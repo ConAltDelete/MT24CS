@@ -1,0 +1,11 @@
+# folders
+
+PRIVATE_FILES
+*.zip
+.ipynb_checkpoints
+data/*
+Kontrakter
+møter
+plots
+Master vult
+artikler
