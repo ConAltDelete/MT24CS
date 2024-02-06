@@ -55,6 +55,14 @@ The selection process for finding these station can be compiled into these steps
 	\item If some station was replaced the repeat step \ref{list:na_anal}
 \end{enumerate}
 
+\begin{figure}
+	\label{fig:plot-17--favang}
+	\includegraphics{"../../plots/plot-17- Fåvang"}
+	\caption{Visual representation of missing values at station 17 from 2014 to 2020}
+\end{figure}
+
+A NA-plot of 
+
 \subsection{Collection of data}
 
-The method used was a powershell\footnote{Version 7.3.11} script that called the respective instetutions servers using the "curl" program\footnote{curl 8.4.0 (Windows) libcurl/8.4.0 Schannel WinIDN} to send an http request. 
+The method used was a powershell\footnote{Version 7.3.11} script that called the respective institutions servers using the "curl" program\footnote{curl 8.4.0 (Windows) libcurl/8.4.0 Schannel WinIDN} to send an http request for the timeseries. The data is stores as an either a csv file or a json file for easy retrieval and manual control of values. 
