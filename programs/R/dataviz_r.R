@@ -1,9 +1,4 @@
----
-title: An R Markdown document converted from "./dataviz_r.ipynb"
-output: html_document
----
-
-```{r}
+## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 library(dplyr) # for data manipulation and transformation
 library(tidyverse) # for a collection of packages for data manipulation and visualization
 library(stats) # for statistical functions and models
@@ -23,9 +18,9 @@ library(gridExtra) # for arranging multiple plots on a grid
 library(RColorBrewer) # for creating color palettes for your plots
 library(MLmetrics)
 library(summarytools)
-```
 
-```{r}
+
+## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # path definitions
 
 ROOT <- "../../"
@@ -125,17 +120,9 @@ find.na.index.length <- function(x){ # antar at x er bool vektor
     }
     return(na.data)
 }
-```
 
-## Data behandling
 
-Henter data fra csv filer som er hentet fra NiBio
-
-## Imputerings metode
-
-Undersøker om dekomponering er bedre enn naiv imputering
-
-```{r}
+## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 blocks.index <- c()
 len.na <- 8
 len.val <- 12
@@ -148,9 +135,9 @@ while(i < 5880){
     i <- i + len.na
 }
 blocks.index <- blocks.index[blocks.index <= 5880]
-```
 
-```{r}
+
+## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #library(moments)
 data_nibio_no_na <- data.nibio(14,2019)
 col.name <- "TM"
@@ -167,9 +154,9 @@ fixed.data <- na.interpol.cust(faulty.data[,col.name], n.p = 21,alg.option="spli
 abs.diff <- fixed.data - data_nibio_no_na[,col.name]
 print(paste("µ",mean(abs.diff),"std:",sqrt(var(abs.diff)),"skewness:",skewness(abs.diff)))
 plot((abs.diff),xlim = c(0,5880))
-```
 
-```{r}
+
+## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # RR hadde ikke noe serlig, men hadde en rep ~= 31 (måned baser?)
 # TM ~= 24? 
 # TJM10 ~= 24?
@@ -196,13 +183,9 @@ for(col in c("TJM20")){
     abline(v=indexes[2],col = "red")
     title(paste(col,"naive"))
 }
-```
 
-## Data Analyse
 
-Analyserer data for manglede verdier.
-
-```{r}
+## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 feature.name = c("TM","RR","TJM10","TJM20")
 na.run.tables <- c()
@@ -395,18 +378,18 @@ for(id in all.id){
                 " Total:",sum(diag(na.matrix.total))))
     dev.off()
 }
-```
 
-```{r}
+
+## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 plot(data.nibio(16,2017)[,"TM"],type="l")
 plot(forecast(fit,h=24*7),xlim=c(5500,6000))
-```
 
-```{r}
+
+## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 imput_data <- na_interpolation(as.ts(data_nibio))
-```
 
-```{r}
+
+## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # RR hadde ikke noe serlig, men hadde en rep ~= 31 (måned baser?)
 # TM ~= 24? 
 # TJM10 ~= 24?
@@ -417,15 +400,13 @@ for(col in c("TM","TJM10","TJM20")){
     pacf(imput_data[,col])
     title(col)
 }
-```
 
-```{r}
+
+## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 plot(stlplus::stlplus(imput_data[,"RR"],n.p = 31, s.window = 5,s.degree=2))
-```
 
-DEtte virker som nice statestik, men hvordan utvide dette til flere år når det er forskjellige vekstperioder? Kan jo prøve å dekomponere dem, så summere residualene under antagelsen at perioden for få stasjoner representerer ikke bare alle år, men alle stasjoner! Som er veldig grovt i min mening, men hva annet kan jeg gjøre.
 
-```{r}
+## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 data_stat_id = matrix()
 
 for(id in nibio_id){
@@ -439,9 +420,9 @@ for(id in nibio_id){
     combined_data <- combined_data %>% column_to_rownames(., var = 'Time')
     combined_data <- mutate_at(combined_data,c("TM","RR","TJM10","TJM20"), as.numeric)
 }
-```
 
-```{r}
+
+## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 library( datasets )
 data("faithful")
 # z - scores & M a h a l a n o b i s d i s t a n c e
@@ -459,11 +440,10 @@ predict( iso_mod , newdata = imput_data )
 library( e1071 )
 svm_mod <- svm ( imput_data , type = "one-classification")
 print(sum(predict( svm_mod , newdata = imput_data )))
-```
 
-```{r}
+
+## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 adf.test(imputed.data[,"TJM10"])
 kpss.test(imputed.data[,"TJM10"])
 pp.test(imputed.data[,"TJM10"])
-```
 
