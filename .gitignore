@@ -4,6 +4,7 @@ PRIVATE_FILES
 *.zip
 .ipynb_checkpoints
 data/*
+programs/python/ILSTM_Soil-model-main/data
 Kontrakter
 møter
 plots
