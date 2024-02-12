@@ -67,6 +67,12 @@ The plots of stations follow a simple representation where the y-axis represent 
 
 The method used was a powershell\footnote{Version 7.3.11} script that called the respective institutions servers using the "curl" program\footnote{curl 8.4.0 (Windows) libcurl/8.4.0 Schannel WinIDN} to send an http request for the timeseries starting from 2014 to 2020 in the interval 1 of May to 31 of October. Code for data collection can be viewed in appendix \ref{apx:code:datacollect}. The data is stores as an either a csv file or a json file for easy retrieval and manual control of values.
 
+\subsection{labeling of stations between Nibio and MET}
+
+Since Nibio and MET have different names for the same stations the authors desided to compile a simple request to the Frost API where the following query was submitted; \begin{verbatim}
+	"https://frost.met.no/observations/v0.csv?sources=ID&referencetime=2014-03-1%2F2020-10-31&elements=sum(precipitation_amount%20PT1H)"
+\end{verbatim} Where ID is the station ID used by Frost API / MET
+
 \subsection{Setup of models}
 
 The models are set up in according to the relevant paper the model is fetched from, alternativly reuse the code made by the author. When importing the data to the model there will be modifying to the original code to facilitate for the model as far as it goes. Any modifications will be in the appendix under section \ref{apx:code}. The details of the models will be discused in section \ref{sec:theory}
