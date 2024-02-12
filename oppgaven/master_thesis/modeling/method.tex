@@ -71,10 +71,10 @@ The method used was a powershell\footnote{Version 7.3.11} script that called the
 
 Since Nibio and MET have different names for the same stations one must compile a list that converts Nibio ID to MET ID. This was performed with these requests 
 \begin{enumerate}
-	\item \begin{verbatim}"https://lmt.nibio.no/services/rest/weatherstation/getstation?weatherStationId=ID"\end{verbatim}
-	\item \begin{verbatim}"https://frost.met.no/sources/v0.jsonld?types=SensorSystem&geometry=nearest(POINT(ID.longitude%20ID.latitude))"\end{verbatim}
-	\item \begin{verbatim}"https://frost.met.no/sources/v0.jsonld?types=SensorSystem&elements=sum(precipitation_amount%20PT1H)&geometry=nearest(POINT(ID.longitude%20ID.latitude))&nearestmaxcount=5"\end{verbatim}
-	\item \begin{verbatim}"https://frost.met.no/observations/v0.csv?sources=Frost.ID&referencetime=2014-03-1%2F2020-10-31&elements=sum(precipitation_amount%20PT1H)"\end{verbatim}
+	\item \begin{lstlisting}"https://lmt.nibio.no/services/rest/weatherstation/getstation?weatherStationId=ID"\end{lstlisting}
+	\item \begin{lstlisting}"https://frost.met.no/sources/v0.jsonld?types=SensorSystem&geometry=nearest(POINT(ID.longitude%20ID.latitude))"\end{lstlisting}
+	\item \begin{lstlisting}"https://frost.met.no/sources/v0.jsonld?types=SensorSystem&elements=sum(precipitation_amount%20PT1H)&geometry=nearest(POINT(ID.longitude%20ID.latitude))&nearestmaxcount=5"\end{lstlisting}
+	\item \begin{lstlisting}"https://frost.met.no/observations/v0.csv?sources=Frost.ID&referencetime=2014-03-1%2F2020-10-31&elements=sum(precipitation_amount%20PT1H)"\end{lstlisting}
 \end{enumerate}
 Where ID is the Nibio Id for the given station, Frost.ID is the MET id, ID.latitude is the latitude gathered from Nibio, ID.longitude is the longitude gathered from Nibio.
 
