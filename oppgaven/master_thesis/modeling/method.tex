@@ -44,7 +44,7 @@ The dataset is chosen from four regions in Norway; Innlandet, Vestfold, Trøndel
 
 All stations are sampled from the date\footnote{Format month-day} 03-01 to 10-31 from 2016 to 2020. The features rain (RR), mean soil temperature at 10cm (TJM10), mean soil temperature at 20cm (TJM20), and air temperature at 2m (TM) are sampled from the LMT database. The snow parameter is sampled from MET via Xgeo for imputed values in areas where there are no messured values. The soil type, and soil texture is sampled from Kilden from Norwegian Institute of Bioeconomy Research.
 
-\subsection{Selection process}
+\subsubsection{Selection process}
 The selection process for finding these station can be compiled into these steps
 
 \begin{enumerate}
@@ -63,11 +63,11 @@ The selection process for finding these station can be compiled into these steps
 
 The plots of stations follow a simple representation where the y-axis represent the year and the x-axis represent the index of the data as all tables are taken from the same period. A circle represent a singluar na values, while a band represent a series of 2 or more missing values. The colours represents the features used in this comperative study. This representation of the missing values will indicate sesonal, and systematic removal of data and give an overall indication of how much data is missing. To get further insight into the data a report is generated in parallel to the plots describing precisie date and time of all values and which other parameter values is also missing values in the same period. See appendix \ref{apx:code:dataanal} for the full detail of the report generation and appendix \ref{apx:plots} for na-plots of the station chosen for this study.
 
-\subsection{Collection of data}
+\subsubsection{Collection of data}
 
 The method used was a powershell\footnote{Version 7.3.11} script that called the respective institutions servers using the "curl" program\footnote{curl 8.4.0 (Windows) libcurl/8.4.0 Schannel WinIDN} to send an http request for the timeseries starting from 2014 to 2020 in the interval 1 of May to 31 of October. Code for data collection can be viewed in appendix \ref{apx:code:datacollect}. The data is stores as an either a csv file or a json file for easy retrieval and manual control of values.
 
-\subsection{labeling of stations between Nibio and MET}
+\subsubsection{labeling of stations between Nibio and MET}
 
 Since Nibio and MET have different names for the same stations one must compile a list that converts Nibio ID to MET ID. This was performed with these requests 
 \begin{enumerate}
@@ -76,7 +76,28 @@ Since Nibio and MET have different names for the same stations one must compile 
 	\item \verb"https://frost.met.no/sources/v0.jsonld?types=SensorSystem&elements=sum(precipitation_amount%20PT1H)&geometry=nearest(POINT(ID.longitude%20ID.latitude))&nearestmaxcount=5"
 	\item \verb"https://frost.met.no/observations/v0.csv?sources=Frost.ID&referencetime=2014-03-1%2F2020-10-31&elements=sum(precipitation_amount%20PT1H)"
 \end{enumerate}
-Where ID is the Nibio Id for the given station, Frost.ID is the MET id, ID.latitude is the latitude gathered from Nibio, ID.longitude is the longitude gathered from Nibio.
+Where ID is the Nibio Id for the given station, Frost.ID is the MET id, ID.latitude is the latitude gathered from Nibio, ID.longitude is the longitude gathered from Nibio. These variables can be swaped out for the relevant station.
+
+\subsubsection{Storage of data}
+The storage of the data is done through two data structures; Hashmap and DataFrame from the package pandas. The transformation of data is done with a costume datatype called "DataFileHandler" which is converted to a module for convinience. The keys for the hashmap is chosen by by the naming of the data files. 
+
+\begin{figure}[h]
+	\begin{tikzpicture}
+		\node (start) [io] {Web request};
+		\node (storage) [prosess, right of=start] {file storage};
+		\node (reading) [prosess, right of=storage] {DataFileHandler};
+		\node (datatreat) [] {Data treatment}
+		\node (p1) at (6,8) {preprosessing 1};
+		\node (p2) at (6,6) {preprosessing 2};
+		\node (p3) at (6,4) {preprosessing 3};
+		\node (pn) at (6,2) {preprosessing n};
+		\node (m1) at (4,8) {modeling 1};
+		\node (m2) at (4,6) {modeling 2};
+		\node (m3) at (4,4) {modeling 3};
+		\node (mn) at (4,2) {modeling n};
+	\end{tikzpicture}
+	\caption{Compressed stucture of study}
+\end{figure}
 
 \subsection{Setup of models}
 
