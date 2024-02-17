@@ -67,7 +67,7 @@ The plots of stations follow a simple representation where the y-axis represent 
 
 The method used was a powershell\footnote{Version 7.3.11} script that called the respective institutions servers using the "curl" program\footnote{curl 8.4.0 (Windows) libcurl/8.4.0 Schannel WinIDN} to send an http request for the timeseries starting from 2014 to 2020 in the interval 1 of May to 31 of October. Code for data collection can be viewed in appendix \ref{apx:code:datacollect}. The data is stores as an either a csv file or a json file for easy retrieval and manual control of values.
 
-\subsubsection{labeling of stations between Nibio and MET}
+\subsubsection{Labeling of stations between Nibio and MET}
 
 Since Nibio and MET have different names for the same stations one must compile a list that converts Nibio ID to MET ID. This was performed with these requests 
 \begin{enumerate}
@@ -97,12 +97,12 @@ The storage of the data is done through two data structures; Hashmap and DataFra
 		\node (mn) at (4,2) {modeling n};
 		% need to fill inn the lines
 	\end{tikzpicture}
-	\caption{Compressed stucture of study}
+	\caption{Compressed structure of study}
 \end{figure}
 
 \paragraph{Technical overview of custom data structure}
 
-The data structure used to store the data from the different stations is called "DataFileHandler" and stores the data in a tree-structure where indexes are dictated by the filename. It has several built-in functions to assist with data partitioning, and merging of data. 
+The data structure used to store the data from the different stations is called "DataFileHandler" and stores the data in a tree-structure where indexes are dictated by the filename. It has several built-in functions to assist with data partitioning, and merging of data. This makes it easier to move and store all 846 720 observations from 16 station from 4 regions\footnote{there are 4 stations per region.}. 
 
 \subsection{Setup of models}
 
