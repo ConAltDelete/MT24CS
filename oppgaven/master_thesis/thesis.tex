@@ -76,26 +76,26 @@ fill=green!30]
 \tikzstyle{arrow} = [thick,->,>=stealth]
 
 \begin{document}
-\onecolumn
-\includepdf[pages=-]{front_page.pdf}
 
-\include{intro/forword.tex}
+	\onecolumn
+	\includepdf[pages=-]{front_page.pdf}
 
-\include{intro/introduction.tex}
+	\include{intro/forword.tex}
 
-\include{modeling/theory.tex}
+	\include{intro/introduction.tex}
 
-\include{modeling/method.tex}
+	\include{modeling/theory.tex}
 
-\include{modeling/results.tex}
+	\include{modeling/method.tex}
 
-\include{conclution/discusion.tex}
+	\include{modeling/results.tex}
 
-\include{conclution/conclution.tex}
+	\include{conclution/discusion.tex}
 
-\bibliographystyle{IEEEbib}
-\bibliography{MasterV24, small_selection}
+	\include{conclution/conclution.tex}
 
+	\bibliographystyle{IEEEbib}
+	\bibliography{MasterV24, small_selection}
 \appendix
 
 \include{appendix/code.tex}
