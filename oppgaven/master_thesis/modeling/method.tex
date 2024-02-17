@@ -71,9 +71,9 @@ The method used was a powershell\footnote{Version 7.3.11} script that called the
 
 Since Nibio and MET have different names for the same stations one must compile a list that converts Nibio ID to MET ID. This was performed with these requests 
 \begin{enumerate}
-	\item \verb"https://lmt.nibio.no/services/rest/weatherstation/getstation?weatherStationId=ID"
-	\item \verb"https://frost.met.no/sources/v0.jsonld?types=SensorSystem&geometry=nearest(POINT(ID.longitude%20ID.latitude))"
-	\item \verb"https://frost.met.no/sources/v0.jsonld?types=SensorSystem&elements=sum(precipitation_amount%20PT1H)&geometry=nearest(POINT(ID.longitude%20ID.latitude))&nearestmaxcount=5"
+	\item \verb"services/rest/weatherstation/getstation?weatherStationId=ID"
+	\item \verb"sources/v0.jsonld?types=SensorSystem&geometry=nearest(POINT(ID.longitude%20ID.latitude))"
+	\item \verb"sources/v0.jsonld?types=SensorSystem&elements=sum(precipitation_amount%20PT1H)&geometry=nearest(POINT(ID.longitude%20ID.latitude))&nearestmaxcount=5"
 	\item \verb"https://frost.met.no/observations/v0.csv?sources=Frost.ID&referencetime=2014-03-1%2F2020-10-31&elements=sum(precipitation_amount%20PT1H)"
 \end{enumerate}
 Where ID is the Nibio Id for the given station, Frost.ID is the MET id, ID.latitude is the latitude gathered from Nibio, ID.longitude is the longitude gathered from Nibio. These variables can be swaped out for the relevant station.
@@ -100,6 +100,10 @@ The storage of the data is done through two data structures; Hashmap and DataFra
 	\caption{Compressed stucture of study}
 \end{figure}
 
+\paragraph{Technical overview of custom data structure}
+
+The data structure used to store the data from the different stations is called "DataFileHandler" and stores the data in a tree-structure where indexes are dictated by the filename. It has several built-in functions to assist with data partitioning, and merging of data. 
+
 \subsection{Setup of models}
 
-The models are set up in according to the relevant paper the model is fetched from, alternativly reuse the code made by the author. When importing the data to the model there will be modifying to the original code to facilitate for the model as far as it goes. Any modifications will be in the appendix under section \ref{apx:code}. The details of the models will be discused in section \ref{sec:theory}
+The models are set up in according to the relevant paper the model is fetched from, alternativly reuse the code made by the author. When importing the data to the model there will be modifying to the original code to facilitate for the model as far as it goes. Any modifications will be in the appendix under section \ref{apx:code}. The details of the models will be discussed in section \ref{sec:theory}
