@@ -70,12 +70,11 @@ The method used was a powershell\footnote{Version 7.3.11} script that called the
 \subsubsection{Labeling of stations between Nibio and MET}
 
 Since Nibio and MET have different names for the same stations one must compile a list that converts Nibio ID to MET ID. This was performed with these requests 
-\begin{enumerate}
-	\item services/rest/weatherstation/getstation?weatherStationId=ID
-	\item sources/v0.jsonld?types=SensorSystem\&geometry=nearest(POINT(ID.longitude\%20ID.latitude))
-	\item sources/v0.jsonld?types=SensorSystem\&elements=sum(precipitation\_amount\%20PT1H)\&geometry=nearest(POINT(ID.longitude\%20ID.latitude))\&nearestmaxcount=5
-	\item https://frost.met.no/observations/v0.csv?sources=Frost.ID\&referencetime=2014-03-1\%2F2020-10-31\&elements=sum(precipitation\_amount\%20PT1H)"
-\end{enumerate}
+\begin{table}
+	\begin{tabular}{|l|}
+		innhold...
+	\end{tabular}
+\end{table}
 Where ID is the Nibio Id for the given station, Frost.ID is the MET id, ID.latitude is the latitude gathered from Nibio, ID.longitude is the longitude gathered from Nibio. These variables can be swaped out for the relevant station.
 
 \subsubsection{Storage of data}
