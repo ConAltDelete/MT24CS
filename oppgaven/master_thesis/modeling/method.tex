@@ -81,7 +81,7 @@ Where ID is the Nibio Id for the given station, Frost.ID is the MET id, ID.latit
 \subsubsection{Storage of data}
 The storage of the data is done through two data structures; Hashmap and DataFrame from the package pandas. The transformation of data is done with a costume datatype called "DataFileHandler" which is converted to a module for convinience. The keys for the hashmap is chosen by by the naming of the data files. 
 
-\begin{figure}[h]
+\begin{figure}[ht]
 	\begin{tikzpicture}
 		\node (start) [startstop] {Web request};
 		\node (storage) [process, right of=start] {file storage};
