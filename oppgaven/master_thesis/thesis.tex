@@ -18,12 +18,17 @@
 \usepackage[ruled, lined, linesnumbered, commentsnumbered, longend]{algorithm2e}
 \usepackage{xcolor}
 \usepackage{epsfig}
-\usepackage[numbers]{biblatex}
+
 \usepackage[final]{pdfpages}
 \usepackage{multicol}
 \usepackage{listings}
-
 \usepackage{hyperref}
+
+\usepackage[backend=bibtex,citestyle=numeric-comp, bibstyle= ieee,maxnames=99]{biblatex}
+\bibliography{MasterV24}
+\addbibresource{small_selection}
+
+
 
 % tikz config
 
@@ -84,8 +89,7 @@ fill=green!30]
 	\include{conclution/conclution.tex}
 	
 	\section{Bibliography}
-	\bibliographystyle{IEEEbib}
-	\bibliography{MasterV24, small_selection}
+	\printbibliography
 \appendix
 
 \include{appendix/code.tex}
