@@ -12,7 +12,7 @@ $$
 Where $\vec{F}$ is a vector function with following domain $\vec{F}:\mathbb{R}^{m\times n}\to \mathbb{R}^{m\times p}$ where $m,p\in \mathbb{N}$, $\mathbf{A}$ is the data in matrix form with dimensions $\mathbb{R}^{m\times n}$, $\vec{\beta}$ is the regression terms, $\vec{y}$ is the target (TJM), and $\vec{\varepsilon}$ is the error from modelling. The $\circ$ operator is the composition of $\vec{F}$ and $\mathbf{A}$, is a short way of writing $\vec{F}(\mathbf{A})$.
 
 This basic model to express the linearity of the compoents to soil temperature. This will function as the base model for regression models. 
-\subsection[Plauborg Regression]{Plauborg linear regression model with Fourier terms}
+\subsection[Plauborg Regression]{Plauborg linear regression model with Fourier terms}\cite{plauborg_simple_2002}
 
 Making a linear regression model for soil temperature sensitive to time without introducing more computational heavy operation would be to introduce features that reflect time. In the paper \citetitle{plauborg_simple_2002} the author chose to extend the features from air temperature to include also day of year and the air temperature from those days. This means the following F function that \citeauthor{plauborg_simple_2002} used would be 
 $$
@@ -39,5 +39,5 @@ The larger coefficient could be expressed as $2\pi/24$ while the smaller $\omega
 	\label{fig:lstmcell}
 \end{figure}
 
-\subsection[ILSTM]{Attention aware LSTM model}
+\subsection[ILSTM]{Attention aware LSTM model}\cite{li_attention-aware_2022}
 
