@@ -1,4 +1,4 @@
-\section{Theory}\label{sec:theory}
+\section{Previous works}\label{sec:theory}
 
 This section discusses the theory behind the models used in the 
 
@@ -27,7 +27,12 @@ Where $air_t$ is the air temperature at time $t$ expressed in day of year, $\ome
 
 The larger coefficient could be expressed as $2\pi/24$ while the smaller $\omega$ for daily values would be rescaled to $2\pi/8760$.
 
-\subsection[Rankin algorithm]{Rankin's finite difference method of simplified heat flow in snow cowered soil}\cite{rankinen_simple_2004}
+The problem with this approsh would be Fouriers Sine-Cosine series approximation which would suggest that \citeauthor{plauborg_simple_2002}'s method could be subject to overfitting but addition of more terms. On the other hand it gives us a way to compute the coefficients $\alpha_i$ and $\gamma_i$ for sine and cosine terms respectively, though it would be more numerically stable with a pseudo-inverse computation or a max log likelihood approach. 
+
+\subsection[Rankin algorithm]{Rankin's finite difference method of simplified heat flow in snow cowered soil}
+
+A more direct method based on laws of physics developt by \citeauthor{karvonen_model_1988} involves forming a Finite Difference Method (FDM) around point of interest with simplifications to the equations described in \citetitle{karvonen_model_1988}. 
+
 
 
 \subsection{Long Short Term Memory model}
