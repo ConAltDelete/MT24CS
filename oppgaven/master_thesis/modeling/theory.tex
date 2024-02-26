@@ -27,14 +27,23 @@ Where $air_t$ is the air temperature at time $t$ expressed in day of year, $\ome
 
 The larger coefficient could be expressed as $2\pi/24$ while the smaller $\omega$ for daily values would be rescaled to $2\pi/8760$.
 
-The problem with this approsh would be Fouriers Sine-Cosine series approximation which would suggest that \citeauthor{plauborg_simple_2002}'s method could be subject to overfitting but addition of more terms. On the other hand it gives us a way to compute the coefficients $\alpha_i$ and $\gamma_i$ for sine and cosine terms respectively, though it would be more numerically stable with a pseudo-inverse computation or a max log likelihood approach. 
+The problem with this approsh would be Fouriers Sine-Cosine series approximation which would suggest that \citeauthor{plauborg_simple_2002}'s method could be subject to overfitting but addition of more terms. On the other hand it gives us a way to compute the coefficients $\alpha_i$ and $\gamma_i$ for sine and cosine terms respectively, though it would be more numerically stable with a pseudo-inverse computation or a max log likelihood approach. \alert{Need to compute condition number of solutions.}
 
 \subsection[Rankin algorithm]{Rankin's finite difference method of simplified heat flow in snow cowered soil}
 
-A more direct method based on laws of physics developt by \citeauthor{karvonen_model_1988} involves forming a Finite Difference Method (FDM) around point of interest with simplifications to the equations described in \citetitle{karvonen_model_1988}. 
-
-
-
+A more direct method based on laws of physics develop by \citeauthor{karvonen_model_1988} involves forming a Finite Difference Method (FDM) around point of interest with simplifications to the equations described in \citetitle{karvonen_model_1988}. A team of reasearchers collaborating with the original author found an algorithm by making simplifications to the general differential equations forming a iterative 2-step prosedure.
+\begin{algorithm}
+	\begin{algorithmic}
+		\Require $D,f_d$
+		\Ensure $T_Z^0$ is defined.
+		\State $\alpha_t$ \gets $\frac{\partial T / \partial t}{\partial^2 T / \partial t^2}$
+		\ForEach{$t\in T$}
+			\State $T_*^{t+1}$ \gets $T_Z^t + \Delta t \times \alpha_t \times (T_{air}-T_Z^t)$
+			\State $T_Z^{t+1}$ \gets $T_*^{t+1}*e^{-f_d\times D}$
+		\EndForEach
+	\end{algorithmic}
+	\caption{Rankin algorithm}
+\end{algorithm}
 \subsection{Long Short Term Memory model}
 
 \begin{figure}[ht]
