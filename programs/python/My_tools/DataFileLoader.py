@@ -1,13 +1,20 @@
 import copy, re, os
 import pandas as pd
+from concurrent.futures import ThreadPoolExecutor
+from collections import deque
+from multiprocessing import Pool
+
 class DataFileLoader:
+    """
+        DataFileLoader stores files in a hashmap with keys given by the file name of the file spesified by the `file_pattern`.
+    """
     def __init__(self, data_path, file_pattern):
-        """
+        r"""
         Initializes the DataFileLoader class.
 
         Args:
             data_path (str): Path to the directory containing data files.
-            file_pattern (str): File name pattern (with placeholders) to match files.
+            file_pattern (str): File name pattern writen in RegEx notation spesified by the python `re` module to match files. The file pattern should contain capture groups to signify the keys used for groupings.
                 Example: r"file_y\d{4}_id\d{1,3}.csv"
         """
         self.data_path = data_path
@@ -16,47 +23,39 @@ class DataFileLoader:
         self.DictData = {}
         self._origin = None
         self.levels = self.pt.groups
+        self._nolevCount = None
 
     def load_data(self, group_order = None, names = None):
         """
         Loads data files from the specified path and populates the nested dictionary.
         """
         print("started load")
+        file_readers = {
+            "csv": self._read_csv,
+            "xlsx": self._read_xlsx,
+            # Add other formats as needed
+        }
         for root, _, files in os.walk(self.data_path):
-            for filename in files:
-                if not self.pt.match(filename):
-                    continue
-                filepath = os.path.join(root, filename)
+            for filename in [filename for filename in files if self.pt.match(filename)]:
                 try:
-                    # Extract placeholders from the filename using regex or string manipulation
-                    # For example, if the filename is "file_y2045_id190.csv", extract 2045 and 190
-                    # and convert them to integers
+                    filepath = os.path.join(root, filename)
                     identifier = self._extract_placeholders(filename)
-                    identifier.reverse() # stack based filling of structure
-                    if group_order is not None:
+                    #identifier.reverse()  # Stack-based filling of structure
+                    if group_order:
                         identifier = [identifier[i] for i in group_order]
-                    if len(identifier) > 0 and identifier is not None:
-                        # Read the CSV file into a Pandas DataFrame
-                        file_extention = filename.split(".")[-1]
+                    if identifier:
+                        file_extension = filename.split(".")[-1]
 
-                        match file_extention:
-                            case "csv":
-                                df = self._read_csv(filepath, names = names)
-                            case "xlsx":
-                                df = self._read_xlsx(filepath, names = names)
-                            case "json":
-                                raise NotImplementedError("Have not implemented Json")
-                            case _:
-                                raise TypeError("Did not reconice type: " + file_extention)
-                        
+                        if file_extension in file_readers:
+                            df = file_readers[file_extension](filepath,names)
+                        else:
+                            raise ValueError(f"Unsupported file type: {file_extension}")
+
                         # Update the nested dictionary
                         current_dict = self.DictData
-                        while len(identifier) > 1: # to make it more general
-                            k = identifier.pop()
-                            if k not in current_dict:
-                                current_dict[k] = {}
-                            current_dict = current_dict[k]
-                        current_dict[identifier[0]] = df
+                        for k in identifier[:-1]:
+                            current_dict = current_dict.setdefault(k, {})
+                        current_dict[identifier[-1]] = df
                 except Exception as e:
                     print(f"Error loading data from {filename}: {e}")
         print("ended load")
@@ -73,7 +72,7 @@ class DataFileLoader:
     def _read_xlsx(self, file_path, names = None):
         df = pd.read_xlsx(file_path)
     
-    def _extract_placeholders(self, filename):
+    def _extract_placeholders(self, filename) -> list[str]:
         """
         Extracts placeholders from the filename based on the specified pattern.
 
@@ -83,6 +82,13 @@ class DataFileLoader:
         Returns:
             List[string]: Extracted year and identifier (or None if not found).
         """
+
+        if self.levels == 0:
+            if self._nolevCount is None:
+                self._nolevCount = 0
+            self._nolevCount += 1
+            return self._nolevCount
+
         try:
             placeholders = list(self.pt.findall(filename)[0])
             #print(placeholders)
@@ -90,7 +96,44 @@ class DataFileLoader:
         except (ValueError, IndexError):
             return None
 
-    def merge_layer(self, level = 0, _current_level = 0, merge_func = None):
+    def group_layer(self,group_struct: dict[str], level = None):
+        """
+            Groups a layer in accordence with `group_struct` which is a dictionary.
+
+            Description:
+                This function will look through the structure and group the entries in accordence with the scematic given by the `group_struct`
+            
+            Args:
+                group_struct (dict[string]): grouping schematic
+                level (int | NoneType): The depth to group, if None the a search will procead
+
+            Returns:
+                DataFileLoader: Restructured DataFileLoader
+        """
+
+        new_data = copy.deepcopy(group_struct)
+
+        old_data = copy.deepcopy(dict(self.flatten(max_level = level,return_key=True))) if level else copy.deepcopy(self.DictData)
+
+        Stack = deque([new_data])
+
+        current_list = {}
+
+        while len(Stack) > 0:
+            current_list = Stack.popleft()
+            if isinstance(list(current_list.values())[0], list):
+                #print(current_list.items(), old_data.keys())
+                for key, surrugate_keys in current_list.items():
+                    current_list[key] = {surr_key: old_data[surr_key] for surr_key in surrugate_keys}
+            else:
+                Stack.append(current_list.values())
+        
+        return self._dict2class(new_data)
+        
+
+
+
+    def merge_layer(self, level: int | None = 0, _current_level: int = 0, merge_func = None):
         """
         Flattens a given layer in a 0 indexed way.
 
@@ -106,7 +149,10 @@ class DataFileLoader:
             data DataFrame: Transformed data
         """
         if _current_level == level:
-            return self.flatten(merge_func = merge_func)
+            if merge_func:
+                return self.flatten(merge_func = merge_func)
+            else:
+                return self.flatten(merge_func=lambda x,y: pd.concat([x, y], ignore_index=True))
         else:
             current_dict = {}
             for key in self.DictData.keys():
@@ -116,7 +162,7 @@ class DataFileLoader:
                     raise ValueError("level too large, current level = "+str(level))
             return self._dict2class(current_dict)
 
-    def flatten(self, merge_func = None):
+    def flatten(self, merge_func = None, max_level = None, return_key = False, _current_level = 0):
         """
         Flattens the entire datastructure to a single DataFrame
 
@@ -126,32 +172,24 @@ class DataFileLoader:
         Returns:
             data DataFrame: Transformed data
         """
-        data = copy.deepcopy(self.DictData)
         return_value = None
-        stack = list(data.values())
-        while len(stack) > 0:
-            current_dict = stack.pop()
-            if not(isinstance(current_dict,dict)):
-                if (return_value is not None) and (merge_func is None):
-                    return_value = pd.concat([return_value, current_dict], ignore_index=True)
-                elif return_value is not None:
-                    return_value = merge_func(return_value, current_dict)
-                else:
-                    return_value = current_dict
-                continue
-            for value in current_dict.values():
-                if isinstance(value,dict):
-                    stack.extend(list(value.values()))
-                else:
-                    if (return_value is not None) and (merge_func is None):
-                        return_value = pd.concat([return_value, value], ignore_index=True)
-                    elif return_value is not None:
-                        return_value = merge_func(return_value, value)
-                    else:
-                        return_value = value
-        return return_value
+        return_keys = None
+        for key, value in self.DictData.items():
+            if isinstance(value, dict) and ((_current_level != max_level) if max_level else True):
+                processed_value = self._dict2class(value).flatten(merge_func,max_level = max_level ,_current_level = _current_level+1)
+            else:
+                processed_value = value if merge_func else [value]
+            if return_value is not None:
+                return_value = merge_func(return_value, processed_value) if merge_func else (return_value + processed_value)
+                if return_key:
+                    return_keys.append(key)
+            else:
+                return_value = processed_value
+                if return_key:
+                    return_keys.append(key)
+        return list(zip(return_keys,return_value)) if return_key else return_value
 
-    def data_transform(self,func):
+    def data_transform(self,func = None, clone=True):
         """
         Transforms data via a function that take in a dataframe and turns it into another dataframe
 
@@ -159,18 +197,21 @@ class DataFileLoader:
             func (function): Function to transform data
 
         Returns:
-            dict Dict[int][int]DataFrame: Transformed data
+            data DataFileLoader: Transformed data
         """
-        data = copy.deepcopy(self.DictData)
-        stack = list(data.values())
-        while len(stack) > 0:
-            current_dict = stack.pop()
-            for key, value in current_dict.items():
-                if isinstance(value,dict):
-                    stack.extend(list(value.values()))
-                else:
-                    current_dict[key] = func(current_dict[key]) # apply function to all leafs
-        return self._dict2class(data)
+        if clone:
+            data = copy.deepcopy(self)
+        else:
+            data = self
+        if func is None:
+            return
+        for key, value in data.DictData.items():
+            if isinstance(value, dict):
+                self._dict2class(value).data_transform(func,clone=False) # only need to clone on top, not the entire tree
+            else:
+                data.DictData[key] = func(value)
+        return data
+
     def restore(self):
         """
             Restorerer dataen til en forandring tilbake.
@@ -205,7 +246,7 @@ class DataFileLoader:
         other_dict = copy.deepcopy(other.DictData)
         
         common = set(data.keys()) & set(other_dict.keys())
-        not_common = (set(data.keys()) & set(other_dict.keys())) - common
+        not_common = (set(data.keys()) ^ set(other_dict.keys()))
 
         for key in common:
             if isinstance(data[key],dict) & isinstance(other_dict[key],dict):
@@ -226,32 +267,49 @@ class DataFileLoader:
         return self._dict2class(data)
     
     def __getitem__(self, indexes): #! Does not work!
-        current_dict = self.DictData
-        if isinstance(indexes,tuple):
-            for i in indexes:
-                if isinstance(i,tuple | list | slice):
-                    current_dict = self._dict2class(current_dict)[i].DictData
-                else:
-                    current_dict = current_dict[i]
+        current_dict = {}
+
+        if isinstance(indexes, str):
+            if indexes in self.DictData:
+                current_dict = {indexes : self.DictData[indexes]}
+            else:
+                raise KeyError(str(indexes) + " is not in data.")
+        elif isinstance(indexes, tuple):
+            assert self.levels == len(indexes)
+
+            temp = self[indexes[0]]
+
+            rest_ind = tuple(list(indexes)[1:])
+
+            for key, value in temp.DictData.items():
+                if isinstance(value,dict):
+                    psudo_data = self._dict2class(value)
+                    psudo_data.levels = psudo_data.levels - 1
+                    psudo_data_dict = psudo_data[rest_ind].DictData
+                    temp.DictData[key] = psudo_data_dict
+            
+            current_dict = temp.DictData
+
         elif isinstance(indexes,list):
-            ret = {}
-            for i in indexes:
-                if isinstance(i,tuple | list | slice):
-                    current_dict = self._dict2class(current_dict)[i].DictData
-                else:
-                    ret.update({i:current_dict[i]})
-            current_dict = ret
+            current_dict = {i:self.DictData[i] for i in indexes}
+
         elif isinstance(indexes,slice):
-            # check if in dict
-            sub_dict = {}
-            values_sorted = sorted(current_dict.keys())
+            values_sorted = sorted(self.DictData.keys())
+
+            if ((indexes.start is not None) & (indexes.start not in values_sorted)) | ((indexes.stop is not None) & (indexes.stop not in values_sorted)):
+                missing = []
+                if (indexes.start is not None) & (indexes.start not in values_sorted):
+                    missing.append(indexes.start)
+                if (indexes.stop is not None) & (indexes.stop not in values_sorted):
+                    missing.append(indexes.stop)
+                raise ValueError("Index not in data: " + str(missing))
             
             if (indexes.start in values_sorted) & (indexes.stop in values_sorted):
                 ind_start = values_sorted.index(indexes.start)
-                ind_end = values_sorted.index(indexes.stop)
+                ind_end = values_sorted.index(indexes.stop) + 1
             elif (indexes.start is None) | (indexes.stop is None):
                 ind_start = values_sorted.index(indexes.start) if indexes.start in values_sorted else 0
-                ind_end = values_sorted.index(indexes.stop) if indexes.stop in values_sorted else len(values_sorted)-1
+                ind_end = values_sorted.index(indexes.stop) if indexes.stop in values_sorted else len(values_sorted)
             else:
                 raise ValueError("confused key pair: ({},{}) ; known keys:{}".format(indexes.start,indexes.stop,values_sorted) )
 
@@ -259,15 +317,80 @@ class DataFileLoader:
                 ind = values_sorted[ind_start:ind_end:indexes.step]
             else:
                 ind = values_sorted[ind_start:ind_end]
-            for i in ind:
-                sub_dict.update({i:current_dict[i]})
-            current_dict = sub_dict
-        else:
-            current_dict = self.DictData[indexes]
-        if isinstance(current_dict,dict):
-            ret_dict = self._dict2class(current_dict)
-        else:
-            return current_dict
+            current_dict = self[ind].DictData
+        
+        return self._dict2class(current_dict)
+
+class ExperimentDataFileHandler(DataFileLoader):
+    def _data_prosess(self,file_info):
+        ext_to_reader = {
+            "csv": self._read_csv,
+            "xlsx": self._read_xlsx,
+            # Add other formats as needed
+        }
+        obj, filename, filepath, identifier, file_extension, names = file_info
+        try:
+            reader_func = ext_to_reader.get(file_extension)
+                            
+            if reader_func:
+                df = reader_func(filepath, names=names)
+            else:
+                raise TypeError(f"Unrecognized file type: {file_extension}")
+            return (identifier,df)
+        except Exception as e:
+            print(f"Error loading data from {filename}: {e}")
+
+    def load_data(self, group_order=None, names=None):
+        """
+        Loads data files from the specified path and populates the nested dictionary.
+        """
+        print("started load")
+
+        File_info_list = []
+        for root, _, files in os.walk(self.data_path):
+            for filename in [filename for filename in files if self.pt.match(filename)]:
+
+                filepath = os.path.join(root, filename)
+                try:
+                    identifier = self._extract_placeholders(filename)
+                    if identifier:
+                        identifier.reverse()  # stack-based filling of structure   
+                        if group_order:
+                            identifier = [identifier[i] for i in group_order]
+        
+                        file_extension = filename.split(".")[-1]
+                        File_info_list.append((self,filename, filepath, identifier, file_extension,names))
+
+                except Exception as e:
+                    print(f"Error loading data from {filename}: {e}")
+        num_processes = os.cpu_count()
+
+        for data in Pool(num_processes).map(self._data_prosess, File_info_list):
+            current_dict = self.DictData
+            identifier = data[0]
+            while len(identifier) > 1:
+                k = identifier.pop()
+                current_dict.setdefault(k, {})
+                current_dict = current_dict[k]
+            
+            current_dict[identifier[0]] = data[1]
+        print("ended load")
+
+    def _dict2class(self, object):
+        """
+            Restorerer dataen til en forandring tilbake.
+
+            Args:
+                object Dict: object to be converted
+            
+            Return:
+                DataFileLoader
+        """
+        ret = ExperimentDataFileHandler(self.data_path, self.file_pattern)
+        ret.DictData = object
+        ret._origin = self
+        return ret
+            
 
 if __name__ == "__main__":
     pass
