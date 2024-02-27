@@ -7,41 +7,36 @@ $bases = @(
 10 , 11 , 12 , 145 , 143 , 13 , 86 , 133 , 14 , 127 , 140 , 15 , 16 , 17 , 18 , 19 , 20 , 110 , 21 , 121 , 87 , 22 , 23 , 24 , 25 , 26 , 27 , 28 , 93 , 57 , 29 , 149 , 141 , 30 , 31 , 65 , 62 , 32 , 33 , 82 , 71 , 34 , 104 , 35 , 90 , 81 , 147 , 36 , 37 , 38 , 97 , 83 , 130 , 39 , 40 , 41 , 63 , 42 , 131 , 134 , 142 , 43 , 108 , 44 , 64 , 129 , 45 , 46 , 47 , 123 , 48 , 91 , 49 , 50 , 51 , 52 , 54 , 55 , 144 , 118 , 53 , 5 , 61 , 72
 )
 
+$station_conv = Import-csv "$($datapath)/../../info"
+
 $jobs = @()
 
 foreach ($base in $bases) {
 	foreach ($year in 2014..2022) {
-		$full_path = "$($datapath)/weather_data_raw_hour_stID$($base)_y$($year).csv"
+		$full_path = "$($datapath)/snowdepth_data_daily_stID_$($base).csv"
 		if(Test-Path $full_path -PathType Leaf){
 			continue
 		}
     $jobs += Start-ThreadJob -Name "w$($base)-y$($year)" -ScriptBlock {
-			param($base, $baseUri, $year, $storage)
+			param($base, $baseUri, $year, $storage,$FrostID)
 			$form = @{
-				weatherstation=$base
-				loginterval=1
-				valuetype="value_raw"
-				date_start="$($year)-03-01"
-				date_end="$($year)-03-31"
+				sources=$base
+				refrenceTime="R9/2014-03-01T00:00:00Z/2014-10-31T23:59:59Z/P1Y"
+				elements="surface_snow_thickness"
+				timeResolution="days"
 				format="csv"
-				separator="dot"
 			}
 
 			$Uri = "$($baseUri)?"
-
-			$Uri += "weatherstation=$($form["weatherstation"])&"
-
-			foreach ($el in @(1,297,6,7)) { # 1, 297 -< temp, nedbør
-				$Uri += "elementMeasurementTypes%5B%5D=$($el)&"
+			
+			foreach($el in $form.GetEnumerator()){
+				$Uri += "$($el.Name)=$($el.Value)&"
 			}
-
-			foreach ($key in @("loginterval","valuetype","date_start","date_end","format","separator")) {
-				$Uri += "$($key)=$($form[$key])&"
-			}
+			
 			$Uri = $Uri.Substring(0,$Uri.length-1)
 			Write-Host $Uri
-			curl $Uri --output $storage --retry 3 --retry-delay 5
-    } -ArgumentList $base, $baseUri, $year, $full_path
+			curl $Uri --user $FrostID: --output $storage --retry 3 --retry-delay 5
+    } -ArgumentList $base, $baseUri, $year, $full_path, $FrostID
 		Write-Host "Written w$($base)-y$($year)."
 	}
 }
