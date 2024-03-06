@@ -9,14 +9,15 @@ $$
 \left(\vec{F}\circ \mathbf{A}\right)\vec{\beta}=\vec{y}+\vec{\varepsilon}
 $$
 
-Where $\vec{F}$ is a vector function with following domain $\vec{F}:\mathbb{R}^{m\times n}\to \mathbb{R}^{m\times p}$ where $m,p\in \mathbb{N}$, $\mathbf{A}$ is the data in matrix form with dimensions $\mathbb{R}^{m\times n}$, $\vec{\beta}$ is the regression terms, $\vec{y}$ is the target (TJM), and $\vec{\varepsilon}$ is the error from modelling. The $\circ$ operator is the composition of $\vec{F}$ and $\mathbf{A}$, is a short way of writing $\vec{F}(\mathbf{A})$.
+Where $\vec{F}$ is a vector function with following domain $\vec{F}:\mathbb{R}^{m\times n}\to \mathbb{R}^{m\times p}$ where $m,n,p\in \mathbb{N}$, $\mathbf{A}$ is the data in matrix form with dimensions $\mathbb{R}^{m\times n}$, $\vec{\beta}$ is the regression terms, $\vec{y}$ is the target (TJM), and $\vec{\varepsilon}$ is the error from modeling. The $\circ$ operator is the composition of $\vec{F}$ and $\mathbf{A}$, is a short way of writing $\vec{F}(\mathbf{A})$.
 
-This basic model to express the linearity of the compoents to soil temperature. This will function as the base model for regression models. 
-\subsection[Plauborg Regression]{Plauborg linear regression model with Fourier terms}\cite{plauborg_simple_2002}
+This basic model to express the linearity of the components to soil temperature. This will function as the base model for regression models. 
+
+\subsection[Plauborg Regression]{Plauborg linear regression model with Fourier terms}
 
 Making a linear regression model for soil temperature sensitive to time without introducing more computational heavy operation would be to introduce features that reflect time. In the paper \citetitle{plauborg_simple_2002} the author chose to extend the features from air temperature to include also day of year and the air temperature from those days. This means the following F function that \citeauthor{plauborg_simple_2002} used would be 
 $$
-\vec{F} := [air_t \; air_{t-1}\; air_{t-2}\; air_{t-3}\; \sin(\omega t) \; \cos(\omega t)\; \sin(2*\omega t)\; \cos(2*\omega t)]^T
+\vec{F} := [air_t , air_{t-1}, air_{t-2}, air_{t-3}, \sin(\omega t) , \cos(\omega t), \sin(2*\omega t), \cos(2*\omega t)]^T
 $$
 
 Where $air_t$ is the air temperature at time $t$ expressed in day of year, $\omega$ is the angular frequency to make the argument of sine and cosine expressed in radians. The sine/cosine elements in the F function represent the variations through the day by fitting $\vec{\beta}$ to the yearly variation. To adapt the authors model to an hourly time unit would be to either
@@ -25,26 +26,54 @@ Where $air_t$ is the air temperature at time $t$ expressed in day of year, $\ome
 	\item Refit the Fourier terms with a larger $\omega$ coefficient to make the oscillations more representative of daily temperature changes.
 \end{enumerate}
 
-The larger coefficient could be expressed as $2\pi/24$ while the smaller $\omega$ for daily values would be rescaled to $2\pi/8760$.
+The larger coefficient could be expressed as $\pi/12$ while the smaller $\omega$ for daily values would be rescaled to $\pi/4380$.
 
-The problem with this approsh would be Fouriers Sine-Cosine series approximation which would suggest that \citeauthor{plauborg_simple_2002}'s method could be subject to overfitting but addition of more terms. On the other hand it gives us a way to compute the coefficients $\alpha_i$ and $\gamma_i$ for sine and cosine terms respectively, though it would be more numerically stable with a pseudo-inverse computation or a max log likelihood approach. \alert{Need to compute condition number of solutions.}
+The problem with this approsh would be Fouriers Sine-Cosine series approximation which would suggest that \citeauthor{plauborg_simple_2002}'s method could be subject to overfitting with addition of more terms. On the other hand it gives us a way to compute the coefficients $\alpha_i$ and $\gamma_i$ for sine and cosine terms respectively, though it would be more numerically stable with a pseudo-inverse computation or a max log likelihood approach. \alert{Need to compute condition number of solutions.}
 
-\subsection[Rankin algorithm]{Rankin's finite difference method of simplified heat flow in snow cowered soil}
+\subsection[Rankin algorithm]{Rankin's finite difference method of simplified heat flow in snow covered soil}
 
-A more direct method based on laws of physics develop by \citeauthor{karvonen_model_1988} involves forming a Finite Difference Method (FDM) around point of interest with simplifications to the equations described in \citetitle{karvonen_model_1988}. A team of reasearchers collaborating with the original author found an algorithm by making simplifications to the general differential equations forming a iterative 2-step prosedure.
-\begin{algorithm}
-	\begin{algorithmic}
-		\Require $D,f_d$
-		\Ensure $T_Z^0$ is defined.
-		\State $\alpha_t$ \gets $\frac{\partial T / \partial t}{\partial^2 T / \partial t^2}$
-		\ForEach{$t\in T$}
-			\State $T_*^{t+1}$ \gets $T_Z^t + \Delta t \times \alpha_t \times (T_{air}-T_Z^t)$
-			\State $T_Z^{t+1}$ \gets $T_*^{t+1}*e^{-f_d\times D}$
-		\EndForEach
-	\end{algorithmic}
+A more direct method based on laws of physics develop by \citeauthor{karvonen_model_1988} involves forming a Finite Difference Method (FDM) around point of interest with simplifications to the equations described in \citetitle{karvonen_model_1988}. A team of researchers collaborating with the original author found an algorithm by making simplifications to the general differential equations forming a iterative 2-step procedure seen at the procedure \ref{alg:rankin}.
+
+\begin{algorithm}[h]
+	\SetAlgoLined
+	\KwData{ $D,f_d$ }
+	\KwResult{$T_Z$}
+	$\alpha_t \gets \frac{\partial T / \partial t}{\partial^2 T / \partial z^2}$\;
+	\For{$t\in T$}{
+		$T_*^{t+1} \gets T_Z^t + \Delta t \times \frac{\alpha_t}{(2Z)^2} \times (T^t_{air}-T_Z^t)$\;
+		$T_Z^{t+1} \gets T_*^{t+1}*e^{-f_d\times D}$\;
+	}
 	\caption{Rankin algorithm}
+	\label{alg:rankin}
 \end{algorithm}
+
+Where $\alpha_t = K_T/C_A$ is the Thermal diffusivity from Fourier's law in thermodynamics, $K_T$ is average soil thermal conductivity, $C_A$ is the apparent heat capacity, and $f_d$ is the damping parameter that has to be empirically derived however for this study it will be estimated from the data through the following estimation
+
+$$
+f_d \approx \frac{-\ln\left(\frac{T_Z^{t+1}}{T_Z^t + \Delta t \frac{\alpha_t}{(2Z)^2} (T^t_{air}-T_Z^t)}\right)}{2D}
+$$
+
+The approximation used in the algorithmn \ref{alg:rankin} assumes that $K_T$ is not dependend on depth . To make the approximation of $\alpha_t$ more accurate the inclusion of rain ($\theta$) to introduce variation can be approximated with
+$$
+\alpha_t \approx \frac{b_1 + b_2\theta +b_3\sqrt{\theta}}{a_1 + a_2\theta}
+$$
+
+proposed by \citeauthor{kodesova_thermal_2013}\cite{kodesova_thermal_2013}\footnote{This representation was not proposed by the author however the linear approximations was proposed to approximate $K_T$ and $C_A$ respectfully. Since $\theta \propto m_w$ we can substitute water content with rain in mm since the area is constant and during all messurement the soil type will be the same, however this would need to be resestimated if a station contains a different soil type as the constant has a wide range of values\cite{kodesova_thermal_2013}.}. To make the computation easier of this Padé-Puiseux\footnote{Padé Approximation is a of the form $\frac{\sum_{i=0}^\infty c_ix^i}{\sum_{j=0}^\infty c_jx^j}$ and a Puiseux series is a $\sum_{j=N}^\infty c_jx^{j/N}$} approximation hybrid we will realize that $\alpha_t$ is expressed by
+
+$$
+	\frac{b_1 + b_2\theta +b_3\sqrt{\theta}}{a_1 + a_2\theta} \approx \alpha_t \approx \frac{(T_z^{t+1} - T_{air})*(2z)^2}{( T_{air} - T_z^{t})*\Delta t} 
+$$
+Thereby only needing a linear regression of two F-functions; $F_1 = [ 1,\theta ,\sqrt{\theta} ]^T$ and $F_2 = [1 , \theta]^T$ rather than a three step approximation. This algorithm (algorithm \ref{alg:rankin}) will approximate the following integral
+
+$$
+T = \int_{t_0}^{t_{max}} \frac{K_T}{C_A}\frac{\partial^2 T}{\partial z^2} dt
+$$
+
+via a Finite Difference Method, although other methods are possible with higher accuracy\footnote{For example fourth degree Runge-Kutta method\cite{runge_ueber_1895} which converges quicker than forward-Euler method or FDM.}.\alert{Must verify for this case!} This study will use the FDM used by the author for the purpose of making the results in this study comparable with the study presented in the paper \citetitle{rankinen_simple_2004}. 
+
 \subsection{Long Short Term Memory model}
+
+The most common problem in Neural networks is the vanishing gradient problem where updating the first few layers of a large network becomes exponentialy more difficult since the adjustments gets smaller and smaller for each layer towards teh start rather than the reverse. Long Sort Term Memory chagnges this by caring information from the previous cells forward thereby allowing updating earlier cells with bigger impact than the standard approach\cite{hochreiter_long_1997}.
 
 \begin{figure}[ht]
 	\centering
@@ -53,5 +82,5 @@ A more direct method based on laws of physics develop by \citeauthor{karvonen_mo
 	\label{fig:lstmcell}
 \end{figure}
 
-\subsection[ILSTM]{Attention aware LSTM model}\cite{li_attention-aware_2022}
+\subsection[ILSTM]{Attention aware LSTM model}
 
