@@ -3,6 +3,8 @@ import pandas as pd
 from concurrent.futures import ThreadPoolExecutor
 from collections import deque
 from multiprocessing import Pool
+import textwrap as tw
+import warnings
 
 class DataFileLoader:
     """
@@ -24,6 +26,7 @@ class DataFileLoader:
         self._origin = None
         self.levels = self.pt.groups
         self._nolevCount = None
+        self.grouped = False
 
     def load_data(self, group_order = None, names = None):
         """
@@ -95,6 +98,11 @@ class DataFileLoader:
             return placeholders
         except (ValueError, IndexError):
             return None
+        
+    def find_depth(self, Dict ,_current_depth = 0):
+        if isinstance(Dict,dict):
+            return _current_depth + max(map(lambda x: self.find_depth(x,_current_depth+1),Dict.values()))
+        return _current_depth
 
     def group_layer(self,group_struct: dict[str], level = None):
         """
@@ -118,6 +126,7 @@ class DataFileLoader:
         Stack = deque([new_data])
 
         current_list = {}
+        add_levs = self.find_depth(new_data)
 
         while len(Stack) > 0:
             current_list = Stack.popleft()
@@ -127,13 +136,25 @@ class DataFileLoader:
                     current_list[key] = {surr_key: old_data[surr_key] for surr_key in surrugate_keys}
             else:
                 Stack.append(current_list.values())
-        
-        return self._dict2class(new_data)
-        
 
+        new_ret = self._dict2class(new_data)
+        new_ret.levels += add_levs
 
+        new_ret.grouped = True
 
-    def merge_layer(self, level: int | None = 0, _current_level: int = 0, merge_func = None):
+        return new_ret
+
+    def shave_top_layer(self):
+        """
+            Removes top layer of the structure and merges child-trees to a single structure.
+        """
+        gathered_data = {}
+        for value in self.DictData.values():
+            gathered_data.update(value)
+        new_ret = self._dict2class(gathered_data,params={"levels":self.levels-1})
+        return new_ret
+
+    def merge_layer(self, level = 0, merge_func = None, _current_level = 0):
         """
         Flattens a given layer in a 0 indexed way.
 
@@ -148,6 +169,7 @@ class DataFileLoader:
         Returns:
             data DataFrame: Transformed data
         """
+        DictData = copy.deepcopy(self.DictData)
         if _current_level == level:
             if merge_func:
                 return self.flatten(merge_func = merge_func)
@@ -155,9 +177,9 @@ class DataFileLoader:
                 return self.flatten(merge_func=lambda x,y: pd.concat([x, y], ignore_index=True))
         else:
             current_dict = {}
-            for key in self.DictData.keys():
-                if isinstance(self.DictData[key], dict):
-                    current_dict.update({key: self._dict2class(self.DictData[key]).merge_layer(level,_current_level + 1, merge_func = merge_func)})
+            for key in DictData.keys():
+                if isinstance(DictData[key], dict):
+                    current_dict.update({key: self._dict2class(DictData[key]).merge_layer(level = level, merge_func = merge_func, _current_level = _current_level + 1)})
                 else:
                     raise ValueError("level too large, current level = "+str(level))
             return self._dict2class(current_dict)
@@ -176,7 +198,7 @@ class DataFileLoader:
         return_keys = None
         for key, value in self.DictData.items():
             if isinstance(value, dict) and ((_current_level != max_level) if max_level else True):
-                processed_value = self._dict2class(value).flatten(merge_func,max_level = max_level ,_current_level = _current_level+1)
+                processed_value = self._dict2class(value).flatten(merge_func = merge_func, max_level = max_level, _current_level = _current_level+1)
             else:
                 processed_value = value if merge_func else [value]
             if return_value is not None:
@@ -187,6 +209,7 @@ class DataFileLoader:
                 return_value = processed_value
                 if return_key:
                     return_keys.append(key)
+
         return list(zip(return_keys,return_value)) if return_key else return_value
 
     def data_transform(self,func = None, clone=True):
@@ -224,7 +247,7 @@ class DataFileLoader:
         else:
             return self._origin
 
-    def _dict2class(self, object):
+    def _dict2class(self, object, params = None):
         """
             Restorerer dataen til en forandring tilbake.
 
@@ -237,13 +260,22 @@ class DataFileLoader:
         ret = DataFileLoader(self.data_path, self.file_pattern)
         ret.DictData = object
         ret._origin = self
+        if params is not None:
+            ret.__dict__.update(params)
         return ret
 
-    def combine(self, other, merge_func = None):
+    def combine(self, other, keep_levs = None,merge_func = None):
         assert(self.levels == other.levels)
         
         data = copy.deepcopy(self.DictData)
         other_dict = copy.deepcopy(other.DictData)
+
+        if (keep_levs is not None and keep_levs):
+            params = {"levels":self.levels}
+        elif (self.grouped and keep_levs is None):
+            params = {"levels":self.levels}
+        else:
+            params = None
         
         common = set(data.keys()) & set(other_dict.keys())
         not_common = (set(data.keys()) ^ set(other_dict.keys()))
@@ -264,9 +296,13 @@ class DataFileLoader:
         for key in not_common:
             data.update({key:other_dict[key]})
         
-        return self._dict2class(data)
+        new_ret = self._dict2class(data,params=params)
+        return copy.deepcopy(new_ret)
     
-    def __getitem__(self, indexes): #! Does not work!
+    def clone(self):
+        return copy.deepcopy(self)
+    
+    def __getitem__(self, indexes): 
         current_dict = {}
 
         if isinstance(indexes, str):
@@ -275,16 +311,17 @@ class DataFileLoader:
             else:
                 raise KeyError(str(indexes) + " is not in data.")
         elif isinstance(indexes, tuple):
-            assert self.levels == len(indexes)
-
+            #assert self.levels == len(indexes), "max level is {} but got {}".format(self.levels,len(indexes))
+            if len(indexes) == 0:
+                return self
+            
             temp = self[indexes[0]]
 
             rest_ind = tuple(list(indexes)[1:])
 
             for key, value in temp.DictData.items():
                 if isinstance(value,dict):
-                    psudo_data = self._dict2class(value)
-                    psudo_data.levels = psudo_data.levels - 1
+                    psudo_data = self._dict2class(value,params= {"levels":self.levels-1})
                     psudo_data_dict = psudo_data[rest_ind].DictData
                     temp.DictData[key] = psudo_data_dict
             
@@ -319,9 +356,24 @@ class DataFileLoader:
                 ind = values_sorted[ind_start:ind_end]
             current_dict = self[ind].DictData
         
-        return self._dict2class(current_dict)
+        return copy.deepcopy(self._dict2class(current_dict))
+    
+    def __str__(self) -> str:
+        ret_string = ""
+        for key, value in self.DictData.items():
+            if isinstance(value,dict):
+                str_value = str(self._dict2class(value))
+                ret_string += str(key) + ":\n" + tw.indent(str_value,"\t") + "\n\n"
+            else:
+                ret_string += str(key) + ":\n" + tw.indent(str(value),"\t") + "\n\n"
+        return ret_string
 
 class ExperimentDataFileHandler(DataFileLoader):
+    
+    def __init__(*args):
+        warnings.warn("This an experimental class, features might give wrong values or worse.",RuntimeWarning)
+        super().__init__(*args)
+        
     def _data_prosess(self,file_info):
         ext_to_reader = {
             "csv": self._read_csv,
