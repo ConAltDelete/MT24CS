@@ -3,79 +3,24 @@
 %          IEEEbib.bst - IEEE bibliography style file.
 % --------------------------------------------------------------------------
 \documentclass[a4paper]{article}
-\usepackage{spconf,amsmath,graphicx}
-\usepackage{amssymb}
-\usepackage{subfigure}
-\usepackage{multirow}
-\usepackage{amsmath}
-\usepackage{geometry}
-\usepackage{tikz}
-\usepackage[style=base]{caption}
-\usepackage{amsmath,amssymb,amsfonts}
-\usepackage{graphicx}
 
-\usepackage[ruled, lined, linesnumbered, commentsnumbered, longend]{algorithm2e}
-\usepackage{xcolor}
-\usepackage{epsfig}
-\usepackage{easyReview}
-
-\usepackage[final]{pdfpages}
-\usepackage{multicol}
-\usepackage{listings}
-\usepackage{hyperref}
-\usepackage{algorithm2e}
-\usepackage[backend=bibtex,citestyle=numeric-comp, bibstyle= ieee,maxnames=99,abbreviate = false,maxcitenames=1,hyperref=true, giveninits=false]{biblatex}
-\bibliography{MasterV24}
-\addbibresource{small_selection}
-
-
-
-% tikz config
-
-\usetikzlibrary{shapes.geometric, arrows}
-
-\tikzstyle{startstop} = [rectangle, rounded corners, 
-minimum width=3cm, 
-minimum height=1cm,
-text centered, 
-draw=black, 
-fill=red!30]
-
-\tikzstyle{io} = [trapezium, 
-trapezium stretches=true, % A later addition
-trapezium left angle=70, 
-trapezium right angle=110, 
-minimum width=3cm, 
-minimum height=1cm, text centered, 
-draw=black, fill=blue!30]
-
-\tikzstyle{process} = [rectangle, 
-minimum width=3cm, 
-minimum height=1cm, 
-text centered, 
-text width=3cm, 
-draw=black, 
-fill=orange!30]
-
-\tikzstyle{decision} = [diamond, 
-minimum width=3cm, 
-minimum height=1cm, 
-text centered, 
-draw=black, 
-fill=green!30]
-\tikzstyle{arrow} = [thick,->,>=stealth]
-
-\setcounter{tocdepth}{6}
+\include{preamble_settings.tex}
 
 \begin{document}
-
+	\pagenumbering{Roman}
 	\onecolumn
 	\includepdf[pages=-]{front_page.pdf}
 
 	\include{intro/forword.tex}
+	\newpage
 	
-	\tableofcontents
+	\include{glossery_library.tex}
 
+	\printglossaries
+	\newpage
+	\tableofcontents
+	\newpage
+	\pagenumbering{arabic}
 	\include{intro/introduction.tex}
 
 	\include{modeling/theory.tex}

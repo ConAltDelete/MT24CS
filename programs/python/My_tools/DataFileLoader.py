@@ -10,13 +10,14 @@ class DataFileLoader:
     """
         DataFileLoader stores files in a hashmap with keys given by the file name of the file spesified by the `file_pattern`.
     """
-    def __init__(self, data_path, file_pattern):
+    def __init__(self, data_path, file_pattern, key_name = None):
         r"""
         Initializes the DataFileLoader class.
 
         Args:
             data_path (str): Path to the directory containing data files.
             file_pattern (str): File name pattern writen in RegEx notation spesified by the python `re` module to match files. The file pattern should contain capture groups to signify the keys used for groupings.
+            key_names (function): Converts RegEx groups to a different string based on a user defined function that takes one argument of type list of strings.
                 Example: r"file_y\d{4}_id\d{1,3}.csv"
         """
         self.data_path = data_path
@@ -27,10 +28,15 @@ class DataFileLoader:
         self.levels = self.pt.groups
         self._nolevCount = None
         self.grouped = False
+        self.key_name = key_name
 
     def load_data(self, group_order = None, names = None):
         """
         Loads data files from the specified path and populates the nested dictionary.
+
+        Args:
+            group_order (list): Spesifies the order of the keys.
+            names (list): Spesifies the names of columns in files.
         """
         print("started load")
         file_readers = {
@@ -46,6 +52,8 @@ class DataFileLoader:
                     #identifier.reverse()  # Stack-based filling of structure
                     if group_order:
                         identifier = [identifier[i] for i in group_order]
+                    if callable(self.key_name):
+                        identifier = self.key_name(identifier)
                     if identifier:
                         file_extension = filename.split(".")[-1]
 
@@ -195,7 +203,7 @@ class DataFileLoader:
             data DataFrame: Transformed data
         """
         return_value = None
-        return_keys = None
+        return_keys = []
         for key, value in self.DictData.items():
             if isinstance(value, dict) and ((_current_level != max_level) if max_level else True):
                 processed_value = self._dict2class(value).flatten(merge_func = merge_func, max_level = max_level, _current_level = _current_level+1)

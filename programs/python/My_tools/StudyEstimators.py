@@ -33,9 +33,10 @@ class KerasBiLSTM(MLPRegressor):
         # Setting up model
         self.model = Sequential()
         self.model.add(Input((All_data[0][0].shape[1], All_data[0][0].shape[2])))
-        self.model.add(Bidirectional(LSTM(self.lstm_units)))
+        self.model.add(Bidirectional(LSTM(self.lstm_units,return_sequences=True)))
+        self.model.add(LSTM(self.lstm_units))
         self.model.add(Dense(self.num_classes, activation='softmax'))
-        self.model.compile(loss='mean_absolute_error', optimizer='adam', metrics=['mean_absolute_error','r2_score'])
+        self.model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mean_squared_error','r2_score'])
         print(self.model.output_shape)
         # fitting model
         #print(self.model.summary())
@@ -111,10 +112,10 @@ class KerasBiLSTM(MLPRegressor):
 
 class PlauborgRegresson(LinearRegression):
 
-    def __init__(self):
-        self.lag_max = 2
-        self.fourier_sin_length = 2
-        self.fourier_cos_length = 2
+    def __init__(self,lag_max = 2, fourier_sin_length = 2, fourier_cos_length = 2):
+        self.lag_max = lag_max
+        self.fourier_sin_length = fourier_sin_length
+        self.fourier_cos_length = fourier_cos_length
 
         super().__init__()
 
@@ -135,9 +136,11 @@ class PlauborgRegresson(LinearRegression):
                                         ["FS" + str(i) for i in range(1,self.fourier_sin_length + 1)] + \
                                         ["FC" + str(i) for i in range(1,self.fourier_cos_length + 1)])
 
-        for i in range(1,self.fourier_sin_length): # 1,2
+        for i in range(1,self.lag_max+1): # 1,2
             data_ret.loc[:,"B"+str(i)] = new_df.loc[:,"TM"].shift(i).values
+        for i in range(1,self.fourier_sin_length+1): # 1,2
             data_ret.loc[:,"FS"+str(i)] = np.sin(2*np.pi/(365*24) * ( new_df.index.day*24 + new_df.index.hour) * i)
+        for i in range(1,self.fourier_cos_length+1): # 1,2
             data_ret.loc[:,"FC"+str(i)] = np.cos(2*np.pi/(365*24) * ( new_df.index.day*24 + new_df.index.hour ) * i)
         return data_ret.infer_objects(copy=False).fillna(0)
     
