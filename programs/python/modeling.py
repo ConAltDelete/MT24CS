@@ -37,7 +37,7 @@ from sklearn.metrics         import accuracy_score, mean_squared_error, r2_score
 #sklearn → data treatment
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import OneHotEncoder
-
+from sklearn.models import LinearRegression
 
 #from ILSTM_Soil_model_main import lstm_interprety_soil_moisture as ILSTM
 from My_tools import DataFileLoader as DFL # min egen
@@ -110,9 +110,9 @@ def show_plot(data,plot_kwarg):
 
 def table2Latex(table, dir_path, file_name, header = "", append = False):
     if os.path.isfile(dir_path + file_name + ".tex") & append:
-        file = open(dir_path+filename+".tex","a", encoding="utf-8")
+        file = open(dir_path+file_name+".tex","a", encoding="utf-8")
     else:
-        file = open(dir_path+filename+".tex","w", encoding="utf-8")
+        file = open(dir_path+file_name+".tex","w", encoding="utf-8")
 
     file.write(r"\begin{tabular}{|l|" + ["c" for _ in range(len(header))].join("|") + "|}")
     if header != "":
@@ -145,6 +145,100 @@ else:
     print("dumped data to",METADATA_PRELOAD_DATA)
 
 
+def attempt_fitting(base_model, param_area, nibio_data):
+    best_plauborg = {
+    "Score":np.inf,
+    "mse":0,
+    "r2":0,
+    "year":0,
+    "model":None
+    }
+
+    worst_plauborg = {
+    "Score":-np.inf,
+    "mse":0,
+    "r2":0,
+    "year":0,
+    "model":None,
+    }
+
+    all_plauborg = []
+
+    search_area = param_area
+
+    base_model = base_model()
+
+    for regi in nibio_id.keys():
+        for i in range(2014,2022):
+            # First we fetch region (regi), all stations (:), then relevant years ("2014":str(i)). Since we only look at one region at the time
+            # we remove the root group (shave_top_layer()), then we merge the years (merge_layer(level = 1), level 1 since level 0 would be the stations at this point)
+            # then make a list (flatten(), the default handeling is to put leafs in a list)
+            
+            data = nibio_data[regi,:,"2014":str(i)].shave_top_layer().merge_layer(level = 1).flatten(return_key = True) # shape [(key, value)] ; looks at all previus years including this year
+            test = nibio_data[regi,:,str(i+1)].shave_top_layer().merge_layer(level = 1).flatten(return_key = True) # shape [(key, value)] ; looks at the next year
+
+            data = [(k,v.infer_objects(copy=False).fillna(0)) for k,v in data] # Removes nan in a quick manner
+            test = [(k,v.infer_objects(copy=False).fillna(0)) for k,v in test] # but will be reviced.
+            
+            model = GridSearchCV(copy.deepcopy(base_model),param_grid=search_area,pre_dispatch=20, n_jobs = -1)
+            n = 0
+            overall_r2 = None # approximates a average r2
+            overall_mse = None
+            for d,t in zip(data,test): # fitting model with all stations
+                model.fit(d[1].loc[:,["Time","TM"]],d[1].loc[:,["TJM20"]]) # regions model
+                s_model = GridSearchCV(copy.deepcopy(base_model),param_grid=search_area, n_jobs = -1).fit(d[1].loc[:,["Time","TM"]],d[1].loc[:,["TJM20"]])# Station model
+                s_pred = s_model.predict(t[1].loc[:,["Time","TM"]])
+                
+                if overall_r2 is not None:
+                    overall_r2 = 1-mediant(1-overall_r2, 1-r2_score(t[1].loc[t[1].shape[0]-s_pred.shape[0]:,"TJM20"].to_numpy(),s_pred))
+                else:
+                    overall_r2 = r2_score(t[1].loc[t[1].shape[0]-s_pred.shape[0]:,"TJM20"].to_numpy(),s_pred)
+                
+                if overall_mse is not None:
+                    overall_mse = (t[1].loc[t[1].shape[0]-s_pred.shape[0]:,"TJM20"].to_numpy()-s_pred)**2 + (overall_mse*n)
+                else:
+                    overall_mse = (t[1].loc[t[1].shape[0]-s_pred.shape[0]:,"TJM20"].to_numpy()-s_pred)**2
+                n += len(s_pred)
+                overall_mse /= n
+
+                show_plot([
+                    pd.DataFrame({"Time":t[1].loc[t[1].shape[0]-s_pred.shape[0]:,"Time"].to_numpy().ravel(),"TJM20":s_pred.ravel() - t[1].loc[t[1].shape[0]-s_pred.shape[0]:,["TJM20"]].to_numpy().ravel()})
+                ],{0:{"label":"spesial"}})
+            
+            show_plot([
+                pd.DataFrame({"Time":t[1].loc[t[1].shape[0]-s_pred.shape[0]:,"Time"],"TJM20":model.predict(t[1].loc[:,["Time","TM"]]).ravel() - t[1].loc[t[1].shape[0]-s_pred.shape[0]:,["TJM20"]].to_numpy().ravel()})
+            ],{0:{"label":"global"}})
+
+            plt.savefig(PLOT_PATH + base_model.__name__ +"_" + regi + "_y"+ str(i) + ".pdf")
+            plt.clf()
+
+            mse = {k:mean_squared_error(t.loc[t.shape[0]-s_pred.shape[0]:,"TJM20"].to_numpy().ravel(),model.predict(t.loc[:,["Time","TM"]])) for k,t in test}
+            r2 = {k:r2_score(t.loc[t.shape[0]-s_pred.shape[0]:,"TJM20"].to_numpy().ravel(),model.predict(t.loc[:,["Time","TM"]])) for k,t in test}
+                
+            print(base_model.__name__,":",regi,"from year 2014 to year",i,":\n",
+                  "\tMSE:", mse,
+                  "\n\tR2:",r2,
+                  "\n\tparams:",model.best_params_)
+            score = max(m/r if r != 0 else np.inf for m,r in zip(mse.values(),r2.values()))
+            model_info = {
+                    "Name":base_model.__name__,
+                    "Score":score, 
+                    "params":model.best_params_,
+                    "mse":mse, 
+                    "r2": r2,
+                    "r2_spes": overall_r2,
+                    "mse_spes": overall_mse,
+                    "year_max": str(i+1), 
+                    "region": regi, 
+                    "model": model
+                }
+            all_plauborg.append(model_info)
+            if score < best_plauborg["Score"]:
+                best_plauborg = model_info
+            elif score > worst_plauborg["Score"]:
+                worst_plauborg = model_info
+
+    return {"all":all_plauborg,"best":best_plauborg,"worst":worst_plauborg}
 # In[5]:
 
 
@@ -198,6 +292,13 @@ def combine_years(X,Y):
     if X.index == Y.index:
         return [X,Y]
 
+# Linear Regression
+
+result_fitting = attempt_fitting(LinearRegression,{"fit_intercept":[True,False],"Positive":[True,False]},imputed_nibio_data)
+
+print("Linear Regresson best:",result_fitting["best"])
+print("Linear Regresson worst:",result_fitting["worst"])
+print("Linear Regresson median:",sorted(result_fitting["all"],key = lambda x: x["Score"])[int(len(result_fitting["all"])/2)])
 
 # ### Plauborg regression
 # 
@@ -205,111 +306,18 @@ def combine_years(X,Y):
 
 # In[ ]:
 
-def attempt_fitting(base_model, param_area):
-    best_plauborg = {
-    "Score":np.inf,
-    "mse":0,
-    "r2":0,
-    "year":0,
-    "model":None
-    }
-
-    worst_plauborg = {
-    "Score":-np.inf,
-    "mse":0,
-    "r2":0,
-    "year":0,
-    "model":None,
-    }
-
-    all_plauborg = []
-
-    search_area = 
-
-    base_model = base_model()
-
-    for regi in nibio_id.keys():
-    for i in range(2014,2022):
-        # First we fetch region (regi), all stations (:), then relevant years ("2014":str(i)). Since we only look at one region at the time
-        # we remove the root group (shave_top_layer()), then we merge the years (merge_layer(level = 1), level 1 since level 0 would be the stations at this point)
-        # then make a list (flatten(), the default handeling is to put leafs in a list)
-        
-        data = imputed_nibio_data[regi,:,"2014":str(i)].shave_top_layer().merge_layer(level = 1).flatten(return_key = True) # shape [(key, value)] ; looks at all previus years including this year
-        test = imputed_nibio_data[regi,:,str(i+1)].shave_top_layer().merge_layer(level = 1).flatten(return_key = True) # shape [(key, value)] ; looks at the next year
-
-        data = [(k,v.infer_objects(copy=False).fillna(0)) for k,v in data] # Removes nan in a quick manner
-        test = [(k,v.infer_objects(copy=False).fillna(0)) for k,v in test] # but will be reviced.
-        
-        model = GridSearchCV(copy.deepcopy(base_model),param_grid=search_area,pre_dispatch=20, n_jobs = -1)
-        n = 0
-        overall_r2 = None # approximates a average r2
-        overall_mse = None
-        for d,t in zip(data,test): # fitting model with all stations
-            model.fit(d[1].loc[:,["Time","TM"]],d[1].loc[:,["TJM20"]]) # regions model
-            s_model = GridSearchCV(copy.deepcopy(base_model),param_grid=search_area, n_jobs = -1).fit(d[1].loc[:,["Time","TM"]],d[1].loc[:,["TJM20"]])# Station model
-            s_pred = s_model.predict(t[1].loc[:,["Time","TM"]])
-            
-            if overall_r2 is not None:
-                overall_r2 = 1-mediant(1-overall_r2, 1-r2_score(t[1].loc[t[1].shape[0]-s_pred.shape[0]:,"TJM20"].to_numpy(),s_pred))
-            else:
-                overall_r2 = r2_score(t[1].loc[t[1].shape[0]-s_pred.shape[0]:,"TJM20"].to_numpy(),s_pred)
-            
-            if overall_mse is not None:
-                overall_mse = (t[1].loc[t[1].shape[0]-s_pred.shape[0]:,"TJM20"].to_numpy()-s_pred)**2 + (overall_mse*n)
-            else:
-                overall_mse = (t[1].loc[t[1].shape[0]-s_pred.shape[0]:,"TJM20"].to_numpy()-s_pred)**2
-            n += len(s_pred)
-            overall_mse /= n
-
-            show_plot([
-                pd.DataFrame({"Time":t[1].loc[t[1].shape[0]-s_pred.shape[0]:,"Time"].to_numpy().ravel(),"TJM20":s_pred.ravel() - t[1].loc[t[1].shape[0]-s_pred.shape[0]:,["TJM20"]].to_numpy().ravel()})
-            ],{0:{"label":"spesial"}})
-        
-        show_plot([
-            pd.DataFrame({"Time":t[1].loc[t[1].shape[0]-s_pred.shape[0]:,"Time"],"TJM20":model.predict(t[1].loc[:,["Time","TM"]]).ravel() - t[1].loc[t[1].shape[0]-s_pred.shape[0]:,["TJM20"]].to_numpy().ravel()})
-        ],{0:{"label":"global"}})
-
-        plt.savefig(PLOT_PATH + "Plauborg_plot_" +regi+ "_y"+ str(i) + ".pdf")
-        plt.clf()
-
-        mse = {k:mean_squared_error(t.loc[t.shape[0]-s_pred.shape[0]:,"TJM20"].to_numpy().ravel(),model.predict(t.loc[:,["Time","TM"]])) for k,t in test}
-        r2 = {k:r2_score(t.loc[t.shape[0]-s_pred.shape[0]:,"TJM20"].to_numpy().ravel(),model.predict(t.loc[:,["Time","TM"]])) for k,t in test}
-            
-        print(regi,"from year 2014 to year",i,":\n",
-              "\tMSE:", mse,
-              "\n\tR2:",r2,
-              "\n\tparams:",model.best_params_)
-        score = max(m/r for m,r in zip(mse.values(),r2.values()))
-        model_info = {
-                "Score":score, 
-                "params":model.best_params_,
-                "mse":mse, 
-                "r2": r2,
-                "r2_spes": overall_r2,
-                "mse_spes": overall_mse,
-                "year_max": str(i+1), 
-                "region": regi, 
-                "model": model
-            }
-        all_plauborg.append(model_info)
-        if score < best_plauborg["Score"]:
-            best_plauborg = model_info
-        elif score > worst_plauborg["Score"]:
-            worst_plauborg = model_info
-
-    return {"all":all_plauborg,"best":best_plauborg,"worst":worst_plauborg}
 
 # In[ ]:
 
 #! Need to adjust following code
-result_fitting = attempt_fitting(SE.PlauborgRegresson,{"lag_max":range(2,8),"fourier_sin_length":range(2,10),"fourier_cos_length":range(2,10)})
+result_fitting = attempt_fitting(SE.PlauborgRegresson,{"lag_max":range(2,8),"fourier_sin_length":range(2,10),"fourier_cos_length":range(2,10)},imputed_nibio_data)
 
-print("best:",best_plauborg)
-print("worst:",worst_plauborg)
-print("median:",sorted(all_plauborg,key = lambda x: x["Score"])[int(len(all_plauborg)/2)])
+print("best:",result_fitting["best"])
+print("worst:",result_fitting["worst"])
+print("median:",sorted(result_fitting["all"],key = lambda x: x["Score"])[int(len(result_fitting["all"])/2)])
 
-best_data = imputed_nibio_data[best_plauborg["region"],:,best_plauborg["year_max"]].merge_layer(level = 0)
-worst_data = imputed_nibio_data[worst_plauborg["region"],:,worst_plauborg["year_max"]].merge_layer(level = 0)
+best_data = imputed_nibio_data[best_plauborg := result_fitting["best"],:,best_plauborg["year_max"]].merge_layer(level = 0)
+worst_data = imputed_nibio_data[worst_plauborg := result_fitting["worst"],:,worst_plauborg["year_max"]].merge_layer(level = 0)
 
 show_plot([
     pd.DataFrame({
@@ -418,82 +426,16 @@ plt.savefig(PLOT_PATH + "Plauborg_plot_worst.pdf")
 
 # In[ ]:
 
+result_fitting = attempt_fitting(SE.KerasBiLSTM,{"input_shape":[24*n for n in range(1,7)],"lstm_units":[2*k for k in range(20,25)],"epochs":[4*n for n in range(30,50)]},imputed_nibio_data)
 
-best_lstm = {
-    "Score":np.inf,
-    "mse":0,
-    "r2":0,
-    "year":0,
-    "model":None
-}
-
-worst_lstm = {
-    "Score":-np.inf,
-    "mse":0,
-    "r2":0,
-    "year":0,
-    "model":None,
-}
-
-base_model = SE.KerasBiLSTM()
-
-for regi in nibio_id.keys():
-    for i in range(2014,2022):
-        # First we fetch region (regi), all stations (:), then relevant years ("2014":str(i)). Since we only look at one region at the time
-        # we remove the root group (shave_top_layer()), then we merge the years (merge_layer(level = 1), level 1 since level 0 would be the stations at this point)
-        # then make a list (flatten(), the default handeling is to put leafs in a list)
-        
-        data = imputed_nibio_data[regi,:,"2014":str(i)].shave_top_layer().merge_layer(level = 1).flatten() # looks at all previus years including this year
-        test = imputed_nibio_data[regi,:,str(i+1)].shave_top_layer().merge_layer(level = 1).flatten() # looks at the next year
-
-        data = [d.infer_objects(copy=False).fillna(0) for d in data] # Removes nan in a quick manner
-        test = [d.infer_objects(copy=False).fillna(0) for d in test] # but will be reviced. 
-        for d,t in zip(data,test): # fitting model with all stations
-            d["Time"] = d["Time"].transform({"Time":lambda x: x.day_of_year*24 + x.hour})
-            t["Time"] = t["Time"].transform({"Time":lambda x: x.day_of_year*24 + x.hour})
-
-        # "input_shape":[(12*n,d.shape[1]) for n in range(1,8)],
-
-        search_area = {"input_shape":[24*n for n in range(1,7)],"lstm_units":[2*k for k in range(20,25)],"epochs":[4*n for n in range(30,50)]}
-
-        model = GridSearchCV(copy.deepcopy(base_model),param_grid=search_area,pre_dispatch=20, n_jobs = -1)
-        overall_r2 = None
-        for d,t in zip(data,test): # fitting model with all stations
-            model.fit(d.loc[:,["Time","TM","RR"]].astype("float32"),d.loc[:,["TJM20"]].to_numpy().ravel()) # regions model
-            s_model = GridSearchCV(copy.deepcopy(base_model),param_grid=search_area,pre_dispatch=20, n_jobs = -1).fit(d.loc[:,["Time","TM","RR"]],d.loc[:,["TJM20"]].to_numpy().ravel()) # Station model
-            if overall_r2 is not None:
-                overall_r2 = 1-mediant(1-overall_r2, 1-r2_score(t["TJM20"].to_numpy().reshape(-1, 1),s_model.predict(t.loc[:,["Time","TM","RR"]])))
-            else:
-                overall_r2 = r2_score(t["TJM20"].to_numpy().reshape(-1, 1),s_model.predict(t.loc[:,["Time","TM","RR"]]))
-            
-            
-        print(regi,"from year 2014 to year",i,":\n",
-              "\tMSE:",
-              mae := [mean_squared_error(t["TJM20"].to_numpy(),model.predict(t.loc[:,["Time","TM","RR"]])) for t in test],
-              "\n\tR2:",
-              r2 := [r2_score(t["TJM20"].to_numpy(),model.predict(t.loc[:,["Time","TM","RR"]])) for t in test])
-        score = max(m/r for m,r in zip(mae,r2))
-        model_info = {
-                "Score":score, 
-                "mse":mae, 
-                "r2": r2,
-                "r2_spes": overall_r2,
-                "year_max": i, 
-                "region": regi, 
-                "model": model
-            }
-        if score < best_lstm["Score"]:
-            best_lstm = model_info
-        elif score > worst_lstm["Score"]:
-            worst_lstm = model_info
-
-print(best_lstm)
-print(worst_lstm)
-
+print("best:",result_fitting["best"])
+print("worst:",result_fitting["worst"])
+print("median:",sorted(result_fitting["all"],key = lambda x: x["Score"])[int(len(result_fitting["all"])/2)])
 
 # In[10]:
 
 
+# ------------------------------------------------------------------------------------
 all_data_daily = data_t.set_index("Time").resample("D").mean().dropna().reset_index()
 
 p_data = F_plauborg(all_data_daily)

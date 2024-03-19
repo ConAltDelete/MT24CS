@@ -1,337 +1,337 @@
 Null count of data.
 Staion nr  10
-prosent of 10 : 0.190008503401361
+prosent of 10 : 0.224362244897959
 prosent of 10  for years:
 
 Staion nr  11
-prosent of 11 : 0.123767006802721
+prosent of 11 : 0.290603741496599
 prosent of 11  for years:
 
 Staion nr  12
-prosent of 12 : 3.4155612244898
+prosent of 12 : 3.51475340136054
 prosent of 12  for years:
 
 Staion nr  145
-prosent of 145 : 2.59974489795918
+prosent of 145 : 3.18303571428571
 prosent of 145  for years:
 
 Staion nr  143
-prosent of 143 : 2.27580782312925
+prosent of 143 : 2.78928571428571
 prosent of 143  for years:
 
 Staion nr  13
-prosent of 13 : 0.0813775510204082
+prosent of 13 : 0.189753401360544
 prosent of 13  for years:
 
 Staion nr  86
-prosent of 86 : 5.57287414965986
+prosent of 86 : 7.04260204081633
 prosent of 86  for years:
 
 Staion nr  133
-prosent of 133 : 5.67950680272109
+prosent of 133 : 7.44234693877551
 prosent of 133  for years:
 
 Staion nr  14
-prosent of 14 : 0.0354166666666667
+prosent of 14 : 0.0462159863945578
 prosent of 14  for years:
 
 Staion nr  127
-prosent of 127 : 0.160841836734694
+prosent of 127 : 0.19672619047619
 prosent of 127  for years:
 
 Staion nr  140
-prosent of 140 : 3.67563775510204
+prosent of 140 : 4.71313775510204
 prosent of 140  for years:
 
 Staion nr  15
-prosent of 15 : 0.109948979591837
+prosent of 15 : 0.11921768707483
 prosent of 15  for years:
 
 Staion nr  16
-prosent of 16 : 0.0264455782312925
+prosent of 16 : 0.0298469387755102
 prosent of 16  for years:
 
 Staion nr  17
-prosent of 17 : 0.189583333333333
+prosent of 17 : 0.589710884353742
 prosent of 17  for years:
 
 Staion nr  18
-prosent of 18 : 0.296683673469388
+prosent of 18 : 1.0952806122449
 prosent of 18  for years:
 
 Staion nr  19
-prosent of 19 : 0.704549319727891
+prosent of 19 : 0.753103741496599
 prosent of 19  for years:
 
 Staion nr  20
-prosent of 20 : 0.16781462585034
+prosent of 20 : 0.194897959183673
 prosent of 20  for years:
 
 Staion nr  110
-prosent of 110 : 4.44085884353741
+prosent of 110 : 5.69034863945578
 prosent of 110  for years:
 
 Staion nr  21
-prosent of 21 : 1.83022959183673
+prosent of 21 : 2.87729591836735
 prosent of 21  for years:
 
 Staion nr  121
-prosent of 121 : 5.79727891156463
+prosent of 121 : 7.33295068027211
 prosent of 121  for years:
 
 Staion nr  87
-prosent of 87 : 5.46445578231293
+prosent of 87 : 6.99906462585034
 prosent of 87  for years:
 
 Staion nr  22
-prosent of 22 : 0.126190476190476
+prosent of 22 : 0.385416666666667
 prosent of 22  for years:
 
 Staion nr  23
-prosent of 23 : 0.174107142857143
+prosent of 23 : 0.394940476190476
 prosent of 23  for years:
 
 Staion nr  24
-prosent of 24 : 0.552721088435374
+prosent of 24 : 0.626360544217687
 prosent of 24  for years:
 
 Staion nr  25
-prosent of 25 : 0.103061224489796
+prosent of 25 : 0.133928571428571
 prosent of 25  for years:
 
 Staion nr  26
-prosent of 26 : 0.181972789115646
+prosent of 26 : 0.213222789115646
 prosent of 26  for years:
 
 Staion nr  27
-prosent of 27 : 0.123001700680272
+prosent of 27 : 0.151743197278912
 prosent of 27  for years:
 
 Staion nr  28
-prosent of 28 : 4.51926020408163
+prosent of 28 : 5.61887755102041
 prosent of 28  for years:
 
 Staion nr  93
-prosent of 93 : 3.17831632653061
+prosent of 93 : 3.90208333333333
 prosent of 93  for years:
 
 Staion nr  57
-prosent of 57 : 0.0873724489795918
+prosent of 57 : 0.130527210884354
 prosent of 57  for years:
 
 Staion nr  29
-prosent of 29 : 0.0673469387755102
+prosent of 29 : 0.223979591836735
 prosent of 29  for years:
 
 Staion nr  149
-prosent of 149 : 7
+prosent of 149 : 9
 prosent of 149  for years:
 
 Staion nr  141
-prosent of 141 : 3.65102040816327
+prosent of 141 : 4.69047619047619
 prosent of 141  for years:
 
 Staion nr  30
-prosent of 30 : 0.0828231292517007
+prosent of 30 : 0.104464285714286
 prosent of 30  for years:
 
 Staion nr  31
-prosent of 31 : 0.0278061224489796
+prosent of 31 : 0.0392857142857143
 prosent of 31  for years:
 
 Staion nr  65
-prosent of 65 : 5.71075680272109
+prosent of 65 : 7.2624574829932
 prosent of 65  for years:
 
 Staion nr  62
-prosent of 62 : 5.47240646258503
+prosent of 62 : 7.00531462585034
 prosent of 62  for years:
 
 Staion nr  32
-prosent of 32 : 0.479591836734694
+prosent of 32 : 1.0266156462585
 prosent of 32  for years:
 
 Staion nr  33
-prosent of 33 : 0.297576530612245
+prosent of 33 : 0.329931972789116
 prosent of 33  for years:
 
 Staion nr  82
-prosent of 82 : 3.21279761904762
+prosent of 82 : 4.1687925170068
 prosent of 82  for years:
 
 Staion nr  71
-prosent of 71 : 4.68316326530612
+prosent of 71 : 5.94702380952381
 prosent of 71  for years:
 
 Staion nr  34
-prosent of 34 : 0.257993197278912
+prosent of 34 : 0.355484693877551
 prosent of 34  for years:
 
 Staion nr  104
-prosent of 104 : 4.46301020408163
+prosent of 104 : 5.81041666666667
 prosent of 104  for years:
 
 Staion nr  35
-prosent of 35 : 0.0306122448979592
+prosent of 35 : 0.0362244897959184
 prosent of 35  for years:
 
 Staion nr  90
-prosent of 90 : 5.82232142857143
+prosent of 90 : 7.38664965986395
 prosent of 90  for years:
 
 Staion nr  81
-prosent of 81 : 3.87746598639456
+prosent of 81 : 5.05573979591837
 prosent of 81  for years:
 
 Staion nr  147
-prosent of 147 : 6.00093537414966
+prosent of 147 : 7.7578231292517
 prosent of 147  for years:
 
 Staion nr  36
-prosent of 36 : 0.511267006802721
+prosent of 36 : 0.621811224489796
 prosent of 36  for years:
 
 Staion nr  37
-prosent of 37 : 0.171258503401361
+prosent of 37 : 0.19562074829932
 prosent of 37  for years:
 
 Staion nr  38
-prosent of 38 : 0.508290816326531
+prosent of 38 : 0.564923469387755
 prosent of 38  for years:
 
 Staion nr  97
-prosent of 97 : 4.77317176870748
+prosent of 97 : 6.06126700680272
 prosent of 97  for years:
 
 Staion nr  83
-prosent of 83 : 3.61198979591837
+prosent of 83 : 4.92929421768708
 prosent of 83  for years:
 
 Staion nr  130
-prosent of 130 : 4.83295068027211
+prosent of 130 : 6.39604591836735
 prosent of 130  for years:
 
 Staion nr  39
-prosent of 39 : 0.116921768707483
+prosent of 39 : 0.126105442176871
 prosent of 39  for years:
 
 Staion nr  40
-prosent of 40 : 0.761054421768708
+prosent of 40 : 1.08460884353742
 prosent of 40  for years:
 
 Staion nr  41
-prosent of 41 : 0.282780612244898
+prosent of 41 : 0.302848639455782
 prosent of 41  for years:
 
 Staion nr  63
-prosent of 63 : 4.84005102040816
+prosent of 63 : 4.8968537414966
 prosent of 63  for years:
 
 Staion nr  42
-prosent of 42 : 0.268579931972789
+prosent of 42 : 0.291921768707483
 prosent of 42  for years:
 
 Staion nr  131
-prosent of 131 : 4.66122448979592
+prosent of 131 : 5.89336734693878
 prosent of 131  for years:
 
 Staion nr  134
-prosent of 134 : 6.98924319727891
+prosent of 134 : 8.98584183673469
 prosent of 134  for years:
 
 Staion nr  142
-prosent of 142 : 3.65488945578231
+prosent of 142 : 4.85178571428571
 prosent of 142  for years:
 
 Staion nr  43
-prosent of 43 : 0.327891156462585
+prosent of 43 : 1.23647959183673
 prosent of 43  for years:
 
 Staion nr  108
-prosent of 108 : 0.128741496598639
+prosent of 108 : 0.149659863945578
 prosent of 108  for years:
 
 Staion nr  44
-prosent of 44 : 0.980952380952381
+prosent of 44 : 1.03414115646259
 prosent of 44  for years:
 
 Staion nr  64
-prosent of 64 : 5.47427721088435
+prosent of 64 : 7.02797619047619
 prosent of 64  for years:
 
 Staion nr  129
-prosent of 129 : 2.97249149659864
+prosent of 129 : 3.99404761904762
 prosent of 129  for years:
 
 Staion nr  45
-prosent of 45 : 0.571768707482993
+prosent of 45 : 0.617942176870748
 prosent of 45  for years:
 
 Staion nr  46
-prosent of 46 : 0.257057823129252
+prosent of 46 : 0.558843537414966
 prosent of 46  for years:
 
 Staion nr  47
-prosent of 47 : 1.81781462585034
+prosent of 47 : 2.37295918367347
 prosent of 47  for years:
 
 Staion nr  123
-prosent of 123 : 5.35042517006803
+prosent of 123 : 6.88205782312925
 prosent of 123  for years:
 
 Staion nr  48
-prosent of 48 : 0.276105442176871
+prosent of 48 : 0.279039115646258
 prosent of 48  for years:
 
 Staion nr  91
-prosent of 91 : 6.2577380952381
+prosent of 91 : 7.80140306122449
 prosent of 91  for years:
 
 Staion nr  49
-prosent of 49 : 0.113605442176871
+prosent of 49 : 0.160884353741497
 prosent of 49  for years:
 
 Staion nr  50
-prosent of 50 : 0.389923469387755
+prosent of 50 : 0.408715986394558
 prosent of 50  for years:
 
 Staion nr  51
-prosent of 51 : 0.0828231292517007
+prosent of 51 : 0.219557823129252
 prosent of 51  for years:
 
 Staion nr  52
-prosent of 52 : 0.150340136054422
+prosent of 52 : 0.393877551020408
 prosent of 52  for years:
 
 Staion nr  54
-prosent of 54 : 0.0330357142857143
+prosent of 54 : 0.0395833333333333
 prosent of 54  for years:
 
 Staion nr  55
-prosent of 55 : 3.43184523809524
+prosent of 55 : 3.80739795918367
 prosent of 55  for years:
 
 Staion nr  144
-prosent of 144 : 0.816454081632653
+prosent of 144 : 1.11972789115646
 prosent of 144  for years:
 
 Staion nr  118
-prosent of 118 : 0.290561224489796
+prosent of 118 : 0.327763605442177
 prosent of 118  for years:
 
 Staion nr  53
-prosent of 53 : 0.23703231292517
+prosent of 53 : 0.7625
 prosent of 53  for years:
 
 Staion nr  5
-prosent of 5 : 0.183928571428571
+prosent of 5 : 0.222108843537415
 prosent of 5  for years:
 
 Staion nr  61
-prosent of 61 : 5.55089285714286
+prosent of 61 : 7.11955782312925
 prosent of 61  for years:
 
 Staion nr  72
-prosent of 72 : 4.6515306122449
+prosent of 72 : 5.93941326530612
 prosent of 72  for years:
 

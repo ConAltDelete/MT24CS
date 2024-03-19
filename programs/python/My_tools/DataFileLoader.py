@@ -1,16 +1,18 @@
 import copy, re, os
 import pandas as pd
-from concurrent.futures import ThreadPoolExecutor
+# from concurrent.futures import ThreadPoolExecutor
 from collections import deque
 from multiprocessing import Pool
 import textwrap as tw
 import warnings
+import pickle
+import logging
 
 class DataFileLoader:
     """
         DataFileLoader stores files in a hashmap with keys given by the file name of the file spesified by the `file_pattern`.
     """
-    def __init__(self, data_path, file_pattern, key_name = None):
+    def __init__(self, data_path, file_pattern, key_name = None,_iter_key = False):
         r"""
         Initializes the DataFileLoader class.
 
@@ -29,6 +31,8 @@ class DataFileLoader:
         self._nolevCount = None
         self.grouped = False
         self.key_name = key_name
+        self._iter_key = _iter_key
+        self._leaf_list = []
 
     def load_data(self, group_order = None, names = None):
         """
@@ -38,7 +42,7 @@ class DataFileLoader:
             group_order (list): Spesifies the order of the keys.
             names (list): Spesifies the names of columns in files.
         """
-        print("started load")
+        logging.info("started load")
         file_readers = {
             "csv": self._read_csv,
             "xlsx": self._read_xlsx,
@@ -60,16 +64,19 @@ class DataFileLoader:
                         if file_extension in file_readers:
                             df = file_readers[file_extension](filepath,names)
                         else:
-                            raise ValueError(f"Unsupported file type: {file_extension}")
+                            logging.error(f"Unsupported file type: {file_extension}")
+                            continue
 
                         # Update the nested dictionary
                         current_dict = self.DictData
                         for k in identifier[:-1]:
                             current_dict = current_dict.setdefault(k, {})
                         current_dict[identifier[-1]] = df
+                        self._leaf_list.append((identifier[-1], df) if self._iter_key else df)
+
                 except Exception as e:
-                    print(f"Error loading data from {filename}: {e}")
-        print("ended load")
+                    logging.error(f"Error loading data from {filename}: {e}")
+        logging.info("ended load")
 
     def _read_csv(self, file_path, names = None):
         df = pd.read_csv(file_path,delimiter = ",",
@@ -152,6 +159,9 @@ class DataFileLoader:
 
         return new_ret
 
+    def _update_leafs(self):
+        self._leaf_list = copy.deepcopy(self.flatten(return_key=self._iter_key,_force_update = True))
+
     def shave_top_layer(self):
         """
             Removes top layer of the structure and merges child-trees to a single structure.
@@ -192,7 +202,7 @@ class DataFileLoader:
                     raise ValueError("level too large, current level = "+str(level))
             return self._dict2class(current_dict)
 
-    def flatten(self, merge_func = None, max_level = None, return_key = False, _current_level = 0):
+    def flatten(self, merge_func = None, max_level = None, return_key = False, _current_level = 0, _force_update = False):
         """
         Flattens the entire datastructure to a single DataFrame
 
@@ -202,21 +212,40 @@ class DataFileLoader:
         Returns:
             data DataFrame: Transformed data
         """
+        if (merge_func is None) and (max_level is None) and (self._iter_key == return_key) and not(_force_update):
+            return self._leaf_list
+        
+        #print(_current_level)
+
         return_value = None
         return_keys = []
         for key, value in self.DictData.items():
+            #should_process_value = isinstance(value, dict) and ((not max_level) or (_current_level != max_level))
+
+            #processed_value = (self._dict2class(value).flatten(merge_func=merge_func, max_level=max_level, _current_level=_current_level+1) if should_process_value else value) if merge_func else [value]
+
+            #return_value = merge_func(return_value, processed_value) if merge_func and return_value is not None else (return_value + processed_value if return_value else processed_value)
+
+            #if return_key:
+            #    return_keys.append(key)
             if isinstance(value, dict) and ((_current_level != max_level) if max_level else True):
+                #print("inside, current level", _current_level)
                 processed_value = self._dict2class(value).flatten(merge_func = merge_func, max_level = max_level, _current_level = _current_level+1)
             else:
                 processed_value = value if merge_func else [value]
             if return_value is not None:
-                return_value = merge_func(return_value, processed_value) if merge_func else (return_value + processed_value)
+                merged_value = merge_func(return_value, processed_value) if merge_func else processed_value
                 if return_key:
+                    return_value.append(processed_value)
                     return_keys.append(key)
+                else:
+                    return_value = (return_value + processed_value)
             else:
-                return_value = processed_value
                 if return_key:
+                    return_value = [processed_value]
                     return_keys.append(key)
+                else:
+                    return_value = processed_value
 
         return list(zip(return_keys,return_value)) if return_key else return_value
 
@@ -268,6 +297,7 @@ class DataFileLoader:
         ret = DataFileLoader(self.data_path, self.file_pattern)
         ret.DictData = object
         ret._origin = self
+        ret._update_leafs()
         if params is not None:
             ret.__dict__.update(params)
         return ret
@@ -278,15 +308,10 @@ class DataFileLoader:
         data = copy.deepcopy(self.DictData)
         other_dict = copy.deepcopy(other.DictData)
 
-        if (keep_levs is not None and keep_levs):
-            params = {"levels":self.levels}
-        elif (self.grouped and keep_levs is None):
-            params = {"levels":self.levels}
-        else:
-            params = None
+        params = {"levels": self.levels} if keep_levs or (self.grouped and keep_levs is None) else None
         
-        common = set(data.keys()) & set(other_dict.keys())
-        not_common = (set(data.keys()) ^ set(other_dict.keys()))
+        common = data.keys() & other_dict.keys()
+        not_common = data.keys() ^ other_dict.keys()
 
         for key in common:
             if isinstance(data[key],dict) & isinstance(other_dict[key],dict):
@@ -295,14 +320,11 @@ class DataFileLoader:
                 merged = com_data.combine(com_other,merge_func = merge_func)
                 data[key] = merged.DictData
             elif merge_func is not None:
-                merged = merge_func(data[key],other_dict[key])
-                data[key] = merged
+                data[key] = merge_func(data[key],other_dict[key])
             else:
-                merged = pd.concat([data[key], other_dict[key]], ignore_index=True)
-                data[key] = merged
-
-        for key in not_common:
-            data.update({key:other_dict[key]})
+                data[key] = pd.concat([data[key], other_dict[key]], ignore_index=True)
+        
+        data.update({key: other_dict[key] for key in not_common})
         
         new_ret = self._dict2class(data,params=params)
         return copy.deepcopy(new_ret)
@@ -341,22 +363,13 @@ class DataFileLoader:
         elif isinstance(indexes,slice):
             values_sorted = sorted(self.DictData.keys())
 
-            if ((indexes.start is not None) & (indexes.start not in values_sorted)) | ((indexes.stop is not None) & (indexes.stop not in values_sorted)):
-                missing = []
-                if (indexes.start is not None) & (indexes.start not in values_sorted):
-                    missing.append(indexes.start)
-                if (indexes.stop is not None) & (indexes.stop not in values_sorted):
-                    missing.append(indexes.stop)
-                raise ValueError("Index not in data: " + str(missing))
+            if indexes.start not in values_sorted or indexes.stop not in values_sorted:
+                missing = [index for index in (indexes.start, indexes.stop) if (index not in values_sorted) and (index is not None)]
+                if len(missing)>0:
+                    raise KeyError("Index not in data: " + str(missing), "Avalible indexes: " + str(values_sorted))
             
-            if (indexes.start in values_sorted) & (indexes.stop in values_sorted):
-                ind_start = values_sorted.index(indexes.start)
-                ind_end = values_sorted.index(indexes.stop) + 1
-            elif (indexes.start is None) | (indexes.stop is None):
-                ind_start = values_sorted.index(indexes.start) if indexes.start in values_sorted else 0
-                ind_end = values_sorted.index(indexes.stop) if indexes.stop in values_sorted else len(values_sorted)
-            else:
-                raise ValueError("confused key pair: ({},{}) ; known keys:{}".format(indexes.start,indexes.stop,values_sorted) )
+            ind_start = values_sorted.index(indexes.start) if indexes.start in values_sorted else 0
+            ind_end = values_sorted.index(indexes.stop) + 1 if indexes.stop in values_sorted else len(values_sorted)
 
             if (indexes.step is not None) & isinstance(type(indexes.step),int):
                 ind = values_sorted[ind_start:ind_end:indexes.step]
@@ -366,6 +379,13 @@ class DataFileLoader:
         
         return copy.deepcopy(self._dict2class(current_dict))
     
+    def dump(self,FileName):
+        """
+            Saves class to a binary file named `FileName`
+        """
+        pickle.dump(self,f := open(FileName,"wb"))
+        f.close()
+
     def __str__(self) -> str:
         ret_string = ""
         for key, value in self.DictData.items():
@@ -375,6 +395,9 @@ class DataFileLoader:
             else:
                 ret_string += str(key) + ":\n" + tw.indent(str(value),"\t") + "\n\n"
         return ret_string
+    
+    def __iter__(self):
+        return self._leaf_list.__iter__()
 
 class ExperimentDataFileHandler(DataFileLoader):
     
@@ -398,13 +421,13 @@ class ExperimentDataFileHandler(DataFileLoader):
                 raise TypeError(f"Unrecognized file type: {file_extension}")
             return (identifier,df)
         except Exception as e:
-            print(f"Error loading data from {filename}: {e}")
+            logging.warning(f"Error loading data from {filename}: {e}")
 
     def load_data(self, group_order=None, names=None):
         """
         Loads data files from the specified path and populates the nested dictionary.
         """
-        print("started load")
+        logging.info("started load")
 
         File_info_list = []
         for root, _, files in os.walk(self.data_path):
@@ -422,7 +445,7 @@ class ExperimentDataFileHandler(DataFileLoader):
                         File_info_list.append((self,filename, filepath, identifier, file_extension,names))
 
                 except Exception as e:
-                    print(f"Error loading data from {filename}: {e}")
+                    logging.warning(f"Error loading data from {filename}: {e}")
         num_processes = os.cpu_count()
 
         for data in Pool(num_processes).map(self._data_prosess, File_info_list):
@@ -434,7 +457,7 @@ class ExperimentDataFileHandler(DataFileLoader):
                 current_dict = current_dict[k]
             
             current_dict[identifier[0]] = data[1]
-        print("ended load")
+        logging.info("ended load")
 
     def _dict2class(self, object):
         """

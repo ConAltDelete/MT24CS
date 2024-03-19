@@ -163,7 +163,7 @@ abs.diff <- fixed.data - data_nibio_no_na[,col.name]
 print(paste("µ",mean(abs.diff),"std:",sqrt(var(abs.diff)),"skewness:",skewness(abs.diff)))
 plot((abs.diff),xlim = c(0,5880))
 
-fixed.data <- na.interpol.cust(faulty.data[,col.name], n.p = 21,alg.option="spline", method = "periodic")
+fixed.data <- na.interpol.cust(faulty.data[,col.name], n.p = 21,alg.option="spline")
 abs.diff <- fixed.data - data_nibio_no_na[,col.name]
 print(paste("µ",mean(abs.diff),"std:",sqrt(var(abs.diff)),"skewness:",skewness(abs.diff)))
 plot((abs.diff),xlim = c(0,5880))
@@ -176,13 +176,13 @@ plot((abs.diff),xlim = c(0,5880))
 # TJM20 ~= 21?
 perid <- c(TM = 24,TJM10 = 24, TJM20 = 24, RR = 31)
 
-data.rle <- rle(is.na(data_nibio[,"TJM20"]))
+data.rle <- rle(is.na(data.nibio[,"TJM20"]))
 data.max <- max(data.rle$lengths[data.rle$values])
 indexes <- find.index.rle.bool(data.rle,data.max)
 print(data.max)
 
 for(col in c("TJM20")){
-    imput <- as.ts(na.interpol.cust(data_nibio[,col],n.p=perid[col]))
+    imput <- as.ts(na.interpol.cust(data.nibio[,col],n.p=perid[col]))
     plot(imput,xlim = c(indexes[1]-100,indexes[2]+100))
     abline(v=indexes[1],col = "red")
     abline(v=indexes[2],col = "red")
@@ -190,7 +190,7 @@ for(col in c("TJM20")){
 }
 
 for(col in c("TJM20")){
-    imput <- as.ts(na_interpolation(data_nibio[,col]))
+    imput <- as.ts(na_interpolation(data.nibio[,col]))
     plot(imput,xlim = c(indexes[1]-100,indexes[2]+100))
     abline(v=indexes[1],col = "red")
     abline(v=indexes[2],col = "red")
@@ -233,7 +233,7 @@ for(id in all.id){
     plot(NULL,
          sub = "hourly time From 2014-03-01 to year 2020-10-31",
          xlab="Date", ylab="NA location",
-         xlim = c(0,5881), ylim = c(2013,2021))   
+         xlim = c(0,5881), ylim = c(2013,2023))   
 
     colours <- c(TM ="blue", RR = "red",TJM10 = "green",TJM20 = "orange")
     lev <- seq(-1/2,1/2,length.out=5)
@@ -250,7 +250,7 @@ for(id in all.id){
     #data_plot <- ggplot(title = paste("NA count of staion:",station_names[as.character(id),],"id:",id))
     na.plot <- FALSE
     cat(paste("***************","station",id,"***************"),append=T,sep="\n",file = "NB_data.txt")
-    for(year in seq(2014,2020)){
+    for(year in seq(2014,2022)){
 
         # Drawing seperating lines
 
@@ -445,20 +445,20 @@ for(id in nibio_id){
 library( datasets )
 data("faithful")
 # z - scores & M a h a l a n o b i s d i s t a n c e
-z <- scale(imput_data) %>% as.data.frame()
-mahalanobis(z , center = c(0 ,0) , cov = cov( imput_data,use = "all.obs" ) )
+z <- scale(faithful) %>% as.data.frame()
+mahalanobis(z , center = c(0 ,0) , cov = cov( faithful,use = "all.obs" ) )
 # DBSCAN & LOF
 library( dbscan )
-dbscan( imput_data , eps = 1)$cluster == 0
-lof( imput_data , minPts = 5)
+dbscan( faithful , eps = 1)$cluster == 0
+lof( faithful , minPts = 5)
 # I s o l a t i o n forest
 library( isotree )
-iso_mod <- isolation.forest( imput_data )
-predict( iso_mod , newdata = imput_data )
+iso_mod <- isolation.forest( faithful )
+predict( iso_mod , newdata = faithful )
 # one - class SVM
 library( e1071 )
-svm_mod <- svm ( imput_data , type = "one-classification")
-print(sum(predict( svm_mod , newdata = imput_data )))
+svm_mod <- svm ( faithful , type = "one-classification")
+print(sum(predict( svm_mod , newdata = faithful )))
 ```
 
 ```{r}

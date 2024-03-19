@@ -31,18 +31,19 @@ class KerasBiLSTM(MLPRegressor):
         # Data treatment
         All_data = self._data_treatment(X,y) # Takes both just incase.
         # Setting up model
-        self.model = Sequential()
-        self.model.add(Input((All_data[0][0].shape[1], All_data[0][0].shape[2])))
-        self.model.add(Bidirectional(LSTM(self.lstm_units,return_sequences=True)))
-        self.model.add(LSTM(self.lstm_units))
-        self.model.add(Dense(self.num_classes, activation='softmax'))
-        self.model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mean_squared_error','r2_score'])
-        print(self.model.output_shape)
+        if not(self.is_fitted_):
+            self.model = Sequential()
+            self.model.add(Input((All_data[0][0].shape[1], All_data[0][0].shape[2])))
+            self.model.add(Bidirectional(LSTM(self.lstm_units,return_sequences=True)))
+            self.model.add(LSTM(self.lstm_units))
+            self.model.add(Dense(self.num_classes, activation='softmax'))
+            self.model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mean_squared_error','r2_score'])
+            print(self.model.output_shape)
         # fitting model
         #print(self.model.summary())
         #print("Input shape for LSTM:", All_data[0][0].shape)
 
-        self.model.fit(All_data, epochs=self.epochs, verbose=1)
+        self.model.fit(All_data, epochs=self.epochs, verbose=0)
 
         self.is_fitted_ = True
         return self

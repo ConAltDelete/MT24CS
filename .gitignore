@@ -10,3 +10,6 @@ møter
 plots
 Master vult
 artikler
+*.exe
+*.msi
+*/CoupModel/*

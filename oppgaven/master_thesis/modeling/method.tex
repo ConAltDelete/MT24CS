@@ -2,12 +2,12 @@
 
 \subsection{Source of data}
 
-For this comparative study the following data sourses will be used
+For this comparative study the following data sources will be used
 \begin{enumerate}
-	\item Norwegian Institute of Bioeconomy Research LandbruksMeteorologisk service (LMT)
+	\item \gls{ac:nibio}
 	\item Xgeo
-	\item Norwegian Institute of Bioeconomy Research Kilden (Kilden)
-	\item The Norwegian Meteorological Institute (MET)
+	\item \gls{ac:kilden}
+	\item \gls{ac:met}
 \end{enumerate}
 
 \subsection{Dataset}
@@ -56,12 +56,13 @@ The selection process for finding these station can be compiled into these steps
 \end{enumerate}
 
 \begin{figure}
+	\centering
 	\label{fig:plot-17}
 	\includegraphics{"../../plots/plot-17"}
 	\caption{Visual representation of missing values at station 17 from 2014 to 2020}
 \end{figure}
 
-The plots of stations follow a simple representation where the y-axis represent the year and the x-axis represent the index of the data as all tables are taken from the same period. A circle represent a singluar na values, while a band represent a series of 2 or more missing values. The colours represents the features used in this comperative study. This representation of the missing values will indicate sesonal, and systematic removal of data and give an overall indication of how much data is missing. To get further insight into the data a report is generated in parallel to the plots describing precisie date and time of all values and which other parameter values is also missing values in the same period. See appendix \ref{apx:code:dataanal} for the full detail of the report generation and appendix \ref{apx:plots} for na-plots of the station chosen for this study.
+The plots of stations follow a simple representation where the y-axis represent the year and the x-axis represent the index of the data as all tables are taken from the same period. A circle represent a singluar na values, while a band represent a series of 2 or more missing values. The colours represents the features used in this comperative study. This representation of the missing values will indicate sesonal, and systematic removal of data and give an overall indication of how much data is missing. To get further insight into the data a report is generated in parallel to the plots describing precise date and time of all values and which other parameter values is also missing values in the same period. See appendix \ref{apx:code:dataanal} for the full detail of the report generation and appendix \ref{apx:plots} for na-plots of the station chosen for this study.
 
 \subsubsection{Collection of data}
 
@@ -71,14 +72,20 @@ The method used was a powershell\footnote{Version 7.3.11} script that called the
 
 Since Nibio and MET have different names for the same stations one must compile a list that converts Nibio ID to MET ID. This was performed with these requests 
 \begin{table}
-	\begin{tabular}{|l|}
-		innhold...
+	\centering
+	\begin{tabular}{r|lp{5cm}|}
+		FROST & SQL approximate Code\\\hline
+		 Stations with rain & \parbox{8cm}{\lstinline[language=sql]|SELECT StationName FROM FROST WHERE  LIMIT 4|} \\
+		 Station ID & \parbox{8cm}{\lstinline[language=sql]|SELECT StationID, LMTID FROM FROST,LMT WHERE |} \\
+		\hline LMT & Code \\\hline
+		Meteorological data & \parbox{8cm}{\lstinline[language=sql]|SELECT ID,date,TM,RR,TJM10,TJM20 FROM LMT WHERE date IN BETWEEN year-03-01 year-10-31 AND ID = LMTID|} \\
 	\end{tabular}
+	\caption{SQL version of the query requests sent to the different institutions.}
 \end{table}
 Where ID is the Nibio Id for the given station, Frost.ID is the MET id, ID.latitude is the latitude gathered from Nibio, ID.longitude is the longitude gathered from Nibio. These variables can be swaped out for the relevant station.
 
 \subsubsection{Storage of data}
-The storage of the data is done through two data structures; Hashmap and DataFrame from the package pandas. The transformation of data is done with a costume datatype called "DataFileHandler" which is converted to a module for convinience. The keys for the hashmap is chosen by by the naming of the data files. 
+The storage of the data is done through two data structures; \gls{gl:hashmap} and \gls{gl:dataframe} from the package pandas. The transformation of data is done with a costume datatype called "DataFileHandler" which is converted to a module for convenience. The keys for the hashmap is chosen by the naming of the data files and the pattern given to the class. To escalete modeling the data will also be exported to a binary file for faster retrieval. 
 
 \begin{figure}[ht]
 	\begin{tikzpicture}
@@ -101,9 +108,49 @@ The storage of the data is done through two data structures; Hashmap and DataFra
 %\paragraph[Data structure]{Technical overview of custom data structure}
 The data structure used to store the data from the different stations is called "DataFileHandler" and stores the data in a tree-structure where indexes are dictated by the filename. It has several built-in functions to assist with data partitioning, and merging of data. This makes it easier to move and store all 846 720 observations from 16 station from 4 regions\footnote{there are 4 stations per region.}. 
 
+\subsection{Data cleaning and treatment}
+
+To use the data in this study it must be cleaned and treated for training. The following methods were picked common practice in litterateur with new methods based on the decomposition of the data in the from of \acrfull{ac:stl}\cite{cleveland_stl_1990}\footnote{In this study we expand this for multiple seasons using \acrfull{ac:mstl}\cite{bandara_mstl_2021}, but the theory of this imputation method remains the same.}.
+
+\subsubsection{Outlier detection and removal}
+
+Though the data fetched from \acrshort{ac:nibio} is treated and controlled the external data from \acrshort{ac:met} might not be, and this research project incorporated raw, untreated data from \acrshort{ac:nibio} to fill inn missing values. This paper has done empirical studies to find out which method to use in the prepossessing step of training the models. The selected methods are
+
+\begin{enumerate}
+	\item model based
+	\begin{itemize}
+		\item \acrfull{ac:arima}
+		\item LSTM
+	\end{itemize}
+	\item statistic based
+	\begin{itemize}
+		\item backwards and forwards first observations
+		\item rolling mean
+		\item linear imputation
+	\end{itemize}
+	\item \acrshort{ac:stl} decomposition with above methods
+\end{enumerate}
+
+\subsubsection{Missing value imputation}
+
+The data has missing values, in particular during early Fall when there were sub-zero temperatures meaning any rain measurements done during this period would have unpredictable fluctuations since at negative temperatures water can freeze, get clogged up with residual bio-material from the surrounding area
+
+\begin{enumerate}
+	\item linear imputation
+	\item backwards and forwards first available observation
+	\item global mean replacement
+	\item STL decomposition with above methods to impute components
+\end{enumerate}
+
+The last method, using STL, was chosen because it would in principle be simpler to impute a less noisy signal than a noisy one.
+
 \subsection{Setup of models}
 
-The models are set up in according to the relevant paper the model is fetched from, alternatively reuse the code made by the author. When importing the data to the model there will be modifying to the original code to facilitate for the model as far as it goes. Any modifications will be in the appendix under section \ref{apx:code}. The details of the models will be discussed in section \ref{sec:theory}
+The models are set up in according to the relevant paper the model is fetched from, alternatively reuse the code made by the author. When importing the data to the model there will be modifying to the original code to facilitate for the model as far as it goes. Any modifications will be in the appendix under section \ref{apx:code}. For the convenience of the reader all code is using the sklearn estimator class to make all the models discuses in this study more user friendly and compatible with sklearns other functions. The details of the models will be discussed in section \ref{sec:theory}, this section discusses the setup and implementation of the models.\footnote{Caution to the reader; The code used was run on a Linux subsystem on windows due to the fact that the current version of tensorflow can't run on Windows.}
+
+\subsubsection{Basic Linear model}
+
+The linear model (sec \ref{sec:theory:linreg}) utilises in the study is created from the python model sklearn (or scikit-learn according to pythons package manager) 
 
 \subsection[Use of AI]{Use of Artificial Intelligence in this paper}
 

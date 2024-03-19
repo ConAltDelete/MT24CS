@@ -1,0 +1,97 @@
+%\usepackage{spconf,amsmath,graphicx}
+\usepackage{amssymb}
+\usepackage{subfigure}
+\usepackage{multirow}
+\usepackage{amsmath}
+\usepackage{geometry}
+\usepackage{tikz}
+\usepackage[style=base]{caption}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+
+\usepackage[ruled, lined, linesnumbered, commentsnumbered, longend]{algorithm2e}
+\usepackage{xcolor}
+\usepackage{epsfig}
+\usepackage{easyReview}
+
+\usepackage{hyperref}
+\usepackage{glossaries}
+\usepackage[final]{pdfpages}
+\usepackage{multicol}
+\usepackage{listings}
+\lstset{
+	breaklines=true,
+	postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space},
+	breakindent = 2cm
+}
+%\usepackage{algorithm2e}
+\usepackage[backend=bibtex,citestyle=numeric-comp, bibstyle= ieee,maxnames=99,abbreviate = false,maxcitenames=1,hyperref=true, giveninits=false]{biblatex}
+\bibliography{MasterV24}
+\addbibresource{small_selection}
+
+\title{A comparative study of soil temperature models, including machine learning models}
+
+% page styling
+\setlength{\headheight}{20mm}
+\setlength{\headsep}{25pt}
+\setlength{\voffset}{-2mm}
+\usepackage{lastpage}
+\usepackage{fancyhdr}
+\fancyhf{}
+\fancyhead[L]{\includegraphics[trim={2.5cm 2cm 0 0},clip,height=1.2\headheight]{images/_Logopakke/ENGELSK/RGB/EPS/NMBU_logo_rgb_Primary_logo}}
+\fancyfoot[R]{Page \thepage \hspace{1pt} of \pageref{LastPage}}
+\fancyhead[R]{\leftmark}
+\pagestyle{fancy}
+
+% tabel config
+
+% tikz config
+
+\usetikzlibrary{shapes.geometric, arrows}
+
+\tikzstyle{startstop} = [rectangle, rounded corners, 
+minimum width=3cm, 
+minimum height=1cm,
+text centered, 
+draw=black, 
+fill=red!30]
+
+\tikzstyle{io} = [trapezium, 
+trapezium stretches=true, % A later addition
+trapezium left angle=70, 
+trapezium right angle=110, 
+minimum width=3cm, 
+minimum height=1cm, text centered, 
+draw=black, fill=blue!30]
+
+\tikzstyle{process} = [rectangle, 
+minimum width=3cm, 
+minimum height=1cm, 
+text centered, 
+text width=3cm, 
+draw=black, 
+fill=orange!30]
+
+\tikzstyle{decision} = [diamond, 
+minimum width=3cm, 
+minimum height=1cm, 
+text centered, 
+draw=black, 
+fill=green!30]
+\tikzstyle{arrow} = [thick,->,>=stealth]
+
+\setcounter{tocdepth}{6}
+
+\setglossarystyle{altlisthypergroup}
+\makeglossaries
+
+\usepackage{letltxmacro}
+\makeatletter
+\let\oldr@@t\r@@t
+\def\r@@t#1#2{%
+	\setbox0=\hbox{$\oldr@@t#1{#2\,}$}\dimen0=\ht0
+	\advance\dimen0-0.2\ht0
+	\setbox2=\hbox{\vrule height\ht0 depth -\dimen0}%
+	{\box0\lower0.4pt\box2}}
+\LetLtxMacro{\oldsqrt}{\sqrt}
+\renewcommand*{\sqrt}[2][\ ]{\oldsqrt[#1]{#2}}
