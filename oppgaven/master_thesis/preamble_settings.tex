@@ -13,6 +13,7 @@
 \usepackage{xcolor}
 \usepackage{epsfig}
 \usepackage{easyReview}
+\usepackage{float}
 
 \usepackage{hyperref}
 \usepackage{glossaries}
@@ -24,6 +25,9 @@
 	postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space},
 	breakindent = 2cm
 }
+
+\usepackage[inline]{enumitem}
+
 %\usepackage{algorithm2e}
 \usepackage[backend=bibtex,citestyle=numeric-comp, bibstyle= ieee,maxnames=99,abbreviate = false,maxcitenames=1,hyperref=true, giveninits=false]{biblatex}
 \bibliography{MasterV24}
@@ -84,6 +88,8 @@ fill=green!30]
 
 \setglossarystyle{altlisthypergroup}
 \makeglossaries
+
+\newcommand{\keywords}[1]{\textit{Keywords}: #1}
 
 \usepackage{letltxmacro}
 \makeatletter

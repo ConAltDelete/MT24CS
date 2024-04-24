@@ -12,7 +12,7 @@ class DataFileLoader:
     """
         DataFileLoader stores files in a hashmap with keys given by the file name of the file spesified by the `file_pattern`.
     """
-    def __init__(self, data_path, file_pattern, key_name = None,_iter_key = False):
+    def __init__(self, data_path = None, file_pattern = None, key_name = None,_iter_key = False):
         r"""
         Initializes the DataFileLoader class.
 
@@ -22,19 +22,23 @@ class DataFileLoader:
             key_names (function): Converts RegEx groups to a different string based on a user defined function that takes one argument of type list of strings.
                 Example: r"file_y\d{4}_id\d{1,3}.csv"
         """
-        self.data_path = data_path
+        self.data_path = data_path if data_path is not None else "./"
         self.file_pattern = file_pattern
-        self.pt = re.compile(self.file_pattern)
+        self.pt = re.compile(self.file_pattern) if self.file_pattern is not None else None
         self.DictData = {}
         self._origin = None
-        self.levels = self.pt.groups
+        self.levels = self.pt.groups if self.pt is not None else None
         self._nolevCount = None
         self.grouped = False
         self.key_name = key_name
         self._iter_key = _iter_key
         self._leaf_list = []
 
-    def load_data(self, group_order = None, names = None):
+    def load_dict(self, tree):
+        other = self._dict2class(tree)
+        return other
+
+    def load_data(self, group_order = None, names = None,date_format = "%Y-%m-%d %H:%M:%S%z"):
         """
         Loads data files from the specified path and populates the nested dictionary.
 
@@ -48,6 +52,8 @@ class DataFileLoader:
             "xlsx": self._read_xlsx,
             # Add other formats as needed
         }
+        if self.file_pattern is None:
+            raise AttributeError("Missing pattern!")
         for root, _, files in os.walk(self.data_path):
             for filename in [filename for filename in files if self.pt.match(filename)]:
                 try:
@@ -62,7 +68,7 @@ class DataFileLoader:
                         file_extension = filename.split(".")[-1]
 
                         if file_extension in file_readers:
-                            df = file_readers[file_extension](filepath,names)
+                            df = file_readers[file_extension](filepath,names,date_format)
                         else:
                             logging.error(f"Unsupported file type: {file_extension}")
                             continue
@@ -72,23 +78,23 @@ class DataFileLoader:
                         for k in identifier[:-1]:
                             current_dict = current_dict.setdefault(k, {})
                         current_dict[identifier[-1]] = df
-                        self._leaf_list.append((identifier[-1], df) if self._iter_key else df)
+                        self._leaf_list.append((identifier, df) if self._iter_key else df)
 
                 except Exception as e:
                     logging.error(f"Error loading data from {filename}: {e}")
         logging.info("ended load")
 
-    def _read_csv(self, file_path, names = None):
+    def _read_csv(self, file_path, names = None,date_format = "%Y-%m-%d %H:%M:%S%z"):
         df = pd.read_csv(file_path,delimiter = ",",
                                    header = 0,
                                    names = names)
         df.iloc[:,0] = pd.to_datetime(df.iloc[:,0] + "00",
-                                    format = "%Y-%m-%d %H:%M:%S%z",
+                                    format = date_format,
                                     utc=True) # converts summer time to timezone then convert to GMT
         return df
 
-    def _read_xlsx(self, file_path, names = None):
-        df = pd.read_xlsx(file_path)
+    def _read_xlsx(self, file_path, names = None,date_format = "%Y-%m-%d %H:%M:%S%z"):
+        df = pd.read_xlsx(file_path,names = names)
     
     def _extract_placeholders(self, filename) -> list[str]:
         """
@@ -114,10 +120,18 @@ class DataFileLoader:
         except (ValueError, IndexError):
             return None
         
-    def find_depth(self, Dict ,_current_depth = 0):
+    def find_depth(self, Dict = None ,_current_depth = 0):
+        if Dict is None:
+            Dict = self.DictData
         if isinstance(Dict,dict):
             return _current_depth + max(map(lambda x: self.find_depth(x,_current_depth+1),Dict.values()))
         return _current_depth
+
+    def apply_model(self, model, include_perent=False, combine_func = None):
+        """
+            applys a function `model` to all leafs unless include perent is set to True then it will combine the data using Combine_func, else defult is used.
+        """
+        raise NotImplemented("This function is not implemented.")
 
     def group_layer(self,group_struct: dict[str], level = None):
         """
@@ -160,7 +174,21 @@ class DataFileLoader:
         return new_ret
 
     def _update_leafs(self):
-        self._leaf_list = copy.deepcopy(self.flatten(return_key=self._iter_key,_force_update = True))
+        """
+            Assume DictData is correct       
+        """
+        stack = [(self.DictData.copy(), [])]  # Initialize a stack with the root dictionary and an empty path
+        result = []  # Initialize the result list
+        while stack:
+            current_dict, path = stack.pop()
+            for key, value in current_dict.items():
+                if isinstance(value, dict):
+                    # Push nested dictionaries onto the stack
+                    stack.append((value, path + [key]))
+                else:
+                    # Append the path and leaf element to the result list
+                    result.append((path + [key], value))
+        self._leaf_list = result
 
     def shave_top_layer(self):
         """
@@ -212,42 +240,36 @@ class DataFileLoader:
         Returns:
             data DataFrame: Transformed data
         """
-        if (merge_func is None) and (max_level is None) and (self._iter_key == return_key) and not(_force_update):
-            return self._leaf_list
+        #if (merge_func is None) and (max_level is None) and (self._iter_key == return_key) and not(_force_update):
+        #    return self._leaf_list
         
         #print(_current_level)
 
+        if merge_func is None:
+            def merge_func(left, right):
+                if isinstance(left, list) or isinstance(right, list):
+                    if not isinstance(left, list):
+                        left = [left]
+                    if not isinstance(right, list):
+                        right = [right]
+                    # Concatenate the lists
+                    combined_list = left + right
+                else:
+                    # Create a new list with left and right as elements
+                    combined_list = [left, right]
+                return combined_list
+
         return_value = None
-        return_keys = []
+        dict_array = []
         for key, value in self.DictData.items():
-            #should_process_value = isinstance(value, dict) and ((not max_level) or (_current_level != max_level))
-
-            #processed_value = (self._dict2class(value).flatten(merge_func=merge_func, max_level=max_level, _current_level=_current_level+1) if should_process_value else value) if merge_func else [value]
-
-            #return_value = merge_func(return_value, processed_value) if merge_func and return_value is not None else (return_value + processed_value if return_value else processed_value)
-
-            #if return_key:
-            #    return_keys.append(key)
-            if isinstance(value, dict) and ((_current_level != max_level) if max_level else True):
-                #print("inside, current level", _current_level)
-                processed_value = self._dict2class(value).flatten(merge_func = merge_func, max_level = max_level, _current_level = _current_level+1)
+            if isinstance(value,dict) and ((_current_level != max_level) if max_level else True):
+                value = self._dict2class(value).flatten(merge_func = merge_func, max_level = max_level, _current_level = _current_level+1)
+            if not return_key:
+                return_value = merge_func(return_value,value) if return_value is not None else value
             else:
-                processed_value = value if merge_func else [value]
-            if return_value is not None:
-                merged_value = merge_func(return_value, processed_value) if merge_func else processed_value
-                if return_key:
-                    return_value.append(processed_value)
-                    return_keys.append(key)
-                else:
-                    return_value = (return_value + processed_value)
-            else:
-                if return_key:
-                    return_value = [processed_value]
-                    return_keys.append(key)
-                else:
-                    return_value = processed_value
+                dict_array.append( (key,value) )
 
-        return list(zip(return_keys,return_value)) if return_key else return_value
+        return dict_array if return_key else return_value
 
     def data_transform(self,func = None, clone=True):
         """
@@ -298,6 +320,8 @@ class DataFileLoader:
         ret.DictData = object
         ret._origin = self
         ret._update_leafs()
+        if ret.levels is None:
+            ret.levels = self.find_depth(object)
         if params is not None:
             ret.__dict__.update(params)
         return ret
@@ -383,8 +407,18 @@ class DataFileLoader:
         """
             Saves class to a binary file named `FileName`
         """
-        pickle.dump(self,f := open(FileName,"wb"))
+        pickle.dump(self.__dict__,f := open(FileName,"wb"))
         f.close()
+    
+    def load(self,FileName):
+        """
+            loads data from a binary file
+        """
+        new_dict = self.__dict__ | pickle.load(f := open(FileName,"br"))
+        f.close()
+        copy = self.clone()
+        copy.__dict__.update(new_dict)
+        return copy
 
     def __str__(self) -> str:
         ret_string = ""

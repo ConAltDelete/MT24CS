@@ -7,9 +7,12 @@ data/*
 programs/python/ILSTM_Soil-model-main/data
 Kontrakter
 møter
-plots
 Master vult
+results
 artikler
 *.exe
 *.msi
 */CoupModel/*
+*/__pycache__/*
+*/lstm_log/*
+.virtual_documents

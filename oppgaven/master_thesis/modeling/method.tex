@@ -3,44 +3,40 @@
 \subsection{Source of data}
 
 For this comparative study the following data sources will be used
-\begin{enumerate}
+
+\begin{enumerate*}
 	\item \gls{ac:nibio}
 	\item Xgeo
 	\item \gls{ac:kilden}
 	\item \gls{ac:met}
-\end{enumerate}
+\end{enumerate*}
 
 \subsection{Dataset}
 
 The dataset is chosen from four regions in Norway; Innlandet, Vestfold, Trøndelag, and Østfold. From each region are four stations picked:
-\begin{multicols}{2}
-\begin{itemize}
-	\item[Innlandet] \begin{enumerate}
-		\item Kise
-		\item Ilseng
-		\item Apelsvoll
-		\item Gausdal
-	\end{enumerate}
-	\item[Østfold] \begin{enumerate}
-		\item Rygge
-		\item Rakkestad
-		\item Tomb
-		\item Øsaker
-	\end{enumerate}
-	\item[Trøndelag] \begin{enumerate}
-		\item Kvithamar
-		\item Rissa
-		\item Frosta
-		\item Mære
-	\end{enumerate}
-	\item[Vestfold] \begin{enumerate}
-		\item Lier
-		\item Ramnes
-		\item Tjølling
-		\item Sande
-	\end{enumerate}
-\end{itemize}
-\end{multicols}
+\begin{table}[h]
+	\centering
+	\begin{tabular}{ccccccccc}
+		\hline Region&Name&ID&Drain type&Soile category&Texture&MET name& Latitude&Longdetude\\\hline
+		Innlandet&Apelsvoll&11& Selvdrenert&CM& 17&SN11500&60,70024&10,86952\\
+		Innlandet& Fåvang&17& Selvdrenert&CM& 15&SN13150&61,45822&10,1872\\
+		Innlandet& Ilseng&26& Selvdrenert&PH& 17&SN12180&60,80264&11,20298\\
+		Innlandet& Kise&27& Vannmettet&GL& 99&SN12550&60,77324&10,80569\\
+		Trøndelag& Kvithamar&57& Vannmettet&ST& 16&SN69150&63,48795&10,87994\\
+		Trøndelag& Frosta&15& Selvdrenert&LP& 13&SN69655&63,56502&10,69298\\
+		Trøndelag& Mære&34& Selvdrenert&RG& 14&SN71320&63,94244&11,42527\\
+		Trøndelag& Rissa&39& Vannmettet&PL& 13&SN71320&63,58569&9,97007\\
+		Vestfold& Lier&30& Vannmettet&ST& 16&SN19940&59,79084&10,25962\\
+		Vestfold& Sande&42& Vannmettet&ST& 16&SN26990&59,6162&10,22339\\
+		Vestfold& Tjølling&50& Selvdrenert&AR& 13&SN27780&59,04641&10,12513\\
+		Vestfold& Ramnes&38& Vannmettet&ST& 16&SN27315&59,38081&10,2397\\
+		Østfold& Rakkestad&37& Vannmettet&ST& 18&SN3290&59,38824&11,39042\\
+		Østfold& Rygge&41& Selvdrenert&AR& 13&SN17380&59,39805&10,75427\\
+		Østfold& Tomb&52& Vannmettet&ST& 16&SN17050&59,31893&10,81449\\
+		Østfold& Øsaker&118& Vannmettet&ST& 18&SN3370&59,31936&11,04221\\\hline
+	\end{tabular}
+	\caption{Station information from stations used in this study. The texture class is defined in this article: https://nibio.no/tema/jord/jordkartlegging/jordsmonnkart/dominerende-tekstur-i-overflatesjikt}
+\end{table}
 
 All stations are sampled from the date\footnote{Format month-day} 03-01 to 10-31 from 2016 to 2020. The features rain (RR), mean soil temperature at 10cm (TJM10), mean soil temperature at 20cm (TJM20), and air temperature at 2m (TM) are sampled from the LMT database. The snow parameter is sampled from MET via Xgeo for imputed values in areas where there are no messured values. The soil type, and soil texture is sampled from Kilden from Norwegian Institute of Bioeconomy Research.
 
@@ -58,8 +54,8 @@ The selection process for finding these station can be compiled into these steps
 \begin{figure}
 	\centering
 	\label{fig:plot-17}
-	\includegraphics{"../../plots/plot-17"}
-	\caption{Visual representation of missing values at station 17 from 2014 to 2020}
+	\includegraphics{"../../results/plots/plot-17"}
+	\caption{Visual representation of missing values at station 17 from 2014 to 2022}
 \end{figure}
 
 The plots of stations follow a simple representation where the y-axis represent the year and the x-axis represent the index of the data as all tables are taken from the same period. A circle represent a singluar na values, while a band represent a series of 2 or more missing values. The colours represents the features used in this comperative study. This representation of the missing values will indicate sesonal, and systematic removal of data and give an overall indication of how much data is missing. To get further insight into the data a report is generated in parallel to the plots describing precise date and time of all values and which other parameter values is also missing values in the same period. See appendix \ref{apx:code:dataanal} for the full detail of the report generation and appendix \ref{apx:plots} for na-plots of the station chosen for this study.
@@ -80,30 +76,20 @@ Since Nibio and MET have different names for the same stations one must compile 
 		\hline LMT & Code \\\hline
 		Meteorological data & \parbox{8cm}{\lstinline[language=sql]|SELECT ID,date,TM,RR,TJM10,TJM20 FROM LMT WHERE date IN BETWEEN year-03-01 year-10-31 AND ID = LMTID|} \\
 	\end{tabular}
-	\caption{SQL version of the query requests sent to the different institutions.}
+	\caption{What was requested from the varius databases that was used in this study.}
 \end{table}
 Where ID is the Nibio Id for the given station, Frost.ID is the MET id, ID.latitude is the latitude gathered from Nibio, ID.longitude is the longitude gathered from Nibio. These variables can be swaped out for the relevant station.
 
 \subsubsection{Storage of data}
 The storage of the data is done through two data structures; \gls{gl:hashmap} and \gls{gl:dataframe} from the package pandas. The transformation of data is done with a costume datatype called "DataFileHandler" which is converted to a module for convenience. The keys for the hashmap is chosen by the naming of the data files and the pattern given to the class. To escalete modeling the data will also be exported to a binary file for faster retrieval. 
 
-\begin{figure}[ht]
-	\begin{tikzpicture}
-		\node (start) [startstop] {Web request};
-		\node (storage) [process, right of=start] {file storage};
-		\node (reading) [process, right of=storage] {DataFileHandler};
-		\node (datatreat) [process, right of=reading] {Data treatment};
-		\node (p1) [process, right of=reading] {preprosessing 1};
-		\node (p2) at (6,6) {preprosessing 2};
-		\node (p3) at (6,4) {preprosessing 3};
-		\node (pn) at (6,2) {preprosessing n};
-		\node (m1) at (4,8) {modeling 1};
-		\node (m2) at (4,6) {modeling 2};
-		\node (m3) at (4,4) {modeling 3};
-		\node (mn) at (4,2) {modeling n};
-	\end{tikzpicture} % fill inn the lines.
-	\caption{Compressed structure of study}
+\begin{figure}
+	\centering
+	\includegraphics[width=0.7\linewidth]{figures/progress_diagram}
+	\caption{Diagram sketching three prosedures used in this study.}
+	\label{fig:progressdiagram}
 \end{figure}
+
 
 %\paragraph[Data structure]{Technical overview of custom data structure}
 The data structure used to store the data from the different stations is called "DataFileHandler" and stores the data in a tree-structure where indexes are dictated by the filename. It has several built-in functions to assist with data partitioning, and merging of data. This makes it easier to move and store all 846 720 observations from 16 station from 4 regions\footnote{there are 4 stations per region.}. 
@@ -114,22 +100,18 @@ To use the data in this study it must be cleaned and treated for training. The f
 
 \subsubsection{Outlier detection and removal}
 
-Though the data fetched from \acrshort{ac:nibio} is treated and controlled the external data from \acrshort{ac:met} might not be, and this research project incorporated raw, untreated data from \acrshort{ac:nibio} to fill inn missing values. This paper has done empirical studies to find out which method to use in the prepossessing step of training the models. The selected methods are
+Though the data fetched from \acrshort{ac:nibio} is treated and controlled the external data from \acrshort{ac:met} might not be, and this research project incorporated raw, untreated data from \acrshort{ac:nibio} to fill inn missing values.
 
-\begin{enumerate}
-	\item model based
-	\begin{itemize}
-		\item \acrfull{ac:arima}
-		\item LSTM
-	\end{itemize}
-	\item statistic based
-	\begin{itemize}
-		\item backwards and forwards first observations
-		\item rolling mean
-		\item linear imputation
-	\end{itemize}
-	\item \acrshort{ac:stl} decomposition with above methods
-\end{enumerate}
+The method to quickly find obvious outliers was to look at the following condition
+$$
+	|Z[|\Delta T|]|> \sigma_5
+$$
+
+This condition looks at the absolute difference between consecutive measurements and calculates the z-score for each observation. It is expected that the change in temperature can't be too rapid. Further methods used to highlight potensiall outliers is 
+
+$$
+	\text{Describe point out of line}
+$$
 
 \subsubsection{Missing value imputation}
 
@@ -142,25 +124,116 @@ The data has missing values, in particular during early Fall when there were sub
 	\item STL decomposition with above methods to impute components
 \end{enumerate}
 
-The last method, using STL, was chosen because it would in principle be simpler to impute a less noisy signal than a noisy one.
+The last method, using STL, was chosen because it would in principle be simpler to impute a less noisy signal than a noisy one. The methods will be tried on 40\% of the data, chosen at random to avoid favourable sets that might make the results inaccurate. The reson for only using a fraction of the data rather than all 1.1 millon observations is due to time constrains. For an overview of the prosedure look at the algorithmn \ref{alg:interpol}. 
+
+\begin{algorithm}[h]
+	\SetAlgoLined
+	\KwData{ Dataset, Methods:(method, configuration) }
+	\KwResult{(method, configureation, length)}
+	\For{$M \in Methods$}{
+		$Results_M \gets \{M,Score:+\infty,Length:0\}$\;
+	}
+	\For{$M \in Methods$}{
+		$R_{method} \gets 0$\;
+		\For{$data\in Dataset$}{
+			Apply $M$ to all non-missing ranges in $data$\;
+			Calculate score\;
+			Add score to $R_{method}$
+		}
+		\If{$\mu(R_{method}) \leq Result_{M}[Score] \& Length > Result_{M}[Length]$}{
+			Update $Result_{M}$ with new values\;
+		}
+	}
+	Choose smallest Score from $Results$\;
+	\caption{Interpolation search}
+	\label{alg:interpol}
+\end{algorithm}
 
 \subsection{Setup of models}
 
-The models are set up in according to the relevant paper the model is fetched from, alternatively reuse the code made by the author. When importing the data to the model there will be modifying to the original code to facilitate for the model as far as it goes. Any modifications will be in the appendix under section \ref{apx:code}. For the convenience of the reader all code is using the sklearn estimator class to make all the models discuses in this study more user friendly and compatible with sklearns other functions. The details of the models will be discussed in section \ref{sec:theory}, this section discusses the setup and implementation of the models.\footnote{Caution to the reader; The code used was run on a Linux subsystem on windows due to the fact that the current version of tensorflow can't run on Windows.}
+The models are set up in according to the relevant paper the model is fetched from, alternatively reuse the code made by the author. When importing the data to the model there will be modifying to the original code to facilitate for the model as far as it goes. Any modifications will be in the appendix under section \ref{apx:code}. For the convenience of the reader all code is using the sklearn estimator class to make all the models discuses in this study more user friendly and compatible with sklearns other functions. The details of the models will be discussed in section \ref{sec:theory}, this section discusses the setup and implementation of the models.\footnote{Caution to the reader; The code used was run on the Linux subsystem (Debian) on windows due to the fact that the current version of tensorflow can't run on Windows.}
 
 \subsubsection{Basic Linear model}
 
 The linear model (sec \ref{sec:theory:linreg}) utilises in the study is created from the python model sklearn (or scikit-learn according to pythons package manager) 
 
+\subsubsection{Plauborg}
+
+The Plauborg regression will be formulated as a linear regression problem so that the LinearRegression function in the Sci-kit module can be used. For the parameters used in the paper\cite{plauborg_simple_2002} the F function defined in section \ref{sec:theory:pluborg} will be formulated with loops to give rise 3 more parameters for fine-tuning the model.
+
+\subsubsection{BiLSTM}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=0.7\linewidth]{figures/BiLSTM}
+	\caption{}
+	\label{fig:bilstm}
+\end{figure}
+
+Soil temperatures are dependent on earlier timestemps meaning that to make a good prediction one needs to include temperature from $t,t-1,\dots,t-k$ to make a decent prediction. As a base model it is usefull to evalueate the data both forwards and backwards to find features that is only notisable in a sertan direction. The BiLSTM defined is crafted with Tensorflow's Keras module for ease of use. 
+
+\subsubsection{Attention-aware ILSTM}
+
+It is a know fact, since 1849\footnote{First weather prediction made by Joseph Henry in 1849}, that to know previous weather patterns will greatly improve prediction accuracy. To improve the accurasy even more a model can focus one specific patterns that has a big impact on the prediction. The ILSTM attempts to do this by including a new thecnick in data science called attention\cite{vaswani_attention_2017} that takes a collection of data and gives each element a weight associated with importance. When that paper was published it was focused on translation between English and German, however the paper published by \citeauthor{li_attention-aware_2022} uses this novel teknick to do both time and feature importance and from that make a prediction.
+
+\subsection{Metrics}
+
+The metrics used in this study are
+
+\begin{itemize*}
+	\item Mean Squere Error
+	\item Mean Absolute Error
+	\item Explained Variance
+	\item bias
+	\item Log Condition number
+	\item digit sensitivity
+\end{itemize*}
+
+
+Soil temperatur as a differnet behavor than air temperature since energy (temperature) though the soil gets dampen and delayed. Since the data used in this study has outliers that was not cought during datatreatment, which has been addresed, the author of this study desided to include two more metrics that are not usually included in the evaluation; The log condition number, and digit sensitivity. Both metrics are based on the calculation of the condition number defined as 
+
+\begin{equation}\label{eq:kappa}
+\kappa = \lim\limits_{\varepsilon \to 0^+} \sup\limits_{|\partial x|\leq\varepsilon}  \frac{\left|f(x+\partial x) - f(x)\right|}{|f(x)|}*\frac{|x|}{|\partial x|} 
+\end{equation}
+
+This is not feasible to calculate since infinite calculations with infinitesimal numbers is not possible as per \today for simulation approach\footnote{This calculation is possible for some models, for instance linear regression models when converted to the form $A\vec{\beta} = \vec{y}$.}. Therefore this paper uses algorithm \ref{alg:cond_num} to approximate $\kappa$ for all the models.
+
+\begin{algorithm}[H]
+	\SetAlgoLined
+	\KwData{ Data }
+	\KwResult{log($\kappa$)}
+	Let $\kappa_f$ be the function \ref{eq:kappa}\;
+	$\kappa\gets 0$\;
+	\For{$i \in {1 \dots |Data|}$}{
+		$\partial x \gets \mathcal{U}_{[-\sqrt{\varepsilon/|Data|},\sqrt{\varepsilon/|Data|]}}$\;
+		$k \gets$ calculate with $\kappa_f$ from $x$ and $x+\partial x$\;
+		\If{k > $\kappa$}{$\kappa \gets k$\;}
+	}
+	\Return{$\kappa$}
+	\caption{Method for calculating $\kappa$. $\mathcal{U}$ is a uniform random distrebution in a range.}
+	\label{alg:cond_num}
+\end{algorithm}
+
+The digit sensitivity is included to give an intitive understanding of $\kappa$ and is computed simply as $\log_e(\kappa)+1$. This number tells us the significant digit generated from the model. If the number is less than 0 then its the ith digit after the decimal point.
+
+For the rest of the metrics, they are defined as follows
+\begin{itemize}
+	\item RMSE = $\sqrt{\frac{\sum (y_{\text{pred}} - y_{\text{truth}})^2}{n}}$
+	\item MAE = $\frac{\sum \left| y_{\text{pred}} - y_{\text{truth}}\right|}{n}$
+	\item bias = $\frac{\sum ( y_{\text{pred}} - y_{\text{truth}})}{n}$
+	\item Explained variance = $1-\frac{\sum (y_{\text{pred}} - y_{\text{truth}})^2}{\sum (y_{\text{pred}} - \vec{y})^2}$
+\end{itemize}
+
+Where $\vec{y}$ is the mean of the target, $y_{\text{pred}}$ is the predicted data, and $y_{\text{truth}}$ is the observed soil temperature.
+
 \subsection[Use of AI]{Use of Artificial Intelligence in this paper}
 
-In this paper there has been used Artificial Intelligence (AI), specifically Bing Chat / Copilot hosted by Microsoft Cooperation with special agreement with The Norwegian University of Life Sciences, for the following purposes:
+In this paper there has been used Artificial Intelligence (AI), specifically Bing Chat / Copilot hosted by Microsoft Cooperation with special agreement with \acrfull{ac:nmbu}, for the following purposes:
 
 \begin{enumerate}
 	\item Formalising sentences and rephrasing sentences.
 	\item Spellchecking
-	\item Code generation of basic consepts and structures (tree traversal, template generic class) 
-	\item Better understanding of domain
+	\item Code generation of basic consepts and structures (tree traversal, template for generic classes) 
 \end{enumerate}
 
-All code have been manually check and verified in a separate environment and dedicated class for testing and verification. No confidential information or data has been past into the AI and only generic questions regarding broad topics has been prompted to the AI. Any topics discussed with the chat bot / AI were double checked with research papers and textbooks for verification, and any sources brought up by the AI was checked and verified.
+It is important to emphasize that our engagement with AI have been actively curated and verified with known information. All code underwent rigorous manual inspection within a dedicated testing environment. Furthermore, no confidential or sensitive information was shared with the AI; our interactions focused solely on broad topics and general inquiries. To validate the accuracy of AI-generated responses, we cross-referenced them with established research papers and textbooks.

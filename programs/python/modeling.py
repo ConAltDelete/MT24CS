@@ -10,34 +10,37 @@
 
 import sklearn
 import datetime
+#import numba
 
 import os
-import pickle
 import copy
+import pickle
 
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import numpy as np
 import pandas as pd
+import sklearn.model_selection
 import statsmodels as sm
 import torch.utils.data as Data
 
-from tensorflow.keras.layers import Input, Conv2D, BatchNormalization, Activation 
-from tensorflow.keras.layers import MaxPooling2D, Dropout, Conv2DTranspose
-from tensorflow.keras.layers import concatenate, Concatenate
-from tensorflow.keras.models import Model
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras import metrics
+#from tensorflow.keras.layers import Input, Conv2D, BatchNormalization, Activation 
+#from tensorflow.keras.layers import MaxPooling2D, Dropout, Conv2DTranspose
+#from tensorflow.keras.layers import concatenate, Concatenate
+#from tensorflow.keras.models import Model
+#from tensorflow.keras.optimizers import Adam
+#from tensorflow.keras import metrics
 
 #sklearn → model trening
+from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import GridSearchCV
-from sklearn.metrics         import accuracy_score, mean_squared_error, r2_score
+from sklearn.metrics         import accuracy_score, mean_squared_error, r2_score, mean_absolute_error
 
 #sklearn → data treatment
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import OneHotEncoder
-from sklearn.models import LinearRegression
+
 
 #from ILSTM_Soil_model_main import lstm_interprety_soil_moisture as ILSTM
 from My_tools import DataFileLoader as DFL # min egen
@@ -46,11 +49,14 @@ from My_tools import StudyEstimators as SE
 
 ROOT = "../../"
 
-PLOT_PATH = ROOT + "plots/"
+RESULT_PATH = ROOT + "results/"
 
 DATA_PATH = ROOT + "data/"
+PLOT_PATH = RESULT_PATH + "plots/"
+TABLE_PATH = RESULT_PATH + "tables/"
+OTHER_PATH = RESULT_PATH + "other/"
 
-METADATA_PRELOAD_DATA = ROOT + "PRIVATE_FILES/weatherdata.bin"
+METADATA_PRELOAD_DATA_PATH = OTHER_PATH + "bin_data/"
 
 DATA_INFO = DATA_PATH + "info/"
 DATA_INFO_NIBIO_FILE = DATA_INFO  + "lmt.nibio.csv"
@@ -64,17 +70,13 @@ DATA_COLLECTION_TIME = DATA_COLLECTION + "Time 2013- 2023/" # pattern -> Time{YY
 DATA_COLLECTION_NIBIO = DATA_COLLECTION + "nibio/" # pattern -> weather_data_hour_stID{id}_y{year}.csv
 DATA_COLLECTION_MET = DATA_COLLECTION + "MET/" # pattern -> StationTo_{id}_FROM_{FrostID}.csv
 
-
 # ID definitions
-
 station_names = pd.read_csv(DATA_INFO_NIBIO_FILE,
                           header=0,
                           index_col = "ID")
 
-
-
 nibio_id = {
-    "Innlandet" : ["11","18","26","27"],
+    "Innlandet" : ["11","17","26","27"],
     "Trøndelag" : ["15","57","34","39"],
     "Østfold" : ["37","41","52","118"],
     "Vestfold" : ["30","38","42","50"] # Fjern "50" for å se om bedre resultat
@@ -87,6 +89,8 @@ nibio_id = {
 
 # In[2]:
 
+from typing import Any
+from collections.abc import Iterable
 
 def show_plot(data,plot_kwarg):
     """
@@ -108,32 +112,43 @@ def show_plot(data,plot_kwarg):
     else:
         plt.ylabel = "celsius degrees ℃"
 
-def table2Latex(table, dir_path, file_name, header = "", append = False):
-    if os.path.isfile(dir_path + file_name + ".tex") & append:
-        file = open(dir_path+file_name+".tex","a", encoding="utf-8")
-    else:
-        file = open(dir_path+file_name+".tex","w", encoding="utf-8")
+#@numba.njit
+def stat_model(y_true: Iterable ,y_pred: Iterable) -> dict[str,float]: 
+    """
+        Returns a dict with following statitics
+        - SSE
+        - SST
+        - SAE
+        - --R^2--
+        - bias
+        - n
 
-    file.write(r"\begin{tabular}{|l|" + ["c" for _ in range(len(header))].join("|") + "|}")
-    if header != "":
-        file.write(header.join("&") + r"\\\hline")
-    for row in table:
-        file.write(row.join("&") + r"\\\hline")
-    file.write(r"\end{tabular}")
+        unscaled: to unscale the relevant metric by |y| (R^2,bias)
+    """
+    stats = {
+        "SSE": ((y_true - y_pred) ** 2).sum(axis=0, dtype=np.float64),
+        "SAE": np.abs(y_true - y_pred).sum(axis=0, dtype=np.float64),
+        "bias": (y_pred - y_true).sum(axis=0, dtype=np.float64),
+        "SST": ((y_true - np.average(y_true, axis=0)) ** 2).sum(axis=0, dtype=np.float64),
+        "n": y_true.shape[0]
+    }
+    return stats
 
 
 # In[3]:
-if os.path.exists(METADATA_PRELOAD_DATA):
-    imputed_nibio_data = pickle.load(open(METADATA_PRELOAD_DATA,"rb"))
-    print("Fetched data from", METADATA_PRELOAD_DATA)
-else:
-    nibio_data_ungroup = DFL.DataFileLoader(DATA_COLLECTION_NIBIO,r"weather_data_hour_stID(\d{1,3})_y(\d{4}).csv")
+
+
+force_load = False
+if force_load:
+    nibio_data_ungroup = DFL.DataFileLoader(DATA_COLLECTION_NIBIO,r"weather_data_hour_stID(\d{1,3})_y(\d{4}).csv",_iter_key = True)
     nibio_data_ungroup.load_data(names = ["Time","TM","RR","TJM10","TJM20"])
     nibio_data = nibio_data_ungroup.group_layer(nibio_id)
 
-    nibio_data_raw_ungroup = DFL.DataFileLoader(DATA_COLLECTION_NIBIO,r"weather_data_raw_hour_stID(\d{1,3})_y(\d{4}).csv")
+    nibio_data_raw_ungroup = DFL.DataFileLoader(DATA_COLLECTION_NIBIO,r"weather_data_raw_hour_stID(\d{1,3})_y(\d{4}).csv",_iter_key = True)
     nibio_data_raw_ungroup.load_data(names = ["Time","TM","RR","TJM10","TJM20"])
     nibio_data_raw = nibio_data_raw_ungroup.group_layer(nibio_id)
+
+    frost_raw_ungroup = DFL.DataFileLoader(DATA_COLLECTION_MET,r"weather_data_raw_hour_stID(\d{1,3})_y(\d{4}).csv",_iter_key = True)
 
     def dataframe_merge_func(x,y):
         y.iloc[y.iloc[:,1].notna() & (y.iloc[:,1] <= 0),2] = pd.NA
@@ -141,126 +156,24 @@ else:
         return x
 
     imputed_nibio_data = nibio_data.combine(nibio_data_raw,merge_func = dataframe_merge_func)
-    pickle.dump(imputed_nibio_data,open(METADATA_PRELOAD_DATA,"wb"))
-    print("dumped data to",METADATA_PRELOAD_DATA)
+    imputed_nibio_data.dump(METADATA_PRELOAD_DATA_PATH + "weatherdata.bin")
+
+    del nibio_data, nibio_data_raw, frost_raw_ungroup, nibio_data_raw_ungroup, nibio_data_ungroup
+else: 
+    imputed_nibio_data = DFL.DataFileLoader().load(METADATA_PRELOAD_DATA_PATH + "weatherdata_cleaned.bin")
+
+terskel_data = pd.read_csv(TABLE_PATH + "na_run_count_simp.csv",delimiter=";")
+terskel = int(next(t.split(">")[-1] for t in terskel_data.columns if ">" in t))
 
 
-def attempt_fitting(base_model, param_area, nibio_data):
-    best_plauborg = {
-    "Score":np.inf,
-    "mse":0,
-    "r2":0,
-    "year":0,
-    "model":None
-    }
-
-    worst_plauborg = {
-    "Score":-np.inf,
-    "mse":0,
-    "r2":0,
-    "year":0,
-    "model":None,
-    }
-
-    all_plauborg = []
-
-    search_area = param_area
-
-    base_model = base_model()
-
-    for regi in nibio_id.keys():
-        for i in range(2014,2022):
-            # First we fetch region (regi), all stations (:), then relevant years ("2014":str(i)). Since we only look at one region at the time
-            # we remove the root group (shave_top_layer()), then we merge the years (merge_layer(level = 1), level 1 since level 0 would be the stations at this point)
-            # then make a list (flatten(), the default handeling is to put leafs in a list)
-            
-            data = nibio_data[regi,:,"2014":str(i)].shave_top_layer().merge_layer(level = 1).flatten(return_key = True) # shape [(key, value)] ; looks at all previus years including this year
-            test = nibio_data[regi,:,str(i+1)].shave_top_layer().merge_layer(level = 1).flatten(return_key = True) # shape [(key, value)] ; looks at the next year
-
-            data = [(k,v.infer_objects(copy=False).fillna(0)) for k,v in data] # Removes nan in a quick manner
-            test = [(k,v.infer_objects(copy=False).fillna(0)) for k,v in test] # but will be reviced.
-            
-            model = GridSearchCV(copy.deepcopy(base_model),param_grid=search_area,pre_dispatch=20, n_jobs = -1)
-            n = 0
-            overall_r2 = None # approximates a average r2
-            overall_mse = None
-            for d,t in zip(data,test): # fitting model with all stations
-                model.fit(d[1].loc[:,["Time","TM"]],d[1].loc[:,["TJM20"]]) # regions model
-                s_model = GridSearchCV(copy.deepcopy(base_model),param_grid=search_area, n_jobs = -1).fit(d[1].loc[:,["Time","TM"]],d[1].loc[:,["TJM20"]])# Station model
-                s_pred = s_model.predict(t[1].loc[:,["Time","TM"]])
-                
-                if overall_r2 is not None:
-                    overall_r2 = 1-mediant(1-overall_r2, 1-r2_score(t[1].loc[t[1].shape[0]-s_pred.shape[0]:,"TJM20"].to_numpy(),s_pred))
-                else:
-                    overall_r2 = r2_score(t[1].loc[t[1].shape[0]-s_pred.shape[0]:,"TJM20"].to_numpy(),s_pred)
-                
-                if overall_mse is not None:
-                    overall_mse = (t[1].loc[t[1].shape[0]-s_pred.shape[0]:,"TJM20"].to_numpy()-s_pred)**2 + (overall_mse*n)
-                else:
-                    overall_mse = (t[1].loc[t[1].shape[0]-s_pred.shape[0]:,"TJM20"].to_numpy()-s_pred)**2
-                n += len(s_pred)
-                overall_mse /= n
-
-                show_plot([
-                    pd.DataFrame({"Time":t[1].loc[t[1].shape[0]-s_pred.shape[0]:,"Time"].to_numpy().ravel(),"TJM20":s_pred.ravel() - t[1].loc[t[1].shape[0]-s_pred.shape[0]:,["TJM20"]].to_numpy().ravel()})
-                ],{0:{"label":"spesial"}})
-            
-            show_plot([
-                pd.DataFrame({"Time":t[1].loc[t[1].shape[0]-s_pred.shape[0]:,"Time"],"TJM20":model.predict(t[1].loc[:,["Time","TM"]]).ravel() - t[1].loc[t[1].shape[0]-s_pred.shape[0]:,["TJM20"]].to_numpy().ravel()})
-            ],{0:{"label":"global"}})
-
-            plt.savefig(PLOT_PATH + base_model.__name__ +"_" + regi + "_y"+ str(i) + ".pdf")
-            plt.clf()
-
-            mse = {k:mean_squared_error(t.loc[t.shape[0]-s_pred.shape[0]:,"TJM20"].to_numpy().ravel(),model.predict(t.loc[:,["Time","TM"]])) for k,t in test}
-            r2 = {k:r2_score(t.loc[t.shape[0]-s_pred.shape[0]:,"TJM20"].to_numpy().ravel(),model.predict(t.loc[:,["Time","TM"]])) for k,t in test}
-                
-            print(base_model.__name__,":",regi,"from year 2014 to year",i,":\n",
-                  "\tMSE:", mse,
-                  "\n\tR2:",r2,
-                  "\n\tparams:",model.best_params_)
-            score = max(m/r if r != 0 else np.inf for m,r in zip(mse.values(),r2.values()))
-            model_info = {
-                    "Name":base_model.__name__,
-                    "Score":score, 
-                    "params":model.best_params_,
-                    "mse":mse, 
-                    "r2": r2,
-                    "r2_spes": overall_r2,
-                    "mse_spes": overall_mse,
-                    "year_max": str(i+1), 
-                    "region": regi, 
-                    "model": model
-                }
-            all_plauborg.append(model_info)
-            if score < best_plauborg["Score"]:
-                best_plauborg = model_info
-            elif score > worst_plauborg["Score"]:
-                worst_plauborg = model_info
-
-    return {"all":all_plauborg,"best":best_plauborg,"worst":worst_plauborg}
-# In[5]:
+# In[4]:
 
 
 for regi in nibio_id.keys(): 
     show_plot([station.loc[:,["Time","TJM20"]] for station in imputed_nibio_data[regi,:].shave_top_layer().merge_layer(level=1).flatten()],{})
     plt.legend(nibio_id[regi])
     plt.title("Område: {}, feature: {}".format(regi,"TJM20"))
-    plt.savefig(PLOT_PATH + regi + '.pdf', bbox_inches='tight') # pdf for vectorised grafics.
-    plt.clf() # clear current figure for the next figure
-
-
-# The data is splitted among two collections of data, one is a pdf and the other is a `.xlsx` format. We start by collecting the data from the hourly data collection.
-
-
-# ## Linear regression function 
-# 
-# This function does a transformation of the $m\times n$ matrix (our dataframe) to a $m \times p$ matrix. This can be seen as a kernel trick where we transform the data to a more seperable state to improve prediction. The scema for this model is
-# $$
-#     (\vec{F}\circ \mathbf{A})\vec{\beta}=\vec{y}+\vec{\varepsilon}
-# $$
-
-# In[ ]:
+    plt.show()
 
 
 def all_permute(L):
@@ -292,244 +205,315 @@ def combine_years(X,Y):
     if X.index == Y.index:
         return [X,Y]
 
-# Linear Regression
+#@numba.njit
+def find_non_nan_ranges(df: pd.Series) -> list[tuple[int,int]]:
+    """
+    Finds the ranges of indexes where rows do not contain NaNs in the DataFrame.
+    Assumes there is a 'Time' column with timestamps.
 
-result_fitting = attempt_fitting(LinearRegression,{"fit_intercept":[True,False],"Positive":[True,False]},imputed_nibio_data)
+    Args:
+        df (pd.DataFrame): Input DataFrame with NaNs.
 
-print("Linear Regresson best:",result_fitting["best"])
-print("Linear Regresson worst:",result_fitting["worst"])
-print("Linear Regresson median:",sorted(result_fitting["all"],key = lambda x: x["Score"])[int(len(result_fitting["all"])/2)])
+    Returns:
+        list of tuples: List of (start, end) index ranges where rows do not contain NaNs.
+    """
+
+    # Initialize variables
+    non_nan_ranges = []
+    start_idx = None
+
+    # Iterate over rows
+    for idx, row in df.items():
+        if not(np.isnan(row)):
+            # If the row does not contain NaNs
+            if start_idx is None:
+                # If this is the start of a new range
+                start_idx = idx
+        else:
+            # If the row contains NaNs
+            if start_idx is not None:
+                # If this is the end of a range
+                non_nan_ranges.append((start_idx, idx - 1))
+                start_idx = None
+
+    # Check if the last range is still open
+    if start_idx is not None:
+        non_nan_ranges.append((start_idx, df.index[-1]))
+
+    return non_nan_ranges
+
 
 # ### Plauborg regression
 # 
 # Author Plauborg used the above model to predict soil temperature, but used previus time to make the model more time dependent and fourier terms to reflect changes during the year.
 
-# In[ ]:
+# In[6]:
 
-
-# In[ ]:
-
-#! Need to adjust following code
-result_fitting = attempt_fitting(SE.PlauborgRegresson,{"lag_max":range(2,8),"fourier_sin_length":range(2,10),"fourier_cos_length":range(2,10)},imputed_nibio_data)
-
-print("best:",result_fitting["best"])
-print("worst:",result_fitting["worst"])
-print("median:",sorted(result_fitting["all"],key = lambda x: x["Score"])[int(len(result_fitting["all"])/2)])
-
-best_data = imputed_nibio_data[best_plauborg := result_fitting["best"],:,best_plauborg["year_max"]].merge_layer(level = 0)
-worst_data = imputed_nibio_data[worst_plauborg := result_fitting["worst"],:,worst_plauborg["year_max"]].merge_layer(level = 0)
-
-show_plot([
-    pd.DataFrame({
-        "Time":best_data.Time.iloc[:5879].to_numpy().ravel(),
-        "TJM20":best_plauborg["model"].predict(best_data.loc[:5878,["Time","TM"]]).ravel() - best_data.loc[:5878,["TJM20"]].to_numpy().ravel()
-    }) ],
-    {})
-plt.title("Y_pred - Y_truth")
-plt.savefig(PLOT_PATH + "Plauborg_plot_best.pdf")
-show_plot([
-    pd.DataFrame({
-        "Time":worst_data.Time.iloc[:5879].to_numpy().ravel(),
-        "TJM20":worst_plauborg["model"].predict(worst_data.loc[:5878,["Time","TM"]]).ravel() - worst_data.loc[:5878,["TJM20"]].to_numpy().ravel()
-    }) ],
-    {})
-plt.title("Y_pred - Y_truth")
-plt.savefig(PLOT_PATH + "Plauborg_plot_worst.pdf")
-
-
-# In[ ]:
-
-
-# imputed_nibio_data["Vestfold",:,"2019"].DictData
-
-
-# ### Rankin regression
-# 
-# This regression tries to solve the following integreal using an FDM.
-# 
-# $$
-# T = \int_{t_0}^{t_{max}} \frac{1}{C_{A}} \frac{\partial}{\partial z}\left(K_T \frac{\partial T}{\partial z}\right) dt
-# $$
-# 
-# Where T is temperature, z is depth, and t is time. In this study we will approximate several thing including
-# 
-# - $K_T / C_A \approx \partial_tT/\partial^2_zT$
-# - $f_S \approx -0.5\ln(T^{t+1}/T_*^{t})/D_t$
-
-# best_rankin = {
-#     "Score":np.inf,
-#     "mse":0,
-#     "r2":0,
-#     "year":0,
-#     "model":None
-# }
-# 
-# worst_rankin = {
-#     "Score":-np.inf,
-#     "mse":0,
-#     "r2":0,
-#     "year":0,
-#     "model":None,
-# }
-# 
-# base_model = SE.RankinRegresson()
-# 
-# for regi in nibio_id.keys():
-#     for i in range(2014,2022):
-#         # First we fetch region (regi), all stations (:), then relevant years ("2014":str(i)). Since we only look at one region at the time
-#         # we remove the root group (shave_top_layer()), then we merge the years (merge_layer(level = 1), level 1 since level 0 would be the stations at this point)
-#         # then make a list (flatten(), the default handeling is to put leafs in a list)
-#         
-#         data = imputed_nibio_data[regi,:,"2014":str(i)].shave_top_layer().merge_layer(level = 1).flatten() # looks at all previus years including this year
-#         test = imputed_nibio_data[regi,:,str(i+1)].shave_top_layer().merge_layer(level = 1).flatten() # looks at the next year
-# 
-#         data = [d.infer_objects(copy=False).fillna(0) for d in data] # Removes nan in a quick manner
-#         test = [d.infer_objects(copy=False).fillna(0) for d in test] # but will be reviced.
-#         
-#         model = copy.deepcopy(base_model)
-#         overall_r2 = None
-#         for d,t in zip(data,test): # fitting model with all stations
-#             model.fit(d,d.loc[:,["TJM20"]]) # regions model
-#             s_model = copy.deepcopy(base_model).fit(d,d.loc[:,["TJM20"]]) # Station model
-#             if overall_r2 is not None:
-#                 overall_r2 = 1-mediant(1-overall_r2, 1-r2_score(t["TJM20"].to_numpy(),s_model.predict(t)))
-#             else:
-#                 overall_r2 = r2_score(t["TJM20"].to_numpy(),s_model.predict(t))
-#             
-#             
-#         print(regi,"from year 2014 to year",i,":\n",
-#               "\tMSE:",
-#               mae := [mean_squared_error(t["TJM20"].to_numpy(),model.predict(t)) for t in test],
-#               "\n\tR2:",
-#               r2 := [r2_score(t["TJM20"].to_numpy(),model.predict(t)) for t in test])
-#         score = max(m/r for m,r in zip(mae,r2))
-#         model_info = {
-#                 "Score":score, 
-#                 "mse":mae, 
-#                 "r2": r2,
-#                 "r2_spes": overall_r2,
-#                 "year_max": i, 
-#                 "region": regi, 
-#                 "model": model
-#             }
-#         if score < best_rankin["Score"]:
-#             best_rankin = model_info
-#         elif score > worst_rankin["Score"]:
-#             worst_rankin = model_info
-# 
-# print(best_rankin)
-# print(worst_rankin)
-
-# ## LSTM
-# 
-# This is a base model for testing ILSTM in the next section.
-
-# In[ ]:
-
-result_fitting = attempt_fitting(SE.KerasBiLSTM,{"input_shape":[24*n for n in range(1,7)],"lstm_units":[2*k for k in range(20,25)],"epochs":[4*n for n in range(30,50)]},imputed_nibio_data)
-
-print("best:",result_fitting["best"])
-print("worst:",result_fitting["worst"])
-print("median:",sorted(result_fitting["all"],key = lambda x: x["Score"])[int(len(result_fitting["all"])/2)])
-
-# In[10]:
-
-
-# ------------------------------------------------------------------------------------
-all_data_daily = data_t.set_index("Time").resample("D").mean().dropna().reset_index()
-
-p_data = F_plauborg(all_data_daily)
-ridge = LinearRegression().fit(p_data[50:], all_data_daily.iloc[50:,[-1]])
-y_pred = ridge.predict(p_data[50:])
-display = PredictionErrorDisplay(y_true=all_data_daily.iloc[50:,[-1]], y_pred=y_pred)
-display.plot(kind = "actual_vs_predicted",scatter_kwargs = {
-    "c": np.linspace(0,1,num = all_data_daily.iloc[50:,[-1]].shape[0]),
-    "color": None
-})
-plt.show()
-
-all_data_daily = all_data_daily.reset_index().loc[50:]
-
-Y = pd.DataFrame(
-    zip(all_data_daily["Time"].to_numpy().tolist(), y_pred.flatten()),
-    columns=["Time","Y_pred"])
-
-show_plot([all_data_daily.loc[:,["Time","TJM20"]],Y,all_data_daily.loc[:,["Time","RR"]]],{1:{"alpha":0.5}} )
-plt.legend(["Y","Y_pred"])
-plt.ylim(-5,25)
-plt.ylabel("℃")
-plt.show()
-
-
-# # ILSTM training
-# 
-# Here we will be training a version of LSTM
-
-# In[30]:
-
-
-import copy
-
-def ILSTM_train(raw_data, target_label,total_epoch = 50,hidden_size=16,lerningrate=1e-3, lead_time=1, seq_length=24, batch_size=16):
-    data,scaler,scaler1 = ILSTM.nibio_data_transform(raw_data, target_label)
-    data = scaler1.transform(data)
-
-    # TODO: Generate the tensor for lstm model
-
-    [data_x, data_y,data_z] = ILSTM.LSTMDataGenerator(data, lead_time, batch_size, seq_length)
-
-       # concat all variables.
-    # TODO: Flexible valid split
-    data_train_x=data_x[:int((data_x.shape[0])-400*24)]
-    data_train_y = data_y[:int(data_x.shape[0]-400*24)]
-
-    train_data = Data.TensorDataset(data_train_x, data_train_y)
-    train_loader = Data.DataLoader(
-        dataset=train_data,
-        batch_size=batch_size,
-        shuffle=False,
-        num_workers=0
-    )
-
-    data_valid_x=data_x[int(data_x.shape[0]-400*24):int(data_x.shape[0]-365*24)] # -> trener 35 dager
-    data_valid_y=data_y[int(data_x.shape[0]-400*24):int(data_x.shape[0]-365*24)] # -> tester 35 dager
-    data_test_x=data_x[int(data_x.shape[0]-365*24):int(1.0 * data_x.shape[0])] # -> validerer på resterende
-    data_testd_z=data_z[int(data_x.shape[0]-365*24):int(1.0 * data_x.shape[0])] # -> stat på rest
-
-    # TODO: Flexible input shapes and optimizer
-    # IMVTensorLSTM,IMVFullLSTM
-    model = ILSTM.ILSTM_SV(data_x.shape[2],data_x.shape[1], 1, hidden_size).cuda()
-    # TODO: Trian LSTM based on the training and validation sets
-    model,predicor_import,temporal_import=ILSTM.train_lstm(model,lerningrate,total_epoch,train_loader,data_valid_x,data_valid_y,"./saved_models/lstm_1d.h5")
-
-    # TODO: Create predictions based on the test sets
-    pred, mulit_FV_aten, predicor_import,temporal_import = ILSTM.create_predictions(model, data_test_x,scaler)
-    # TODO: Computer score of R2 and RMSE
-
-    data_testd_z=data_testd_z.reshape(-1,1)
-    data_testd_z=data_testd_z.cpu()
-    data_testd_z=data_testd_z.detach().numpy()
-    # Unnormalize
-    data_testd_z=scaler.inverse_transform(data_testd_z)
-    ILSTM.compute_rmse_r2(data_testd_z,pred,modelname)
-
-    print(pred)
+#@numba.njit
+def model_traning_testing(datafile,base_model,parameters,feature_target,min_length):
+    nibio_id = {
+        "Innlandet" : ["11","17","26","27"],
+        "Trøndelag" : ["15","57","34","39"],
+        "Østfold" : ["37","41","52","118"],
+        "Vestfold" : ["30","38","42","50"] # Fjern "50" for å se om bedre resultat
+    }
+    def calc_stat_from_data(y_true: Iterable ,x_true: Iterable,model: Any ,s_model_stat: dict[str,Any] = dict()) -> dict[str,Any]:
+        current_stat = stat_model(y_true,model.predict(x_true))
+        for metric in current_stat: 
+            s_model_stat.setdefault(metric,0)
+            s_model_stat[metric] += current_stat[metric]
+        return s_model_stat
     
+    base_model_stats = {
+        "global":{},
+        "region":{},
+        "station":{}
+    }
+    def merge_func(left: list[Any, ...] | Any, right: list[Any, ...] | Any) -> list[Any,...]:
+                if isinstance(left, list) or isinstance(right, list):
+                    if not isinstance(left, list):
+                        left = [left]
+                    if not isinstance(right, list):
+                        right = [right]
+                    # Concatenate the lists
+                    combined_list = left + right
+                else:
+                    # Create a new list with left and right as elements
+                    combined_list = [left, right]
+                return combined_list
+
+    global_model = copy.deepcopy(base_model)
+    for regi in nibio_id.keys():
+        for station in nibio_id[regi]:
+            print(regi,station)
+            data = datafile[regi,station,"2014":"2020"].shave_top_layer().merge_layer(level = 1,merge_func = merge_func).flatten() # looks at all previus years including this year
+            test = datafile[regi,station,"2021":"2022"].shave_top_layer().merge_layer(level = 1,merge_func = merge_func).flatten() # looks at the next year
+            test = [t.infer_objects(copy=False) for t in test]
+            for t in test:
+                t.loc[t["TM"].isna() | t[feature_target].isna(),["TM",feature_target]] = np.nan
+            t = test # too lazy
+            # First we fetch region (regi), all stations (:), then relevant years ("2014":str(i)). Since we only look at one region at the time
+            # we remove the root group (shave_top_layer()), then we merge the years (merge_layer(level = 1), level 1 since level 0 would be the stations at this point)
+            # then make a list (flatten(), the default handeling is to put leafs in a list)
+            for d in data: # fitting model with all stations
+                    d = d.infer_objects(copy=False)
+                    d.loc[d["TM"].isna() | d[feature_target].isna(),["TM",feature_target]] = np.nan
+                    for dt in find_non_nan_ranges(d[feature_target]):
+                        if dt[1]-dt[0] < min_length:
+                            continue
+                        global_model.fit(d.loc[dt[0]:dt[1],parameters],d.loc[dt[0]:dt[1],feature_target])
+            collected_test = []
+            for yr in range(len(test)):
+                for deltaT in find_non_nan_ranges(test[yr][feature_target]):
+                    collected_test.append((yr, *deltaT ))  
+            for dt in collected_test: 
+                    if dt[2]-dt[1] < min_length:
+                        continue
+                    base_model_stats["global"] = calc_stat_from_data(t[dt[0]].loc[dt[1]:dt[2],feature_target].to_numpy(),t[dt[0]].loc[dt[1]:dt[2],parameters],global_model,s_model_stat=base_model_stats["global"])
+                    base_model_stats["region"][regi] = calc_stat_from_data(t[dt[0]].loc[dt[1]:dt[2],feature_target].to_numpy(),t[dt[0]].loc[dt[1]:dt[2],parameters],global_model,s_model_stat=base_model_stats["region"].setdefault(regi,dict()))
+                    base_model_stats["station"][station] = calc_stat_from_data(t[dt[0]].loc[dt[1]:dt[2],feature_target].to_numpy(),t[dt[0]].loc[dt[1]:dt[2],parameters],global_model,s_model_stat=base_model_stats["station"].setdefault(station,dict()))
+    base_model_stats["global"]["model"] = global_model
+    return base_model_stats
 
 
-# Need to transform the data first to fit the model.
-
-# In[26]:
+# In[9]:
 
 
-def datetime2string(x):
-    x["Time"] = x["Time"].apply(lambda y: y.strftime("%Y-%m-%d %X"))
-    return x
-station_data = imputed_nibio_data.data_transform(datetime2string).merge_layer(level = 1)
+#parameters = ["TM"]
+#feature_target = "TJM20"
+#min_length = 24 # minimum number of rows used in sequense
+
+#base_model = LinearRegression()
+
+#def time2float(x):
+#    if "Time" in x.columns:
+#        x["Time"] = x["Time"].transform({"Time":lambda x: x.day_of_year*24 + x.hour})
+#    return x
+
+#adapted_data = imputed_nibio_data#.data_transform(time2float)
+
+#lin_reg_stats_20 = model_traning_testing(
+#    datafile = adapted_data,
+#    base_model = base_model,
+#    parameters = parameters,
+#    feature_target = feature_target,
+#    min_length = min_length
+#)
+#pickle.dump(lin_reg_stats_20,f := open(METADATA_PRELOAD_DATA_PATH + "lin_stat_20.bin","wb"))
+#f.close()
+
+#parameters = ["TM"]
+#feature_target = "TJM10"
+#min_length = 24 # minimum number of rows used in sequense
+
+#base_model = LinearRegression()
+
+#def time2float(x):
+#    if "Time" in x.columns:
+#        x["Time"] = x["Time"].transform({"Time":lambda x: x.day_of_year*24 + x.hour})
+#    return x
+
+#adapted_data = imputed_nibio_data#.data_transform(time2float)
+
+#lin_reg_stats_10 = model_traning_testing(
+#    datafile = adapted_data,
+#    base_model = base_model,
+#    parameters = parameters,
+#    feature_target = feature_target,
+#    min_length = min_length
+#)
+
+# In[ ]:
 
 
-# In[31]:
+#pickle.dump(lin_reg_stats_10,f := open(METADATA_PRELOAD_DATA_PATH + "lin_stat_10.bin","wb"))
+#f.close()
 
 
-ILSTM_train(copy.deepcopy(station_data["11"]),"TJM20",batch_size = 8,total_epoch = 20)
+#del lin_reg_stats_10, lin_reg_stats_20 # removes unesseserry data
+# In[ ]:
+
+## ------------------ Plauborg -------------------------
+
+parameters = ["Time","TM"]
+feature_target = "TJM20"
+min_length = 24 # minimum number of rows used in sequense
+search_area_day = {"lag_max":range(2,15,2), "fourier_sin_length":range(2,15,2),"fourier_cos_length":range(2,15,2),"is_day" : [True]}
+#search_area = {"lag_max":range(2,15,2), "fourier_sin_length":range(2,15,2),"fourier_cos_length":range(2,15,2)}
+#base_model = GridSearchCV(SE.PlauborgRegresson(),param_grid=search_area,n_jobs = -1)
+
+#Plauborg_stats_20 = model_traning_testing(
+#    datafile = imputed_nibio_data,
+#    base_model = base_model,
+#    parameters = parameters,
+#    feature_target = feature_target,
+#    min_length = min_length
+#)
+
+#pickle.dump(Plauborg_stats_20,f := open(METADATA_PRELOAD_DATA_PATH + "Plauborg_stat_20.bin","wb"))
+#f.close()
+base_model = GridSearchCV(SE.PlauborgRegresson(),param_grid=search_area_day)
+
+#def hour2day(df):
+#    hourly_df = df.infer_objects(copy=False).set_index("Time")[["TM","TJM10", "TJM20"]].resample("1D").mean().ffill().reset_index()  # Forward fill missing values
+#    return hourly_df
+
+augmented_nibio_data = imputed_nibio_data.data_transform(hour2day)
+
+Plauborg_daily_stats_20 = model_traning_testing(
+    datafile = augmented_nibio_data,
+    base_model = base_model,
+    parameters = parameters,
+    feature_target = feature_target,
+    min_length = min_length
+)
+
+pickle.dump(Plauborg_daily_stats_20,f := open(METADATA_PRELOAD_DATA_PATH + "Plauborg_day_stat_20.bin","wb"))
+f.close()
+
+#parameters = ["Time","TM"]
+feature_target = "TJM10"
+#min_length = 24 # minimum number of rows used in sequense
+#base_model = GridSearchCV(SE.PlauborgRegresson(),param_grid=search_area,n_jobs = -1)
+
+#Plauborg_stats_10 = model_traning_testing(
+#    datafile = imputed_nibio_data,
+#    base_model = base_model,
+#    parameters = parameters,
+#    feature_target = feature_target,
+#    min_length = min_length
+#)
+#pickle.dump(Plauborg_stats_10,f := open(METADATA_PRELOAD_DATA_PATH + "Plauborg_stat_10.bin","wb"))
+#f.close()
+
+base_model = GridSearchCV(SE.PlauborgRegresson(),param_grid=search_area_day,n_jobs = -1)
+
+Plauborg_daily_stats_10 = model_traning_testing(
+    datafile = augmented_nibio_data,
+    base_model = base_model,
+    parameters = parameters,
+    feature_target = feature_target,
+    min_length = min_length
+)
+
+# In[8]:
+
+pickle.dump(Plauborg_daily_stats_10,f := open(METADATA_PRELOAD_DATA_PATH + "Plauborg_day_stat_10.bin","wb"))
+f.close()
+
+del Plauborg_daily_stats_10, Plauborg_daily_stats_20 # removes unesseserry data
+
+
+## -------------------------------------- BiLSTM ---------------------------------------------
+
+parameters = ["Time","TM"]
+feature_target = "TJM20"
+min_length = 200 # minimum number of rows used in sequense
+search_area = {"input_shape":[12*n for n in range(2,14,4)],"lstm_units":[2**k for k in range(3,10,2)],"epochs":[2*n for n in range(5,15,3)]}
+base_model = GridSearchCV(SE.KerasBiLSTM(),param_grid=search_area,pre_dispatch = 5,n_jobs = -1)
+
+KerasBiLSTM_stats_20 = model_traning_testing(
+    datafile = imputed_nibio_data,
+    base_model = base_model,
+    parameters = parameters,
+    feature_target = feature_target,
+    min_length = min_length
+)
+pickle.dump(KerasBiLSTM_stats_20,f := open(METADATA_PRELOAD_DATA_PATH + "KerasBiLSTM_stat_20.bin","wb"))
+f.close()
+
+feature_target = "TJM10"
+KerasBiLSTM_stats_10 = model_traning_testing(
+    datafile = imputed_nibio_data,
+    base_model = base_model,
+    parameters = parameters,
+    feature_target = feature_target,
+    min_length = min_length
+)
+
+
+# In[ ]:
+
+pickle.dump(KerasBiLSTM_stats_10,f := open(METADATA_PRELOAD_DATA_PATH + "KerasBiLSTM_stat_10.bin","wb"))
+f.close()
+
+del KerasBiLSTM_stats_10, KerasBiLSTM_stats_20 # removes unesseserry data
+
+# In[ ]:
+
+
+# ---------------------------- ILSTM ----------------------------------------
+
+parameters = ["Time","TM"]
+feature_target = "TJM20"
+min_length = 12*14+2 # minimum number of rows used in sequense
+search_area = {"input_shape":[12*n for n in range(2,14,4)],"lstm_units":[2**k for k in range(3,15,2)],"epochs":[2*n for n in range(5,15,3)]}
+base_model = GridSearchCV(SE.ILSTM(),param_grid=search_area,n_jobs = -1)
+
+ILSTM_stats_20 = model_traning_testing(
+    datafile = imputed_nibio_data,
+    base_model = base_model,
+    parameters = parameters,
+    feature_target = feature_target,
+    min_length = min_length
+)
+pickle.dump(ILSTM_stats_20,f := open(METADATA_PRELOAD_DATA_PATH + "ILSTM_stat_20.bin","wb"))
+f.close()
+
+feature_target = "TJM10"
+ILSTM_stats_10 = model_traning_testing(
+    datafile = imputed_nibio_data,
+    base_model = base_model,
+    parameters = parameters,
+    feature_target = feature_target,
+    min_length = min_length
+)
+
+
+# In[ ]:
+
+pickle.dump(ILSTM_stats_10,f := open(METADATA_PRELOAD_DATA_PATH + "ILSTM_stat_10.bin","wb"))
+f.close()
+
+del ILSTM_stats_10, ILSTM_stats_20 # removes unesseserry data
 

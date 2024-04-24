@@ -1,4 +1,4 @@
-\section{Previous works}\label{sec:theory}
+\section{Theory}\label{sec:theory}
 
 This section discusses the theory behind the models used in the 
 
@@ -6,10 +6,10 @@ This section discusses the theory behind the models used in the
 
 The regression model will be for the sake of convenience be expressed as the following expression
 $$
-\left(\vec{F}\circ \mathbf{A}\right)\vec{\beta}=\vec{y}+\vec{\varepsilon}
+\left(\vec{F}(\mathbf{A})\right)\vec{\beta}=\vec{y}+\vec{\varepsilon}
 $$
 
-Where $\vec{F}$\marginpar{The $\vec{F}$ is not important, just that your data is shaped by a function.} is a vector function with following domain $\vec{F}:\mathbb{R}^{m\times n}\to \mathbb{R}^{m\times p}$ where $m,n,p\in \mathbb{N}$, $\mathbf{A}$ is the data in matrix form with dimensions $\mathbb{R}^{m\times n}$, $\vec{\beta}$ is the regression terms, $\vec{y}$ is the target (TJM), and $\vec{\varepsilon}$ is the error from modeling. The $\circ$ operator is the composition of $\vec{F}$ and $\mathbf{A}$, is a short way of writing $\vec{F}(\mathbf{A})$.
+Where $\vec{F}$\marginpar{The $\vec{F}$ is not important, just that your data is shaped by a function.} is a vector function with following domain $\vec{F}:\mathbb{R}^{m\times n}\to \mathbb{R}^{m\times p}$ where $m,n,p\in \mathbb{N}$, $\mathbf{A}$ is the data in matrix form with dimensions $\mathbb{R}^{m\times n}$, $\vec{\beta}$ is the regression terms, $\vec{y}$ is the target (TJM), and $\vec{\varepsilon}$ is the error from modeling.
 
 This basic model to express the linearity of the components to soil temperature. This will function as the base model for regression models. 
 
@@ -77,16 +77,19 @@ T_z^0 \approx \frac{k\exp(D)}{1+\exp(D)\times(k-1)}\times T_{air}
 $$
 
 Where k is $ K_T*\Delta t/ (C_A * (2Z)^2)$, and D is $-f_d*Snow_{Depth}$. This assumes constant air temperature above a constant layer of snow, though unrealistic since air temperature has a tendensy to change during the day due to solar radiation and other climate factors that can cool down or heat up the air. Another problem is the fact that the snow level ramins the same which is also untrue.
+
 \subsection{Long Short Term Memory model}\label{sec:theory:lstm}
 
-The most common problem in Neural networks is the vanishing gradient problem where updating the first few layers of a large network becomes exponentially more difficult since the adjustments gets smaller and smaller for each layer towards the start rather than the reverse. \gls{gl:lstm} changes this by caring information from the previous cells forward thereby allowing updating earlier cells with bigger impact than the standard approach\cite{hochreiter_long_1997}. \acrshort{ac:lstm} is part of a family of \gls{gl:rnn}'s that passes information to other cells in the same layer.
+When modeling soil temperature it is important to know the previus hours or days to predict the next timestep, for this a natural selection for a data driven model is a recurent network. This type of network makes prediction based on previus timesteps in the data, however the longer timespan the model takse into account the less important are the erlier timesteps in the data. To combat this there was developt an imporoved model called Long-Short Term Memory model\cite{hochreiter_long_1997} that deploys a memory cell that feeds information from erlier timesteps to the late ones. To make sure that redundant information or unimportant informantion dont get feed forward there are also forgetting gates that removes some of the newly learned patterns and integrates it into the memory cell. 
 
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=0.7\linewidth]{figures/LSTM_Cell}
-	\caption{LSTM cell  Artist: \textcite{chevalier_english_2018}}
-	\label{fig:lstmcell}
-\end{figure}
+%The most common problem in Neural networks is the vanishing gradient problem where updating the first few layers of a large network becomes exponentially more difficult since the adjustments gets smaller and smaller for each layer towards the start rather than the reverse. \gls{gl:lstm} changes this by caring information from the previous cells forward thereby allowing updating earlier cells with bigger impact than the standard approach\cite{hochreiter_long_1997}. \acrshort{ac:lstm} is part of a family of \gls{gl:rnn}'s that passes information to other cells in the same layer.
+
+%\begin{figure}[ht]
+%	\centering
+%	\includegraphics[width=0.7\linewidth]{figures/LSTM_Cell}
+%	\caption{LSTM cell  Artist: \textcite{chevalier_english_2018}}
+%	\label{fig:lstmcell}
+%\end{figure}
 
 \subsection[ILSTM]{Attention aware LSTM model}\label{sec:theory:Ilstm}
 
