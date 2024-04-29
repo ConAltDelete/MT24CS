@@ -39,7 +39,7 @@ def nibio_data_transform(daily_2014_2020,target):
 	daily_2014_2020["Time"] = daily_2014_2020["Time"].transform(lambda x: int(pattern.sub(r"\1\2\3\4",x)) + (1 if x[-1] == "2" else 0))
 	#daily_2014_2020 = daily_2014_2020.drop("TJM10",axis=1)
     
-	daily_2014_2020.dropna(inplace=True)
+	#daily_2014_2020.dropna(inplace=True)
 
 	ds = pd.DataFrame(daily_2014_2020.loc[:,[target]])
 	# soil moisture  variables normal.
@@ -121,8 +121,8 @@ def LSTMDataGenerator(data, lead_time, batch_size,seq_length):
 
     # Currently, we have a big sequence of half hourly cases. We’ll convert it into smaller ones:
     train_xt, train_yt = create_sequences(data, seq_length,lead_time)
-    train_xt = torch.from_numpy(train_xt).float().cuda()
-    train_yt = torch.from_numpy(train_yt).float().cuda()
+    train_xt = torch.from_numpy(train_xt).float().cuda() if torch.cuda.is_available() else torch.from_numpy(train_xt).float()
+    train_yt = torch.from_numpy(train_yt).float().cuda() if torch.cuda.is_available() else torch.from_numpy(train_yt).float()
     train_zt=train_yt
     #
     return train_xt,train_yt,train_zt
@@ -146,7 +146,7 @@ def train_lstm(model,lr,total_epoch,train_loader,data_valid_x,data_valid_y,model
     if (os.path.exists(model_save_fn)):
         checkpoint = torch.load(model_save_fn)
         model.load_state_dict(checkpoint['net'])
-        model.cuda()
+        model.cuda() if torch.cuda.is_available() else None
         print(model)
         print('model has existed')
     else:
@@ -154,9 +154,10 @@ def train_lstm(model,lr,total_epoch,train_loader,data_valid_x,data_valid_y,model
         tempora_import = []
 
         sumWriter = SummaryWriter('lstm_log')
-        model.cuda()
+        if torch.cuda.is_available():
+            model.cuda()
         optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-        loss_func = torch.nn.SmoothL1Loss ().cuda()
+        loss_func = torch.nn.SmoothL1Loss().cuda() if torch.cuda.is_available() else torch.nn.SmoothL1Loss()
         # loss_func = torch.nn.MSELoss().cuda()
         global_step = 1
         # initialize the early_stopping object
@@ -257,14 +258,13 @@ def FItsave(y_test,filename,dir):
 
 def main(datadir,dataname,hidden_size,lr,total_epoch,batch_size,lead_time,
          seq_length,model_save_fn,modelname,source="flux"):
-    match source:
-        case "flux":
+    if source == "flux":
             # TODO: Flexible input data
             # Open fluxnetdataset and create data generators
             data,scaler,scaler1=generatedatafluxnet(datadir,dataname)
-        case "nibio":
+    elif source == "nibio":
             data,scaler,scaler1=generatedatanibio(datadir,dataname)
-        case _:
+    else:
             raise ValueError("does not reconice source: " + source)
 
     # TODO: Normalization
@@ -294,7 +294,7 @@ def main(datadir,dataname,hidden_size,lr,total_epoch,batch_size,lead_time,
 
     # TODO: Flexible input shapes and optimizer
     # IMVTensorLSTM,IMVFullLSTM
-    model = ILSTM_SV(data_x.shape[2],data_x.shape[1], 1, hidden_size).cuda()
+    model = ILSTM_SV(data_x.shape[2],data_x.shape[1], 1, hidden_size).cuda() if torch.cuda.is_available() else ILSTM_SV(data_x.shape[2],data_x.shape[1], 1, hidden_size)
     # TODO: Trian LSTM based on the training and validation sets
     model,predicor_import,temporal_import=train_lstm(model,lr,total_epoch,train_loader,data_valid_x,data_valid_y,model_save_fn)
 

@@ -7,18 +7,18 @@ from sklearn.linear_model import LinearRegression
 from sklearn.neural_network import MLPRegressor
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense, Bidirectional, Input
-from tensorflow.keras import Input
+
+from keras.models import Sequential, Model
+from keras.layers import LSTM, Dense, Bidirectional, Input, Conv1D, Concatenate
+from keras import Input
 from tensorflow.keras.preprocessing.sequence import TimeseriesGenerator
 from tensorflow.keras.utils import timeseries_dataset_from_array
 
 
 import torch
 
-
 class KerasBiLSTM(MLPRegressor):
-    def __init__(self, input_shape = None, num_classes = 1, lstm_units=None, epochs=None, batch_size = 32,**kwargs):
+    def __init__(self, input_shape = None, num_classes = 1, lstm_units=None, epochs=None, batch_size = 768,**kwargs):
         super().__init__(**kwargs)
         self.input_shape: int = input_shape
         self.num_classes: int = num_classes
@@ -124,14 +124,48 @@ class KerasBiLSTM(MLPRegressor):
                             sample_weight=sample_weight
                             )
 
+
+class modKerasBiLSTM(KerasBiLSTM):
+    def fit(self, X, y):
+        if "Time" in X.columns:
+            X["Time"] = X["Time"].transform({"Time":lambda x: x.day_of_year*24 + x.hour})
+
+        X, y = check_X_y(X, y) # Checks if values are finite and not too sparce.
+        # Data treatment
+        All_data = self._data_treatment(X,y) # Takes both just incase.
+        # Setting up model
+        if not(self.is_fitted_):
+            
+            input_layer = Input((All_data[0][0].shape[1], All_data[0][0].shape[2]))
+            #? add a convelution layer or two here?
+            conv_layer = Conv1D(2*self.lstm_units, 24, padding = "same")(input_layer)
+            Concatenate_layer = Concatenate()([input_layer,conv_layer])
+            #Bidirectional(LSTM(self.lstm_units,return_sequences=True))(Concatenate_layer)
+            
+            bi_layer = Bidirectional(LSTM(self.lstm_units,return_sequences=True))(Concatenate_layer)
+            lstm_layer = LSTM(int(self.lstm_units / 2)+1)(bi_layer) # conjestion
+            summary_layer = Dense(self.num_classes, activation='softmax')(lstm_layer) # conjegtion
+            self.model = Model(inputs = input_layer,outputs = summary_layer)
+            self.model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mean_squared_error','r2_score'])
+            #print(self.model.output_shape)
+        # fitting model
+        #print(self.model.summary())
+        #print("Input shape for LSTM:", All_data[0][0].shape)
+
+        self.model.fit(All_data, epochs=self.epochs, verbose=1)
+
+        self.is_fitted_ = True
+        return self
+
 class PlauborgRegresson(LinearRegression):
 
-    def __init__(self,lag_max = 2, fourier_sin_length = 2, fourier_cos_length = 2, is_day = False,**kvarg):
-        super().__init__(**kvarg)
+    def __init__(self,lag_max = 2, fourier_sin_length = 2, fourier_cos_length = 2, is_day = False,fit_intercept = False,**kvarg):
+        super().__init__(fit_intercept = fit_intercept,**kvarg)
         self.lag_max = lag_max
         self.fourier_sin_length = fourier_sin_length
         self.fourier_cos_length = fourier_cos_length
         self.is_day = is_day
+        self.fit_intercept = fit_intercept
 
     def fit(self, X, y=None):
         self.is_fitted_ = True
@@ -150,10 +184,10 @@ class PlauborgRegresson(LinearRegression):
         data_ret = pd.DataFrame({
             "B0":new_df["TM"].values
             })
-        freq = 2*np.pi / (365 * (1 if self.is_day else 24))
+        freq = 2*np.pi / (365 if self.is_day else 24)
         fourier = [self.fourier_sin_length,self.fourier_cos_length]
-        order_of_fourier = fourier if fourier[0] < fourier[1] else list(reversed(fourier))
-        freq_index = freq * ( new_df.index.day if self.is_day else (new_df.index.day*24 + new_df.index.hour))
+        order_of_fourier = fourier if fourier[0] < fourier[1] else fourier[::-1]
+        freq_index = freq * ( new_df.index.dayofyear if self.is_day else (new_df.index.dayofyear*24 + new_df.index.hour))
         for i in range(1,self.lag_max+1): 
            data_ret[f"B{i}"] = new_df["TM"].shift(i).values
         for i in range(1,order_of_fourier[0]+1):
@@ -165,7 +199,7 @@ class PlauborgRegresson(LinearRegression):
         for i in range(order_of_fourier[0]+1,order_of_fourier[1]+1):
            c = i * freq_index
            data_ret[f"F{max_string}{i}"] = func(c)
-        return data_ret.infer_objects(copy=False).fillna(0)
+        return data_ret.infer_objects(copy=False).fillna(0) #! Shit..., this changes the output if it already contains Nan.
     
     def predict(self,X):
         check_is_fitted(self, 'is_fitted_')
@@ -264,141 +298,110 @@ class RankinRegresson(LinearRegression):
                 T_z[t+1] = T_z[t+1]*np.exp(-X["snow"].iloc[t]*self.fs)
         return T_z
 
-class GAN(BaseEstimator, TransformerMixin):
-    def __init__(self, num_epochs=100, batch_size=64, learning_rate=0.0002):
-        self.num_epochs = num_epochs
-        self.batch_size = batch_size
-        self.learning_rate = learning_rate
-        self.generator = None  # Initialize your generator network
-        self.discriminator = None  # Initialize your discriminator network
+# from .ILSTM_Soil_model_main import lstm_interprety_soil_moisture as ILSTM
+# import torch.utils.data as Data
 
-    def fit(self, X, y=None):
-        # Training loop for GAN
-        for epoch in range(self.num_epochs):
-            for _ in range(len(X) // self.batch_size):
-                # Generate random noise (latent vectors)
-                noise = np.random.randn(self.batch_size, latent_dim)  # Replace latent_dim with your desired dimension
+# class ILSTM(MLPRegressor):
+#     def __init__(self,lead_time = 1, batch_size = 752,seq_length = 24, hidden_size = 2**8,learning_rate = 0.5,total_epoch = 20,**kwarg):
+#         super().__init__(**kwarg)
+#         self.lead_time = lead_time
+#         self.batch_size = batch_size
+#         self.seq_length = seq_length
+#         self.hidden_size = hidden_size
+#         self.learning_rate = learning_rate
+#         self.total_epoch = total_epoch
 
-                # Generate fake samples using the generator
-                generated_samples = self.generator.predict(noise)
+#     def fit(self,raw_data, target_label):
 
-                # Real samples (from your dataset)
-                real_samples = X[np.random.randint(0, len(X), self.batch_size)]
+#         # TODO:  remember to add data["Time"].transform({"Time":lambda x: x.day_of_year*24 + x.hour})
+#         data,self.scaler,self.scaler1 = ILSTM.nibio_data_transform(raw_data, target_label)
+#         data = self.scaler1.transform(data)
 
-                # Train the discriminator
-                d_loss_real = self.discriminator.train_on_batch(real_samples, np.ones((self.batch_size, 1)))
-                d_loss_fake = self.discriminator.train_on_batch(generated_samples, np.zeros((self.batch_size, 1)))
-                d_loss = 0.5 * np.add(d_loss_real, d_loss_fake)
+#         # TODO: Generate the tensor for lstm model
 
-                # Train the generator
-                g_loss = self.combined.train_on_batch(noise, np.ones((self.batch_size, 1)))
+#         [data_x, data_y,_] = ILSTM.LSTMDataGenerator(data, self.lead_time, self.batch_size, self.seq_length)
 
-            # Print progress (optional)
-            print(f"Epoch {epoch}/{self.num_epochs} - D Loss: {d_loss[0]} - G Loss: {g_loss}")
+#         # concat all variables.
+#         # TODO: Flexible valid split
+#         #data_train_x = data_x[:int((data_x.shape[0])-400*24)]
+#         #data_train_y = data_y[:int(data_x.shape[0]-400*24)]
 
-        return self
+#         train_data = Data.TensorDataset(data_x, data_y)
+#         train_loader = Data.DataLoader(
+#             dataset=train_data,
+#             batch_size=self.batch_size,
+#             shuffle=False,
+#             num_workers=0
+#         )
 
-    def transform(self, X):
-        # Generate synthetic data using the trained GAN
-        noise = np.random.randn(len(X), latent_dim)
-        synthetic_data = self.generator.predict(noise)
+#         #data_valid_x      = data_x[int(data_x.shape[0]-400*24):int(data_x.shape[0]-365*24)] # -> trener 35 dager
+#         #data_valid_y      = data_y[int(data_x.shape[0]-400*24):int(data_x.shape[0]-365*24)] # -> tester 35 dager
+#         #self.data_test_x  = data_x[int(data_x.shape[0]-365*24):int(1.0 * data_x.shape[0])] # -> validerer på resterende
+#         #self.data_testd_z = data_z[int(data_x.shape[0]-365*24):int(1.0 * data_x.shape[0])] # -> stat på rest
 
-        return synthetic_data
-
-class ILSTM(MLPRegressor):
-    def __init__(self,lead_time, batch_size,seq_length, hidden_size,learning_rate,total_epoch,**kwarg):
-        super().__init__(**kwarg)
-        from .ILSTM_Soil_model_main import lstm_interprety_soil_moisture as ILSTM
-        import torch.utils.data as Data
-    def fit(self,raw_data, target_label):
-
-        # TODO:  remember to add data["Time"].transform({"Time":lambda x: x.day_of_year*24 + x.hour})
-        data,self.scaler,self.scaler1 = ILSTM.nibio_data_transform(raw_data, target_label)
-        data = self.scaler1.transform(data)
-
-        # TODO: Generate the tensor for lstm model
-
-        [data_x, data_y,_] = ILSTM.LSTMDataGenerator(data, self.lead_time, self.batch_size, self.seq_length)
-
-        # concat all variables.
-        # TODO: Flexible valid split
-        data_train_x = data_x[:int((data_x.shape[0])-400*24)]
-        data_train_y = data_y[:int(data_x.shape[0]-400*24)]
-
-        train_data = Data.TensorDataset(data_train_x, data_train_y)
-        train_loader = Data.DataLoader(
-            dataset=train_data,
-            batch_size=self.batch_size,
-            shuffle=False,
-            num_workers=0
-        )
-
-        data_valid_x      = data_x[int(data_x.shape[0]-400*24):int(data_x.shape[0]-365*24)] # -> trener 35 dager
-        data_valid_y      = data_y[int(data_x.shape[0]-400*24):int(data_x.shape[0]-365*24)] # -> tester 35 dager
-        self.data_test_x  = data_x[int(data_x.shape[0]-365*24):int(1.0 * data_x.shape[0])] # -> validerer på resterende
-        #self.data_testd_z = data_z[int(data_x.shape[0]-365*24):int(1.0 * data_x.shape[0])] # -> stat på rest
-
-        # TODO: Flexible input shapes and optimizer
-        # IMVTensorLSTM,IMVFullLSTM
-        if not(self.is_fitted_):
-            self.model = ILSTM.ILSTM_SV(data_x.shape[2],data_x.shape[1], 1, self.hidden_size)
-        if torch.cuda.is_available():
-            self.model = self.model.cuda()
-        # TODO: Trian LSTM based on the training and validation sets
-        self.model,_,_=ILSTM.train_lstm(self.model,self.learning_rate,self.total_epoch,train_loader,data_valid_x,data_valid_y,"./results/lstm_1d.h5")
-        self.is_fitted_ = True
-        return self
+#         # TODO: Flexible input shapes and optimizer
+#         # IMVTensorLSTM,IMVFullLSTM
+#         if not(self.is_fitted_):
+#             self.model = ILSTM.ILSTM_SV(data_x.shape[2],data_x.shape[1], 1, self.hidden_size)
+#         if torch.cuda.is_available():
+#             self.model = self.model.cuda()
+#         # TODO: Trian LSTM based on the training and validation sets
+#         self.model,_,_=ILSTM.train_lstm(self.model,self.learning_rate,self.total_epoch,train_loader,data_x,data_y,"./results/lstm_1d.h5")
+#         self.is_fitted_ = True
+#         return self
     
-    def predict(self,X):
-        # predicting area from here!
-        check_is_fitted(self,"is_fitted_")
+#     def predict(self,X):
+#         # predicting area from here!
+#         check_is_fitted(self,"is_fitted_")
+#         data,self.scaler,self.scaler1 = ILSTM.nibio_data_transform(X, None)
+#         data = self.scaler1.transform(data)
 
-        # TODO: Create predictions based on the test sets
-        pred, mulit_FV_aten, predicor_import,temporal_import = ILSTM.create_predictions(self.model, self.data_test_x,self.scaler)
+#         # TODO: Create predictions based on the test sets
+#         pred, _, _, _ = ILSTM.create_predictions(self.model, data,self.scaler)
 
-        return pred.flatten()
+#         return self.scaler.inverse_transform(pred).flatten()
 
 
-def ILSTM_train(raw_data, target_label,total_epoch = 50,hidden_size=16,lerningrate=1e-3, lead_time=1, seq_length=24, batch_size=16):
-    data,scaler,scaler1 = ILSTM.nibio_data_transform(raw_data, target_label)
-    data = scaler1.transform(data)
+# def ILSTM_train(raw_data, target_label,total_epoch = 50,hidden_size=16,lerningrate=1e-3, lead_time=1, seq_length=24, batch_size=16):
+#     data,scaler,scaler1 = ILSTM.nibio_data_transform(raw_data, target_label)
+#     data = scaler1.transform(data)
 
-    # TODO: Generate the tensor for lstm model
+#     # TODO: Generate the tensor for lstm model
 
-    [data_x, data_y,data_z] = ILSTM.LSTMDataGenerator(data, lead_time, batch_size, seq_length)
+#     [data_x, data_y,data_z] = ILSTM.LSTMDataGenerator(data, lead_time, batch_size, seq_length)
 
-       # concat all variables.
-    # TODO: Flexible valid split
-    data_train_x=data_x[:int((data_x.shape[0])-400*24)]
-    data_train_y = data_y[:int(data_x.shape[0]-400*24)]
+#        # concat all variables.
+#     # TODO: Flexible valid split
+#     data_train_x=data_x[:int((data_x.shape[0])-400*24)]
+#     data_train_y = data_y[:int(data_x.shape[0]-400*24)]
 
-    train_data = Data.TensorDataset(data_train_x, data_train_y)
-    train_loader = Data.DataLoader(
-        dataset=train_data,
-        batch_size=batch_size,
-        shuffle=False,
-        num_workers=0
-    )
+#     train_data = Data.TensorDataset(data_train_x, data_train_y)
+#     train_loader = Data.DataLoader(
+#         dataset=train_data,
+#         batch_size=batch_size,
+#         shuffle=False,
+#         num_workers=0
+#     )
 
-    data_valid_x=data_x[int(data_x.shape[0]-400*24):int(data_x.shape[0]-365*24)] # -> trener 35 dager
-    data_valid_y=data_y[int(data_x.shape[0]-400*24):int(data_x.shape[0]-365*24)] # -> tester 35 dager
-    data_test_x=data_x[int(data_x.shape[0]-365*24):int(1.0 * data_x.shape[0])] # -> validerer på resterende
-    #data_testd_z=data_z[int(data_x.shape[0]-365*24):int(1.0 * data_x.shape[0])] # -> stat på rest
+#     data_valid_x=data_x[int(data_x.shape[0]-400*24):int(data_x.shape[0]-365*24)] # -> trener 35 dager
+#     data_valid_y=data_y[int(data_x.shape[0]-400*24):int(data_x.shape[0]-365*24)] # -> tester 35 dager
+#     data_test_x=data_x[int(data_x.shape[0]-365*24):int(1.0 * data_x.shape[0])] # -> validerer på resterende
+#     #data_testd_z=data_z[int(data_x.shape[0]-365*24):int(1.0 * data_x.shape[0])] # -> stat på rest
 
-    # TODO: Flexible input shapes and optimizer
-    # IMVTensorLSTM,IMVFullLSTM
-    model = ILSTM.ILSTM_SV(data_x.shape[2],data_x.shape[1], 1, hidden_size)
-    if torch.cuda.is_available():
-        model = model.cuda()
-    # TODO: Trian LSTM based on the training and validation sets
-    model,predicor_import,temporal_import=ILSTM.train_lstm(model,lerningrate,total_epoch,train_loader,data_valid_x,data_valid_y,"./saved_models/lstm_1d.h5")
+#     # TODO: Flexible input shapes and optimizer
+#     # IMVTensorLSTM,IMVFullLSTM
+#     model = ILSTM.ILSTM_SV(data_x.shape[2],data_x.shape[1], 1, hidden_size)
+#     if torch.cuda.is_available():
+#         model = model.cuda()
+#     # TODO: Trian LSTM based on the training and validation sets
+#     model,predicor_import,temporal_import=ILSTM.train_lstm(model,lerningrate,total_epoch,train_loader,data_valid_x,data_valid_y,"./saved_models/lstm_1d.h5")
 
-    # TODO: Create predictions based on the test sets
-    pred, mulit_FV_aten, predicor_import,temporal_import = ILSTM.create_predictions(model, data_test_x,scaler)
-    # TODO: Computer score of R2 and RMSE
-    print(pred)
+#     # TODO: Create predictions based on the test sets
+#     pred, mulit_FV_aten, predicor_import,temporal_import = ILSTM.create_predictions(model, data_test_x,scaler)
+#     # TODO: Computer score of R2 and RMSE
+#     print(pred)
 
-    return pred
+#     return pred
     
 
 

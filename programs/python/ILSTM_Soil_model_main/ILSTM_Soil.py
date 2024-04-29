@@ -42,8 +42,11 @@ class ILSTM_SV(nn.Module):
         self.dropout = torch.nn.Dropout(0.5)
     def forward(self, x):
         outputs = []
-        h_t = torch.zeros(x.shape[0], self.input_dim, self.hidden_size).cuda()
-        c_t = torch.zeros(x.shape[0], self.input_dim*self.hidden_size).cuda()
+        h_t = torch.zeros(x.shape[0], self.input_dim, self.hidden_size)
+        c_t = torch.zeros(x.shape[0], self.input_dim*self.hidden_size)
+        if torch.cuda.is_available():
+            h_t = h_t.cuda()
+            c_t = c_t.cuda()
         #######LSTM#########
         for t in range(x.shape[1]):
             x_timstep=x[:,t,:].unsqueeze(1)

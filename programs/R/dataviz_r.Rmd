@@ -32,6 +32,13 @@ ROOT <- "../../"
 
 DATA_PATH <- paste0(ROOT,"data/")
 
+RESULT_PATH <- paste0(ROOT,"results/")
+
+PLOTS_PATH <- paste0(RESULT_PATH,"plots/")
+TABLE_PATH <- paste0(RESULT_PATH,"tables/")
+OTHER_PATH <- paste0(RESULT_PATH,"other/")
+AUGME_PATH <- paste0(RESULT_PATH,"data/")
+
 DATA_INFO <- paste0(DATA_PATH,"info/")
 DATA_INFO_NIBIO_FILE <- paste0(DATA_INFO ,"lmt.nibio.csv")
 DATA_INFO_FROST_FILE <- paste0(DATA_INFO,"Frost_stations.csv")
@@ -169,20 +176,20 @@ print(paste("µ",mean(abs.diff),"std:",sqrt(var(abs.diff)),"skewness:",skewness(
 plot((abs.diff),xlim = c(0,5880))
 ```
 
-```{r}
+```{r eval=FALSE, include=FALSE}
 # RR hadde ikke noe serlig, men hadde en rep ~= 31 (måned baser?)
 # TM ~= 24? 
 # TJM10 ~= 24?
 # TJM20 ~= 21?
 perid <- c(TM = 24,TJM10 = 24, TJM20 = 24, RR = 31)
 
-data.rle <- rle(is.na(data.nibio[,"TJM20"]))
+data.rle <- rle(is.na(data_nibio[,"TJM20"]))
 data.max <- max(data.rle$lengths[data.rle$values])
 indexes <- find.index.rle.bool(data.rle,data.max)
 print(data.max)
 
 for(col in c("TJM20")){
-    imput <- as.ts(na.interpol.cust(data.nibio[,col],n.p=perid[col]))
+    imput <- as.ts(na.interpol.cust(data_nibio[,col],n.p=perid[col]))
     plot(imput,xlim = c(indexes[1]-100,indexes[2]+100))
     abline(v=indexes[1],col = "red")
     abline(v=indexes[2],col = "red")
@@ -204,6 +211,9 @@ Analyserer data for manglede verdier.
 
 ```{r}
 
+cum_threshold <- 5
+TM_cum_threshold <- 3
+
 feature.name = c("TM","RR","TJM10","TJM20")
 na.run.tables <- c()
 full.count <- c()
@@ -211,10 +221,30 @@ full.count <- c()
 notible_run <- 24*7
 warning_run <- 8*2 # imputering fra begge ender
 
-cat("Null count of data.",
-            file = "data.txt",sep="\n")
+csv_title_cumsum_count <- "station;year;total"
+csv_title_dekkning <- "station;year;month"
+
+for (f in feature.name) {
+  if(f == "TM"){
+    cum_lim <- TM_cum_threshold
+  } else {
+    cum_lim <- cum_threshold
+  }
+  csv_title_cumsum_count <- paste0(csv_title_cumsum_count,";",f,";|",f,"|≤",as.character(cum_lim),";|",f,"|>",as.character(cum_lim))
+  csv_title_dekkning <- paste0(csv_title_dekkning,";",f,"%")
+}
+
+csv_na_file_name <- paste0(TABLE_PATH,"na_run_count_simp.csv")
+csv_dekkning_file_name <- paste0(TABLE_PATH,"na_cover.csv")
+report_name <- paste0(OTHER_PATH,"NB_data.txt")
+mix_data_name <- paste0(OTHER_PATH,"data.txt")
+
+cat(csv_title_cumsum_count,
+            file = csv_na_file_name,sep="\n")
+cat(csv_title_dekkning,
+            file = csv_dekkning_file_name,sep="\n")
 cat(paste("notable runs,defined by nb length",notible_run,"and warning length",warning_run,"\n###############################"),
-            file = "NB_data.txt",sep="\n")
+            file = report_name,sep="\n")
 
 station_names <- read.csv(DATA_INFO_NIBIO_FILE,
                           header=TRUE,
@@ -229,9 +259,9 @@ all.id <- as.numeric(rownames(station_names))
 
 for(id in all.id){
     # beginning plot
-    pdf(file = paste0(ROOT,"plots/plot-",id,".pdf"))
+    pdf(file = paste0(PLOTS_PATH,"plot-",id,".pdf"))
     plot(NULL,
-         sub = "hourly time From 2014-03-01 to year 2020-10-31",
+         sub = "hourly time From 2014-03-01 to year 2022-10-31",
          xlab="Date", ylab="NA location",
          xlim = c(0,5881), ylim = c(2013,2023))   
 
@@ -249,8 +279,9 @@ for(id in all.id){
     #na.run.station.year.feature[[as.character(id)]] <- c()
     #data_plot <- ggplot(title = paste("NA count of staion:",station_names[as.character(id),],"id:",id))
     na.plot <- FALSE
-    cat(paste("***************","station",id,"***************"),append=T,sep="\n",file = "NB_data.txt")
+    cat(paste("***************","station",id,"***************"),append=T,sep="\n",file = report_name)
     for(year in seq(2014,2022)){
+        cat(paste0(id,";",year),append=T,file=csv_na_file_name,sep="")
 
         # Drawing seperating lines
 
@@ -261,7 +292,7 @@ for(id in all.id){
         #lev
         #lev["TJM20"]
         #lev[match("TJM20",names(lev))+1]
-        cat(paste(":::::::year",year,":::::::"),append=T,sep="\n",file = "NB_data.txt")
+        cat(paste(":::::::year",year,":::::::"),append=T,sep="\n",file = report_name)
         data_nibio <- suppressWarnings(data.nibio(id,year)) # henter data
         data_nibio <- data_nibio[rownames(data_nibio) ,]#> paste0(year,"-04-01"),]
         data_nibio_raw <- suppressWarnings(data.nibio(id,
@@ -279,7 +310,7 @@ for(id in all.id){
         
         # Na analesys
 
-        cat("--------Matrix representation, and pair NA's---------",append =T,sep="\n\t",file = "NB_data.txt")
+        cat("--------Matrix representation, and pair NA's---------",append =T,sep="\n\t",file = report_name)
 
         data.matrix <- as.matrix(ifelse(is.na(data_nibio),1,0))
 
@@ -290,12 +321,20 @@ for(id in all.id){
             na.matrix.total <- na.matrix.total + data.matrix.sq
         }
         
-        cat("\t",append=T,file = "NB_data.txt",sep = "\t")
-        suppressWarnings(write.table(data.matrix.sq,append =T,file = "NB_data.txt",sep = "\t"))
-
-        cat(paste("Total NA:",sum(diag(data.matrix.sq))),file = "NB_data.txt",append=T,sep="\n")
+        cat("\t",append=T,file = report_name,sep = "\t")
+        suppressWarnings(write.table(data.matrix.sq,append =T,file = report_name,sep = "\t"))
+        
+        cat(paste("Total NA:",sum(diag(data.matrix.sq))),file = report_name,append=T,sep="\n")
         
         na.check <- is.na(data_nibio)
+        
+        month_procent <- as.data.frame(na.check) %>%
+          group_by(id = id, year = year ,month = as.numeric(lubridate::month(lubridate::floor_date(as.POSIXct(rownames(data_nibio)), 'month')))) %>%
+          summarize(sum_TM = mean(TM),sum_RR = mean(RR),sum_TJM10 = mean(TJM10),sum_TJM20 = mean(TJM20))
+        
+        suppressWarnings(write.table(month_procent,append =T,file = csv_dekkning_file_name,sep = ";",row.names =FALSE, col.names = FALSE))
+        
+        cat(paste0(";",sum(na.check)),append=T,file=csv_na_file_name,sep="")
         if(any(na.check)){
             if(length(na.count) == 0){
                 na.count <- ifelse(na.check, 1, 0)
@@ -308,7 +347,7 @@ for(id in all.id){
             for(cols in feature.name){ # checker run for hver kolonne
                 run_table <- table(NULL)
                 cat(paste("\n--------------station",id,"year",year,"feature",cols,"--------------"),
-                          file = "NB_data.txt",append=T,sep="\n")
+                          file = report_name,append=T,sep="\n")
                 if(sum(na.check[,cols]) > 0){
                     run_na <- find.na.index.length(na.check[,cols])
                     #na.run.station.year.feature[[as.character(id)]][[as.character(year)]][[as.character(cols)]] <- table(run_na)
@@ -323,8 +362,8 @@ for(id in all.id){
                         if(any(is.na(dates))){
                             print(dates)
                         }
-                        cat(paste("\t-\t",dates[1],"|->",c,"run",ifelse(c != 1,paste("\t|->",dates[2]),""),"\t"),
-                                file = "NB_data.txt",append=T,sep="") 
+                        cat(paste("\t-","(",run_na[ind,"First"]-1,")\t",dates[1],"|->",c,"run",ifelse(c != 1,paste("\t|-> (",run_na[ind,"Last"]-1,")",dates[2]),""),"\t"), #Adjust from 1-indexing to 0-indexing
+                                file = report_name,append=T,sep="") 
                         # plot conditions
 
                         if(c == 1){
@@ -338,57 +377,67 @@ for(id in all.id){
                                 )
                         }
 
+                        
                         # Write condition
                         
                          if(c >= notible_run){
-                            cat("(NB!)",file = "NB_data.txt",append=T,sep="\n")
+                            cat("(NB!)",file = report_name,append=T,sep="\n")
                         } else if(c > warning_run) {
                             cat("(Warning)",
-                                file = "NB_data.txt",append=T,sep="\n")
+                                file = report_name,append=T,sep="\n")
                         } else {
                             cat("",
-                                file = "NB_data.txt",append=T,sep="\n")
+                                file = report_name,append=T,sep="\n")
                         }
                         na.run.count[c,cols] <- na.run.count[c,cols] + 1
                     }
                     run_table <- t(as.matrix(table(run_na$Length)))
+                    if(f == "TM"){
+                      cum_lim <- TM_cum_threshold
+                    } else {
+                      cum_lim <- cum_threshold
+                    }
+                    threshold_sum <- sum(run_table[1,as.numeric(colnames(run_table)) <= cum_lim])
+                    cat(paste0(";",sum(na.check[,cols]),";",threshold_sum,";",sum(run_table[1,])-threshold_sum),append=T,file = csv_na_file_name,sep="")
+                } else {
+                  cat(";0;0;0",append=T,file = csv_na_file_name,sep="")
                 }
-                
                 cat(paste("\n--------------Total for station",id,"year",year,"in feature",cols,"--------------"),
-                          file = "NB_data.txt",append=T,sep="\n")
-                cat("\t",append=T,file = "NB_data.txt",sep = "\t")
-                suppressWarnings(write.table(run_table,file = "NB_data.txt",append=T,sep = "\t"))
+                          file = report_name,append=T,sep="\n")
+                cat("\t",append=T,file = report_name,sep = "\t")
+                suppressWarnings(write.table(run_table,file = report_name,append=T,sep = "\t"))
                 cat(paste("\t- total :\t",sum(na.check[,cols])),
-                    file = "NB_data.txt",append=T,sep="\n")
+                    file = report_name,append=T,sep="\n")
             }
+            cat("",append=T,file = csv_na_file_name,sep="\n")
         } else {
             cat(paste("\t- year",year,"without NA."),
-                                file = "NB_data.txt",append=T,sep="\n")
+                                file = report_name,append=T,sep="\n")
             if(length(full.count[[as.character(id)]]) == 0){
                 full.count[[as.character(id)]] <- 1/7
             } else {
                 full.count[[as.character(id)]] <- full.count[[as.character(id)]] + 1/7
             }
         }
-        cat(paste(":::::::END year",year,"END:::::::"),append=T,sep="\n",file = "NB_data.txt")
+        cat(paste(":::::::END year",year,"END:::::::"),append=T,sep="\n",file = report_name)
     }
 
     legend(x = "topright",legend=feature.name, fill = colours)
 
     if(na.plot){
-        cat(paste("============ END station",id,"END ============="),append=T,sep="\n",file = "NB_data.txt")
+        cat(paste("============ END station",id,"END ============="),append=T,sep="\n",file = report_name)
         cat(paste("Staion nr ",id),
-            file = "data.txt",append=T,sep="\n")
-        #suppressWarnings(write.table(bad_data,file = "data.txt",append=T)) # add labels... somehow
+            file = mix_data_name,append=T,sep="\n")
+        #suppressWarnings(write.table(bad_data,file = mix_data_name,append=T)) # add labels... somehow
         cat(paste("prosent of",id,":",sum(na.count)/(nrow(data_nibio)*4)),
-            file = "data.txt",append=T,sep="\n")
+            file = mix_data_name,append=T,sep="\n")
         cat(paste("prosent of",id," for years:"),
-            file = "data.txt",append=T,sep="\n")
+            file = mix_data_name,append=T,sep="\n")
         cat(paste0(unlist(na.count.year), collapse = "\n"),
-            file = "data.txt",append=T,sep="\n")      
-        cat("\t",append=T,file = "NB_data.txt",sep = "\t")
-        suppressWarnings(write.table(na.matrix.total,file = "NB_data.txt",append=T,sep = "\t"))
-        cat(paste("Total:",sum(diag(na.matrix.total))),file = "NB_data.txt", append =T, sep = "\n")
+            file = mix_data_name,append=T,sep="\n")      
+        cat("\t",append=T,file = report_name,sep = "\t")
+        suppressWarnings(write.table(na.matrix.total,file = report_name,append=T,sep = "\t"))
+        cat(paste("Total:",sum(diag(na.matrix.total))),file = report_name, append =T, sep = "\n")
     }
     title(main = paste0("NA count of station: ", station_names[as.character(id),],
                          " id: ",id,
@@ -398,16 +447,30 @@ for(id in all.id){
 ```
 
 ```{r}
-plot(data.nibio(16,2017)[,"TM"],type="l")
-plot(forecast(fit,h=24*7),xlim=c(5500,6000))
+plot_heat_na <- function(x){
+  new_x <- na_data_month %>% mutate(ym = paste0(year,"/",month))#as.POSIXct(paste0(year,"-",month),format = "%Y-%m"))
+  df_long <- melt(new_x[,!(names(new_x) %in% c("year","month","station"))], id.vars = "ym")
+  for(gr in unique(x$station)){
+    df_long_small <- df_long[new_x$station == gr,]
+    hmp <- ggplot(df_long_small, aes(x = ym, y = variable, fill = value)) +
+      geom_tile() +
+      scale_fill_gradient(low = "white", high = "blue4") +
+      labs(x = "Dates", y = "Features", title = paste0("Heatmap of ",gr)) +
+      scale_x_discrete(breaks = unique(df_long_small$ym)[round(seq(1, length(unique(df_long_small$ym)), length.out = 25))]) + # seq(1, length(unique(df_long$ym)), length.out = 20)
+      theme(axis.text.x = element_text(angle = 90, hjust = 1))
+      ggsave(paste0(PLOTS_PATH,"heatmap_plot_",gr,".pdf"), plot = hmp)
+  }
+}
+```
+
+## plotting of na values
+```{r}
+na_data_month <- read.csv(csv_dekkning_file_name,sep=";")
+#print(na_data_month)
+na_data_month %>% plot_heat_na()
 ```
 
 ```{r}
-imput_data <- na_interpolation(as.ts(data_nibio))
-```
-
-```{r}
-# RR hadde ikke noe serlig, men hadde en rep ~= 31 (måned baser?)
 # TM ~= 24? 
 # TJM10 ~= 24?
 # TJM20 ~= 21?
@@ -467,3 +530,268 @@ kpss.test(imputed.data[,"TJM10"])
 pp.test(imputed.data[,"TJM10"])
 ```
 
+```{r eval=FALSE, include=FALSE}
+# RR hadde ikke noe serlig, men hadde en rep ~= 31 (måned baser?)
+# TM ~= 24? 
+# TJM10 ~= 24?
+# TJM20 ~= 21?
+perid <- c(TM = 24,TJM10 = 24, TJM20 = 24, RR = 31)
+
+data.rle <- rle(is.na(data_nibio[,"TJM20"]))
+data.max <- max(data.rle$lengths[data.rle$values])
+indexes <- find.index.rle.bool(data.rle,data.max)
+print(data.max)
+
+for(col in c("TJM20")){
+    imput <- as.ts(na.interpol.cust(data_nibio[,col],n.p=perid[col]))
+    plot(imput,xlim = c(indexes[1]-100,indexes[2]+100))
+    abline(v=indexes[1],col = "red")
+    abline(v=indexes[2],col = "red")
+    title(paste(col,"STL + naive"))
+}
+
+for(col in c("TJM20")){
+    imput <- as.ts(na_interpolation(data.nibio[,col]))
+    plot(imput,xlim = c(indexes[1]-100,indexes[2]+100))
+    abline(v=indexes[1],col = "red")
+    abline(v=indexes[2],col = "red")
+    title(paste(col,"naive"))
+}
+```
+
+## Data Analyse
+
+Analyserer data for manglede verdier.
+
+```{r}
+
+cum_threshold <- 5
+TM_cum_threshold <- 3
+
+feature.name = c("TM","RR","TJM10","TJM20")
+na.run.tables <- c()
+full.count <- c()
+
+notible_run <- 24*7
+warning_run <- 8*2 # imputering fra begge ender
+
+csv_title_cumsum_count <- "station;year;total"
+csv_title_dekkning <- "station;year;month"
+
+for (f in feature.name) {
+  if(f == "TM"){
+    cum_lim <- TM_cum_threshold
+  } else {
+    cum_lim <- cum_threshold
+  }
+  csv_title_cumsum_count <- paste0(csv_title_cumsum_count,";",f,";|",f,"|≤",as.character(cum_lim),";|",f,"|>",as.character(cum_lim))
+  csv_title_dekkning <- paste0(csv_title_dekkning,";",f,"%")
+}
+
+csv_na_file_name <- paste0(TABLE_PATH,"washed_na_run_count_simp.csv")
+csv_dekkning_file_name <- paste0(TABLE_PATH,"washed_na_cover.csv")
+report_name <- paste0(OTHER_PATH,"washed_NB_data.txt")
+mix_data_name <- paste0(OTHER_PATH,"washed_data.txt")
+
+cat(csv_title_cumsum_count,
+            file = csv_na_file_name,sep="\n")
+cat(csv_title_dekkning,
+            file = csv_dekkning_file_name,sep="\n")
+cat(paste("notable runs,defined by nb length",notible_run,"and warning length",warning_run,"\n###############################"),
+            file = report_name,sep="\n")
+
+station_names <- read.csv(DATA_INFO_NIBIO_FILE,
+                          header=TRUE,
+                          row.names="ID",
+                          colClasses=c(ID="integer",Navn="character"))
+
+na.run.station.year.feature <- list()
+
+sub_set <- unlist(nibio_id)
+
+all.id <- as.numeric(rownames(station_names))
+
+for(id in all.id){
+    # beginning plot
+    pdf(file = paste0(PLOTS_PATH,"plot-",id,".pdf"))
+    plot(NULL,
+         sub = "hourly time From 2014-03-01 to year 2022-10-31",
+         xlab="Date", ylab="NA location",
+         xlim = c(0,5881), ylim = c(2013,2023))   
+
+    colours <- c(TM ="blue", RR = "red",TJM10 = "green",TJM20 = "orange")
+    lev <- seq(-1/2,1/2,length.out=5)
+    names(lev) <- feature.name
+    
+    numb <- 0
+    denom <- 0
+    na.run.count <- matrix(rep(0,length=5880*4),nrow = 5880, ncol = 4)
+    colnames(na.run.count) <- feature.name
+    na.count <- c()
+    na.count.year <- c()
+    na.matrix.total <- NULL
+    #na.run.station.year.feature[[as.character(id)]] <- c()
+    #data_plot <- ggplot(title = paste("NA count of staion:",station_names[as.character(id),],"id:",id))
+    na.plot <- FALSE
+    cat(paste("***************","station",id,"***************"),append=T,sep="\n",file = report_name)
+    for(year in seq(2014,2022)){
+        cat(paste0(id,";",year),append=T,file=csv_na_file_name,sep="")
+
+        # Drawing seperating lines
+
+        lines(c(0,5880),c(year + 1/2,year + 1/2), col = "black")
+        
+        #lev <- seq(-1/2,1/2,length.out=5)
+        #names(lev) <- c("TM","RR","TJM10","TJM20")
+        #lev
+        #lev["TJM20"]
+        #lev[match("TJM20",names(lev))+1]
+        cat(paste(":::::::year",year,":::::::"),append=T,sep="\n",file = report_name)
+        
+        data_nibio <- suppressWarnings(data.nibio(id,
+                                     year,
+                                     path=paste0(AUGME_PATH,
+                                                 "weather_data_hour_stID%i_y%i.csv"
+                                                )
+                                    ))
+        data_nibio <- data_nibio[rownames(data_nibio) ,]#> paste0(year,"-04-01"),]
+
+        #na.run.station.year.feature[[as.character(id)]][[as.character(year)]] <- c()
+        
+        # Na analesys
+
+        cat("--------Matrix representation, and pair NA's---------",append =T,sep="\n\t",file = report_name)
+
+        data.matrix <- as.matrix(ifelse(is.na(data_nibio),1,0))
+
+        data.matrix.sq <- t(data.matrix)%*%data.matrix
+        if(is.null(na.matrix.total)){
+            na.matrix.total <- data.matrix.sq 
+        } else {
+            na.matrix.total <- na.matrix.total + data.matrix.sq
+        }
+        
+        cat("\t",append=T,file = report_name,sep = "\t")
+        suppressWarnings(write.table(data.matrix.sq,append =T,file = report_name,sep = "\t"))
+        
+        cat(paste("Total NA:",sum(diag(data.matrix.sq))),file = report_name,append=T,sep="\n")
+        
+        na.check <- is.na(data_nibio)
+        
+        month_procent <- as.data.frame(na.check) %>%
+          group_by(id = id, year = year ,month = as.numeric(lubridate::month(lubridate::floor_date(as.POSIXct(rownames(data_nibio)), 'month')))) %>%
+          summarize(sum_TM = mean(TM),sum_RR = mean(RR),sum_TJM10 = mean(TJM10),sum_TJM20 = mean(TJM20))
+        
+        suppressWarnings(write.table(month_procent,append =T,file = csv_dekkning_file_name,sep = ";",row.names =FALSE, col.names = FALSE))
+        
+        cat(paste0(";",sum(na.check)),append=T,file=csv_na_file_name,sep="")
+        if(any(na.check)){
+            if(length(na.count) == 0){
+                na.count <- ifelse(na.check, 1, 0)
+            } else {
+                na.count <- na.count + ifelse(na.check, 1, 0)
+            }
+            #na.count.year[[as.character(year)]] <- sum(na.check)/(nrow(data_nibio)*4)
+            na.plot <- TRUE
+            
+            for(cols in feature.name){ # checker run for hver kolonne
+                run_table <- table(NULL)
+                cat(paste("\n--------------station",id,"year",year,"feature",cols,"--------------"),
+                          file = report_name,append=T,sep="\n")
+                if(sum(na.check[,cols]) > 0){
+                    run_na <- find.na.index.length(na.check[,cols])
+                    #na.run.station.year.feature[[as.character(id)]][[as.character(year)]][[as.character(cols)]] <- table(run_na)
+                    #print(paste("year:",year,"feature:",cols))
+                    #print(run_na)
+
+                    points(c(0,0,0,0),lev[1:4] + year + 1/8, col = colours)
+
+                    for(ind in 1:nrow(run_na)){    
+                        c <- run_na[ind,"Length"]
+                        dates <- rownames(data_nibio)[c(run_na$First[ind],run_na$Last[ind])]
+                        if(any(is.na(dates))){
+                            print(dates)
+                        }
+                        cat(paste("\t-","(",run_na[ind,"First"]-1,")\t",dates[1],"|->",c,"run",ifelse(c != 1,paste("\t|-> (",run_na[ind,"Last"]-1,")",dates[2]),""),"\t"), #Adjust from 1-indexing to 0-indexing
+                                file = report_name,append=T,sep="") 
+                        # plot conditions
+
+                        if(c == 1){
+                            # plot dot
+                            points(run_na$First[ind],year + lev[cols] + 1/8, col = colours[cols])
+                        } else {
+                            # plot rectangle
+                            rect(run_na$First[ind],year + lev[cols],
+                                 run_na$Last[ind],year + lev[match(cols,names(lev))+1],
+                                 col = colours[cols], border = NA
+                                )
+                        }
+
+                        
+                        # Write condition
+                        
+                         if(c >= notible_run){
+                            cat("(NB!)",file = report_name,append=T,sep="\n")
+                        } else if(c > warning_run) {
+                            cat("(Warning)",
+                                file = report_name,append=T,sep="\n")
+                        } else {
+                            cat("",
+                                file = report_name,append=T,sep="\n")
+                        }
+                        na.run.count[c,cols] <- na.run.count[c,cols] + 1
+                    }
+                    run_table <- t(as.matrix(table(run_na$Length)))
+                    if(f == "TM"){
+                      cum_lim <- TM_cum_threshold
+                    } else {
+                      cum_lim <- cum_threshold
+                    }
+                    threshold_sum <- sum(run_table[1,as.numeric(colnames(run_table)) <= cum_lim])
+                    cat(paste0(";",sum(na.check[,cols]),";",threshold_sum,";",sum(run_table[1,])-threshold_sum),append=T,file = csv_na_file_name,sep="")
+                } else {
+                  cat(";0;0;0",append=T,file = csv_na_file_name,sep="")
+                }
+                cat(paste("\n--------------Total for station",id,"year",year,"in feature",cols,"--------------"),
+                          file = report_name,append=T,sep="\n")
+                cat("\t",append=T,file = report_name,sep = "\t")
+                suppressWarnings(write.table(run_table,file = report_name,append=T,sep = "\t"))
+                cat(paste("\t- total :\t",sum(na.check[,cols])),
+                    file = report_name,append=T,sep="\n")
+            }
+            cat("",append=T,file = csv_na_file_name,sep="\n")
+        } else {
+            cat(paste("\t- year",year,"without NA."),
+                                file = report_name,append=T,sep="\n")
+            if(length(full.count[[as.character(id)]]) == 0){
+                full.count[[as.character(id)]] <- 1/7
+            } else {
+                full.count[[as.character(id)]] <- full.count[[as.character(id)]] + 1/7
+            }
+        }
+        cat(paste(":::::::END year",year,"END:::::::"),append=T,sep="\n",file = report_name)
+    }
+
+    legend(x = "topright",legend=feature.name, fill = colours)
+
+    if(na.plot){
+        cat(paste("============ END station",id,"END ============="),append=T,sep="\n",file = report_name)
+        cat(paste("Staion nr ",id),
+            file = mix_data_name,append=T,sep="\n")
+        #suppressWarnings(write.table(bad_data,file = mix_data_name,append=T)) # add labels... somehow
+        cat(paste("prosent of",id,":",sum(na.count)/(nrow(data_nibio)*4)),
+            file = mix_data_name,append=T,sep="\n")
+        cat(paste("prosent of",id," for years:"),
+            file = mix_data_name,append=T,sep="\n")
+        cat(paste0(unlist(na.count.year), collapse = "\n"),
+            file = mix_data_name,append=T,sep="\n")      
+        cat("\t",append=T,file = report_name,sep = "\t")
+        suppressWarnings(write.table(na.matrix.total,file = report_name,append=T,sep = "\t"))
+        cat(paste("Total:",sum(diag(na.matrix.total))),file = report_name, append =T, sep = "\n")
+    }
+    title(main = paste0("NA count of station: ", station_names[as.character(id),],
+                         " id: ",id,
+                " Total:",sum(diag(na.matrix.total))))
+    dev.off()
+}
+```

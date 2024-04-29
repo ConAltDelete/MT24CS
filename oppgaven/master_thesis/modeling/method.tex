@@ -15,27 +15,29 @@ For this comparative study the following data sources will be used
 
 The dataset is chosen from four regions in Norway; Innlandet, Vestfold, Trøndelag, and Østfold. From each region are four stations picked:
 \begin{table}[h]
-	\centering
-	\begin{tabular}{ccccccccc}
-		\hline Region&Name&ID&Drain type&Soile category&Texture&MET name& Latitude&Longdetude\\\hline
-		Innlandet&Apelsvoll&11& Selvdrenert&CM& 17&SN11500&60,70024&10,86952\\
-		Innlandet& Fåvang&17& Selvdrenert&CM& 15&SN13150&61,45822&10,1872\\
-		Innlandet& Ilseng&26& Selvdrenert&PH& 17&SN12180&60,80264&11,20298\\
-		Innlandet& Kise&27& Vannmettet&GL& 99&SN12550&60,77324&10,80569\\
-		Trøndelag& Kvithamar&57& Vannmettet&ST& 16&SN69150&63,48795&10,87994\\
-		Trøndelag& Frosta&15& Selvdrenert&LP& 13&SN69655&63,56502&10,69298\\
-		Trøndelag& Mære&34& Selvdrenert&RG& 14&SN71320&63,94244&11,42527\\
-		Trøndelag& Rissa&39& Vannmettet&PL& 13&SN71320&63,58569&9,97007\\
-		Vestfold& Lier&30& Vannmettet&ST& 16&SN19940&59,79084&10,25962\\
-		Vestfold& Sande&42& Vannmettet&ST& 16&SN26990&59,6162&10,22339\\
-		Vestfold& Tjølling&50& Selvdrenert&AR& 13&SN27780&59,04641&10,12513\\
-		Vestfold& Ramnes&38& Vannmettet&ST& 16&SN27315&59,38081&10,2397\\
-		Østfold& Rakkestad&37& Vannmettet&ST& 18&SN3290&59,38824&11,39042\\
-		Østfold& Rygge&41& Selvdrenert&AR& 13&SN17380&59,39805&10,75427\\
-		Østfold& Tomb&52& Vannmettet&ST& 16&SN17050&59,31893&10,81449\\
-		Østfold& Øsaker&118& Vannmettet&ST& 18&SN3370&59,31936&11,04221\\\hline
-	\end{tabular}
-	\caption{Station information from stations used in this study. The texture class is defined in this article: https://nibio.no/tema/jord/jordkartlegging/jordsmonnkart/dominerende-tekstur-i-overflatesjikt}
+	\begin{adjustwidth}{-1in}{-1in}
+		\centering
+		\begin{tabular}{ccccccccc}
+			\hline Region&Name&ID&Drain type&Soile category&Texture&MET name& Latitude&Longdetude\\\hline
+			Innlandet&Apelsvoll&11& Selvdrenert&CM& 17&SN11500&60,70024&10,86952\\
+			Innlandet& Fåvang&17& Selvdrenert&CM& 15&SN13150&61,45822&10,1872\\
+			Innlandet& Ilseng&26& Selvdrenert&PH& 17&SN12180&60,80264&11,20298\\
+			Innlandet& Kise&27& Vannmettet&GL& 99&SN12550&60,77324&10,80569\\
+			Trøndelag& Kvithamar&57& Vannmettet&ST& 16&SN69150&63,48795&10,87994\\
+			Trøndelag& Frosta&15& Selvdrenert&LP& 13&SN69655&63,56502&10,69298\\
+			Trøndelag& Mære&34& Selvdrenert&RG& 14&SN71320&63,94244&11,42527\\
+			Trøndelag& Rissa&39& Vannmettet&PL& 13&SN71320&63,58569&9,97007\\
+			Vestfold& Lier&30& Vannmettet&ST& 16&SN19940&59,79084&10,25962\\
+			Vestfold& Sande&42& Vannmettet&ST& 16&SN26990&59,6162&10,22339\\
+			Vestfold& Tjølling&50& Selvdrenert&AR& 13&SN27780&59,04641&10,12513\\
+			Vestfold& Ramnes&38& Vannmettet&ST& 16&SN27315&59,38081&10,2397\\
+			Østfold& Rakkestad&37& Vannmettet&ST& 18&SN3290&59,38824&11,39042\\
+			Østfold& Rygge&41& Selvdrenert&AR& 13&SN17380&59,39805&10,75427\\
+			Østfold& Tomb&52& Vannmettet&ST& 16&SN17050&59,31893&10,81449\\
+			Østfold& Øsaker&118& Vannmettet&ST& 18&SN3370&59,31936&11,04221\\\hline
+		\end{tabular}
+	\end{adjustwidth}
+	\caption[Soil information for each station/w location and MET-ID]{Station information from stations used in this study. The texture class is defined in this article: https://nibio.no/tema/jord/jordkartlegging/jordsmonnkart/dominerende-tekstur-i-overflatesjikt}
 \end{table}
 
 All stations are sampled from the date\footnote{Format month-day} 03-01 to 10-31 from 2016 to 2020. The features rain (RR), mean soil temperature at 10cm (TJM10), mean soil temperature at 20cm (TJM20), and air temperature at 2m (TM) are sampled from the LMT database. The snow parameter is sampled from MET via Xgeo for imputed values in areas where there are no messured values. The soil type, and soil texture is sampled from Kilden from Norwegian Institute of Bioeconomy Research.
@@ -54,8 +56,8 @@ The selection process for finding these station can be compiled into these steps
 \begin{figure}
 	\centering
 	\label{fig:plot-17}
-	\includegraphics{"../../results/plots/plot-17"}
-	\caption{Visual representation of missing values at station 17 from 2014 to 2022}
+	\includegraphics[width=0.8\linewidth]{"../../results/plots/Plot_test_naive_nan_k17_fTJM20.pdf"}
+	\caption[Visual representation of station 17]{Visual representation of missing values at station 17 from 2014 to 2022 at the parameter "TJM20". The left numbers indicated how many hours that are missing and how many of them are shorter than or longer than 5 hours. The yellow markings indicate possible outliers based on the given year, all markings was checked if they were actual outliers. The red colouring indicate missing values in the data (represented in the data with code "NULL").}
 \end{figure}
 
 The plots of stations follow a simple representation where the y-axis represent the year and the x-axis represent the index of the data as all tables are taken from the same period. A circle represent a singluar na values, while a band represent a series of 2 or more missing values. The colours represents the features used in this comperative study. This representation of the missing values will indicate sesonal, and systematic removal of data and give an overall indication of how much data is missing. To get further insight into the data a report is generated in parallel to the plots describing precise date and time of all values and which other parameter values is also missing values in the same period. See appendix \ref{apx:code:dataanal} for the full detail of the report generation and appendix \ref{apx:plots} for na-plots of the station chosen for this study.
@@ -65,91 +67,92 @@ The plots of stations follow a simple representation where the y-axis represent 
 The method used was a powershell\footnote{Version 7.3.11} script that called the respective institutions servers using the "curl" program\footnote{curl 8.4.0 (Windows) libcurl/8.4.0 Schannel WinIDN} to send an http request for the timeseries starting from 2014 to 2020 in the interval 1 of May to 31 of October. Code for data collection can be viewed in appendix \ref{apx:code:datacollect}. The data is stores as an either a csv file or a json file for easy retrieval and manual control of values.
 
 \subsubsection{Labeling of stations between Nibio and MET}
-
-Since Nibio and MET have different names for the same stations one must compile a list that converts Nibio ID to MET ID. This was performed with these requests 
 \begin{table}
 	\centering
-	\begin{tabular}{r|lp{5cm}|}
-		FROST & SQL approximate Code\\\hline
-		 Stations with rain & \parbox{8cm}{\lstinline[language=sql]|SELECT StationName FROM FROST WHERE  LIMIT 4|} \\
-		 Station ID & \parbox{8cm}{\lstinline[language=sql]|SELECT StationID, LMTID FROM FROST,LMT WHERE |} \\
-		\hline LMT & Code \\\hline
-		Meteorological data & \parbox{8cm}{\lstinline[language=sql]|SELECT ID,date,TM,RR,TJM10,TJM20 FROM LMT WHERE date IN BETWEEN year-03-01 year-10-31 AND ID = LMTID|} \\
+	\begin{tabular}{r|p{5cm}|}
+		FROST & Description\\\hline
+		Stations with rain & Requested rain data in millimeters. \\
+		Station ID & Sendt a request to LMT for station information using their remote API. \\
+		\hline LMT & Description \\\hline
+		Meteorological data & Requested soil temperature from 10cm depth, and 20cm depth and air temperature (2m), from 2014-03-01 to 2022-10-31.\\
 	\end{tabular}
-	\caption{What was requested from the varius databases that was used in this study.}
+	\caption[Request to servers about stations]{Description of what was requested from each server (FROST part of \acrshort{ac:met}, \acrshort{ac:nibio}).}
+	\label{tab:station_request}
 \end{table}
-Where ID is the Nibio Id for the given station, Frost.ID is the MET id, ID.latitude is the latitude gathered from Nibio, ID.longitude is the longitude gathered from Nibio. These variables can be swaped out for the relevant station.
+
+Since Nibio and MET have different names for the same stations one must compile a list that converts Nibio ID to MET ID. This was performed with these requests shown in table \ref{tab:station_request} where ID is the Nibio Id for the given station, Frost.ID is the MET id, ID. latitude is the latitude gathered from Nibio, ID.longitude is the longitude gathered from Nibio. These variables can be swaped out for the relevant station.\todo{Move to caption}
 
 \subsubsection{Storage of data}
-The storage of the data is done through two data structures; \gls{gl:hashmap} and \gls{gl:dataframe} from the package pandas. The transformation of data is done with a costume datatype called "DataFileHandler" which is converted to a module for convenience. The keys for the hashmap is chosen by the naming of the data files and the pattern given to the class. To escalete modeling the data will also be exported to a binary file for faster retrieval. 
+The storage of the data is done through two data structures; \gls{gl:hashmap} and \gls{gl:dataframe} from the package pandas. The transformation of data is done with a costume datatype called "DataFileHandler" which is converted to a module for convenience. The keys for the hashmap is chosen by the naming of the data files and the pattern given to the class. To escalete modeling the data will also be exported to a binary file for faster retrieval. \todo{MORE DETAIL}
 
 \begin{figure}
 	\centering
 	\includegraphics[width=0.7\linewidth]{figures/progress_diagram}
-	\caption{Diagram sketching three prosedures used in this study.}
+	\caption[Diagram sketching three procedures used in this study.]{A surface level diagram of the }
 	\label{fig:progressdiagram}
-\end{figure}
+\end{figure}\todo{Complete diagram}
 
 
-%\paragraph[Data structure]{Technical overview of custom data structure}
-The data structure used to store the data from the different stations is called "DataFileHandler" and stores the data in a tree-structure where indexes are dictated by the filename. It has several built-in functions to assist with data partitioning, and merging of data. This makes it easier to move and store all 846 720 observations from 16 station from 4 regions\footnote{there are 4 stations per region.}. 
+\paragraph[Data structure]{Technical overview of custom data structure}
+The data structure used to store the data from the different stations is called "DataFileHandler" and stores the data in a tree-structure where indexes are dictated by the filename. It has several built-in functions to assist with data partitioning, and merging of data. This makes it easier to move and store all 846 720 observations from 16 station from all 4 regions\footnote{there are 4 stations per region.}. Further more, the data structure has iteration functions so it is compatible with python's built in loops, and print functions. 
 
 \subsection{Data cleaning and treatment}
 
 To use the data in this study it must be cleaned and treated for training. The following methods were picked common practice in litterateur with new methods based on the decomposition of the data in the from of \acrfull{ac:stl}\cite{cleveland_stl_1990}\footnote{In this study we expand this for multiple seasons using \acrfull{ac:mstl}\cite{bandara_mstl_2021}, but the theory of this imputation method remains the same.}.
 
-\subsubsection{Outlier detection and removal}
+\subsubsection{Outlier detection and removal}\todo{Revise so it reflects what you actialy do}
 
 Though the data fetched from \acrshort{ac:nibio} is treated and controlled the external data from \acrshort{ac:met} might not be, and this research project incorporated raw, untreated data from \acrshort{ac:nibio} to fill inn missing values.
 
 The method to quickly find obvious outliers was to look at the following condition
 $$
-	|Z[|\Delta T|]|> \sigma_5
-$$
+	|\frac{|\Delta T|-µ(|\Delta T|)}{var(|\Delta T|)}|> 4℃
+$$\todo{Make more clear}
 
-This condition looks at the absolute difference between consecutive measurements and calculates the z-score for each observation. It is expected that the change in temperature can't be too rapid. Further methods used to highlight potensiall outliers is 
+This condition looks at the absolute difference between consecutive measurements and calculates the z-score for each observation. It is expected that the change in temperature can't be too rapid. Further methods used to highlight potential outliers is 
 
-$$
-	\text{Describe point out of line}
-$$
+\begin{figure}[h]
+	\centering
+	\definecolor{zzttqq}{rgb}{0.6,0.2,0.}
+	\definecolor{REDDD}{rgb}{0.8,0.5,0.2}
+	\definecolor{ududff}{rgb}{0.30196078431372547,0.30196078431372547,1.}
+	\begin{tikzpicture}[line cap=round,line join=round,>=triangle 45,x=1.0cm,y=1.0cm]
+		\begin{axis}[
+			x=1.0cm,y=1.0cm,
+			axis lines=middle,
+			ymajorgrids=true,
+			xmajorgrids=true,
+			xmin=-0.5,
+			xmax=3.5,
+			ymin=-0.5,
+			ymax=2.5,
+			xtick={-0.0,1.0,...,3.0},
+			ytick={-0.0,1.0,...,2.0},]
+			\clip(-0.5,-0.5) rectangle (3.5,2.5);
+			\draw [line width=2.pt,dash pattern=on 1pt off 1pt] (1.04,1.02)-- (3.04,0.02);
+			\draw [line width=2.pt] (1.04,1.02)-- (2.04,2.02);
+			\draw [line width=2.pt] (2.04,2.02)-- (3.04,0.02);
+			\begin{scriptsize}
+				\draw [fill=ududff] (1.04,1.02) circle (2.5pt);
+				\draw[color=ududff] (1.18,1.39) node {$A$};
+				\draw [fill=ududff] (3.04,0.02) circle (1.5pt);
+				\draw[color=ududff] (3.18,0.31) node {$B$};
+				\draw [fill=ududff] (2.04,2.02) circle (1.5pt);
+				\draw[color=ududff] (2.18,2.31) node {$C$};
+				\draw [fill=zzttqq] (2.,0.54) circle (2.5pt);
+				\draw [color=REDDD,dashed] (2.,0.54) circle (0.5);
+				\draw[color=zzttqq] (2.14,0.91) node {$C^*$};
+			\end{scriptsize}
+		\end{axis}
+	\end{tikzpicture}
+	\caption[Simple Interpolation outlier detection]{An simple outlier detection method utilizing a simple line to estimate where the expected point ($C^*$) is supposed to be. If observed point C falls outside the tolerance level (red dotted circle) then it is marked as an outlier.}
+\end{figure}
 
 \subsubsection{Missing value imputation}
 
-The data has missing values, in particular during early Fall when there were sub-zero temperatures meaning any rain measurements done during this period would have unpredictable fluctuations since at negative temperatures water can freeze, get clogged up with residual bio-material from the surrounding area
+The data has missing values, in particular during early Fall when there were sub-zero temperatures meaning any rain measurements done during this period would have unpredictable fluctuations since at negative temperatures water can freeze, get clogged up with residual bio-material from the surrounding area \todo{Rewrite this part to reflect what is going on}
 
-\begin{enumerate}
-	\item linear imputation
-	\item backwards and forwards first available observation
-	\item global mean replacement
-	\item STL decomposition with above methods to impute components
-\end{enumerate}
-
-The last method, using STL, was chosen because it would in principle be simpler to impute a less noisy signal than a noisy one. The methods will be tried on 40\% of the data, chosen at random to avoid favourable sets that might make the results inaccurate. The reson for only using a fraction of the data rather than all 1.1 millon observations is due to time constrains. For an overview of the prosedure look at the algorithmn \ref{alg:interpol}. 
-
-\begin{algorithm}[h]
-	\SetAlgoLined
-	\KwData{ Dataset, Methods:(method, configuration) }
-	\KwResult{(method, configureation, length)}
-	\For{$M \in Methods$}{
-		$Results_M \gets \{M,Score:+\infty,Length:0\}$\;
-	}
-	\For{$M \in Methods$}{
-		$R_{method} \gets 0$\;
-		\For{$data\in Dataset$}{
-			Apply $M$ to all non-missing ranges in $data$\;
-			Calculate score\;
-			Add score to $R_{method}$
-		}
-		\If{$\mu(R_{method}) \leq Result_{M}[Score] \& Length > Result_{M}[Length]$}{
-			Update $Result_{M}$ with new values\;
-		}
-	}
-	Choose smallest Score from $Results$\;
-	\caption{Interpolation search}
-	\label{alg:interpol}
-\end{algorithm}
-
-\subsection{Setup of models}
+\subsection{Setup of models}\todo{In general, write more on all subsections}
 
 The models are set up in according to the relevant paper the model is fetched from, alternatively reuse the code made by the author. When importing the data to the model there will be modifying to the original code to facilitate for the model as far as it goes. Any modifications will be in the appendix under section \ref{apx:code}. For the convenience of the reader all code is using the sklearn estimator class to make all the models discuses in this study more user friendly and compatible with sklearns other functions. The details of the models will be discussed in section \ref{sec:theory}, this section discusses the setup and implementation of the models.\footnote{Caution to the reader; The code used was run on the Linux subsystem (Debian) on windows due to the fact that the current version of tensorflow can't run on Windows.}
 
@@ -166,9 +169,9 @@ The Plauborg regression will be formulated as a linear regression problem so tha
 \begin{figure}
 	\centering
 	\includegraphics[width=0.7\linewidth]{figures/BiLSTM}
-	\caption{}
+	\caption[BiLSTM overview]{}
 	\label{fig:bilstm}
-\end{figure}
+\end{figure}\todo{Complete caption, and improve figure}
 
 Soil temperatures are dependent on earlier timestemps meaning that to make a good prediction one needs to include temperature from $t,t-1,\dots,t-k$ to make a decent prediction. As a base model it is usefull to evalueate the data both forwards and backwards to find features that is only notisable in a sertan direction. The BiLSTM defined is crafted with Tensorflow's Keras module for ease of use. 
 
@@ -210,7 +213,7 @@ This is not feasible to calculate since infinite calculations with infinitesimal
 		\If{k > $\kappa$}{$\kappa \gets k$\;}
 	}
 	\Return{$\kappa$}
-	\caption{Method for calculating $\kappa$. $\mathcal{U}$ is a uniform random distrebution in a range.}
+	\caption[Randommised $\kappa$ algorithm]{Method for calculating $\kappa$. $\mathcal{U}$ is a uniform random distrebution in a range.}
 	\label{alg:cond_num}
 \end{algorithm}
 

@@ -1,18 +1,24 @@
-\section{Abstract}
+\addcontentsline{toc}{section}{Abstracts}
+\begin{center}
+\begin{minipage}[t]{0.45\textwidth}
+	\centering
+	\textbf{Abstract}\\
+	This study focuses on 3 models that have been used in the literature to predict soil temperatures. The depths chosen as targets are 10cm, and 20cm in 4 regions; Innlandet, Østfold, Vestfold, and Trøndelag. In each region there are 4 stations with self-draining or saturated soils.
+\end{minipage}
+\begin{minipage}[t]{0.45\textwidth}
+	\centering
+	\textbf{Oppsummering}\\
+	Denne studien ser på modeler som predikerer jordtemperaturer
+\end{minipage}
+\end{center}	\todo{Fill out when soon done}
+
 % hva gjør vi
 
 % metode
 
 % resultat
 
-\section{Oppsummering}
-% hva gjør vi
-
-% metode
-
-% resultat
-
-\keywords{Soil temperature, Machine learning, regression}
+\keywords{Soil temperature, Machine learning, regression,hour, ...}
 
 \section{Introduction}
 
@@ -20,16 +26,10 @@ In agriculture soil temperature is one of the important parameters to put into c
 
 If it's important, why don't institutions measure it everywhere? There are several reasons for this, but a common reason is that it's expensive to install new equipment on old weather stations. Sometimes the weather station do have the sensors in the fields reading soil temperature at given levels, but due to technical misadventures and unforeseen phenomenons there might be gaps or misreadings that need to be replaced with approximations or NULL values\footnote{These values are different from 0 as they represent "no data" and can't be used to do calculations.}. There are algorithms, models, and statistical tools to interpolate these missing values but they have their drawbacks. For instance approximation by global mean, which is a common method used in timeseries\cite{lepot_interpolation_2017}. This method is preserved global statistics, however does not represent local changes. Further more for a good estimation of soil temperature it is useful to include exogenous\footnote{Variable that can affect the model, but is not not directly described by the model.} features.
 
-There has been done research into heat conductivity in soil that has lead to differential equations\cite{karvonen_model_1988}, however these equations\cite{fourier_analytical_2009,karvonen_model_1988} are computationally expensive and difficult to simulate, or calculate\cite{rankinen_simple_2004}. To add to the complexity the heat dynamics change depending on soil temperature
+There has been done research into heat conductivity in soil that has lead to differential equations\cite{karvonen_model_1988}, however these equations\cite{fourier_analytical_2009,karvonen_model_1988} are computationally expensive and difficult to simulate, or calculate\cite{rankinen_simple_2004}. \comment{To add to the complexity the heat dynamics change depending on soil temperature as they change the physical stucture of the soil}{Find source!, if not remove}
+
+There are also massive developments in types of models, one of which are ASPER\cite{le_asper_2023} that combines logical statments with deep learning models to aceve better or similar results to "non-logical" deep learning models, but on fewer samples. A study has been preformed with the model which shows that the model can reduse the number of samples/observations needed by a factor of 1/1000\cite{machot_bridging_2023}. After an intervju with the study resercher (\citeauthor{machot_bridging_2023}), although the model needs a strict ruleset it is possible to incoporate baysioan statitics to make the model more geneneral for more applications by weaking the ruleset and imply that the rulse given might not be 100\% accurate and can be relaxed. 
+
+Furter more there are investigation into introducing randomness to the model to improve prediction. As an example is a study into Brownian fractional motion to predict temperature fluxiations at the Campi Flegrei Caldera area. 
 
 In this study 4 methods will be compared and evaluated for the sake of further research into interpolation of missing data in northic countries based on as few features as possible. This study has chosen 2 types of models; Analytical, and Data-Driven models. There will also be base models to compare against, one for each model type. 
-
-\section{Norwegian introduction}
-
-I landbruket er jordtemperatur en av de viktige parametrene å ta i betraktning når man tenker på skadedyrforebygging, bevaring, og avlingsprediksjon. Begrunnelsen for dette er at å kjenne til jordtemperaturen er å kjenne til klimaendringer \cite{li_attention-aware_2022}, vannforvaltning \cite{alizamir_advanced_2020}, utbytte \cite{sim_prediction_2020}, nitrogenprosesser \cite{rankinen_simple_2004}, potensielle overfloder of skred\cite{stuurop_influence_2022}, plantevekst \cite{li_modeling_2020}, når frø begynner å spire \cite{li_modeling_2020}, og forutsi når insektegg klekkes som ble lagt sist vinter. Å kunne forutsi jordtemperaturen inn i fremtiden vil være en stor fordel for bønder, og forskere.
-
-Hvis det er viktig, hvorfor måler ikke institusjoner det overalt? Det er flere årsaker til dette, men en vanlig årsak er at det er dyrt å installere nytt utstyr på gamle værstasjoner. Noen ganger har værstasjonen sensorene i feltene som leser jordtemperatur på gitte nivåer, men på grunn av tekniske feil eller uforutsette fenomener kan det være hull eller feilavlesninger som må erstattes med tilnærminger eller NULL-verdier\footnote{Disse verdiene er forskjellige fra 0 siden de representerer "ingen data" og ikke kan brukes til å gjøre beregninger.}. Det finnes algoritmer, modeller og statistiske verktøy for å interpolere disse manglende verdiene, men de har sine ulemper. For eksempel tilnærming ved global gjennomsnitt, som er en vanlig metode som brukes i tidsserier\cite{lepot_interpolation_2017}. Denne metoden er bevart global statistikk, men representerer ikke lokale endringer. Ytterligere mer for en god estimering av jordtemperatur er det nyttig å inkludere eksogene\footnote{Variabel som kan påvirke modellen, men som ikke er direkte beskrevet av modellen.} variabler.
-
-Det har vært gjort forskning på varmeledningsevne i jord som har ført til differensialligninger\cite{karvonen_model_1988}, men disse ligningene\cite{fourier_analytical_2009,karvonen_model_1988} er dyre og vanskelige å simulere eller beregne\cite{rankinen_simple_2004}. Videre på grunn av arten av andre partielle derivater ville den numeriske ustabiliteten være for stor for praktiske midler.
-
-I denne studien vil 4 metoder bli sammenlignet og evaluert for videre forskning på interpolering av manglende data i nordlige land basert på så få funksjoner som mulig. Denne studien har valgt 2 typer modeller; Analytiske og datadrevne modeller. Det vil også være basismodeller å sammenligne mot, en for hver modelltype.

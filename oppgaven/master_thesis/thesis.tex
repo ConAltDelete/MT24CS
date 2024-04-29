@@ -13,12 +13,12 @@
 
 	\include{intro/forword.tex}
 	\newpage
-	
-
-
-	\printglossaries
-	\newpage
 	\tableofcontents
+	\listofalgorithms
+	\listoffigures
+	\listoftables
+	\listoftodos
+	\printglossary[type=\acronymtype]
 	\newpage
 	\pagenumbering{arabic}
 	\include{intro/introduction.tex}
@@ -32,9 +32,13 @@
 	\include{conclution/discusion.tex}
 
 	\include{conclution/conclution.tex}
+	
+	\pagenumbering{Alph}
 	\include{glossery_library.tex}
 	\section{Bibliography}
 	\printbibliography
+	\newpage
+	\printglossaries
 	\appendix
 
 \include{appendix/code.tex}

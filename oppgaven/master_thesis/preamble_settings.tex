@@ -1,14 +1,19 @@
 %\usepackage{spconf,amsmath,graphicx}
-\usepackage{amssymb}
+%\usepackage{amssymb}
 \usepackage{subfigure}
 \usepackage{multirow}
-\usepackage{amsmath}
+%\usepackage{amsmath}
 \usepackage{geometry}
 \usepackage{tikz}
 \usepackage[style=base]{caption}
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{graphicx}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.15}
+\usepackage{mathrsfs}
+\usetikzlibrary{arrows}
 
+\usepackage{chngpage}
 \usepackage[ruled, lined, linesnumbered, commentsnumbered, longend]{algorithm2e}
 \usepackage{xcolor}
 \usepackage{epsfig}
@@ -16,7 +21,7 @@
 \usepackage{float}
 
 \usepackage{hyperref}
-\usepackage{glossaries}
+\usepackage[acronym]{glossaries}
 \usepackage[final]{pdfpages}
 \usepackage{multicol}
 \usepackage{listings}
@@ -33,7 +38,7 @@
 \bibliography{MasterV24}
 \addbibresource{small_selection}
 
-\title{A comparative study of soil temperature models, including machine learning models}
+%\title{A comparative study of soil temperature models, including machine learning models}
 
 % page styling
 \setlength{\headheight}{20mm}
@@ -43,7 +48,7 @@
 \usepackage{fancyhdr}
 \fancyhf{}
 \fancyhead[L]{\includegraphics[trim={2.5cm 2cm 0 0},clip,height=1.2\headheight]{images/_Logopakke/ENGELSK/RGB/EPS/NMBU_logo_rgb_Primary_logo}}
-\fancyfoot[R]{Page \thepage \hspace{1pt} of \pageref{LastPage}}
+\fancyfoot[R]{Page \thepage \hspace{1pt} of \pageref{pg:LastBread}}
 \fancyhead[R]{\leftmark}
 \pagestyle{fancy}
 

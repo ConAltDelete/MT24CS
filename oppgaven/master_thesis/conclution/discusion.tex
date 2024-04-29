@@ -1,5 +1,25 @@
 \section{Discussion}
+\todo{Write a discussion}
+\todo{metion annomelies and resons}
 
+\subsection{The Fall descrepensy}
+
+A phenomenon that arrose during performence evaluations was that the linear models struggles with the Fall season. The difference graphs shows a clear over or under estimation that are larger than $10\sigma$. When inverstigating the coeffisents to the model \todo{Show table of parameters} this decrepsensy can be contributed to the intercept that during low temperature ($<5c^\circ$) giving either an over estimation or an under estimation. Further more when removing the calculation of the intersept the same phenomenon is still precent. 
+
+\subsection{Basis for results}
+
+The inclution of previous temperatures gives an improved estimation, even on hourly basis. The coefficents for both daily and hourly are observed to be <1 making it a mean temperature and the fourier terms would estimate the function\cite{holmes_estimating_2008}
+$$
+e^{z/D}\sin(\omega t - z/D + \phi)
+$$
+Since the term $exp(z/D)$ is constant we would be estimating $C\sin(\omega t - Q) = \sin(\omega t)\cos(Q) - \sin(Q)\cos(\omega t)$, where Q is $z/D - \phi$ and is constant. This will be extrapolated to a simple sum of sines and cosines as the model does. Together the Plauborg model would estimate
+$$
+E_{\text{year}}(T) + e^{z/D}\sin(\omega t - z/D + \phi) \approx E_{\text{period}}(T) + \sum e^{z/D}\sin(Q_i)\cos(i\omega t_i) + \sum e^{z/D}\cos(Q_i)\sin(i\omega t_i)
+$$
+A possible reason for the residuals could be the soiltypes at the stations making so a universal, high accurasy model would not be feasible unless including other metrological metrics (air pressure, humidity, soil type, soil texture, etc$\dots$) or including other non-linear features ($\sqrt{\text{temperature}}$,2D temperature change in depth and time, etc$\dots$).
+
+
+ 
 \subsection{Future work}
 
-The models chosen in this study is not a representative sample of current knowledge of soil temperature modelling, and this study did not aim for optimizing the models beyond what the original authors have already done with the exception for base models used for comparison puposus. A more comprehensive is needed of more complex models that utelises cutting edge technologies, techniques, and theory. One of which is logic based models, for instance ASPER\cite{le_asper_2023} that tries to incoerate logical descriptions of the problem and limits the model for better or equal results based on fewer samples\cite{machot_bridging_2023}. Another approch is to incorporate randomness into the deterministic models to explain the variation in the data, for instance fractional Brownian motion\cite{di_crescenzo_model_2022}.
+The models chosen in this study is not a representative sample of current knowledge of soil temperature modelling, and this study did not aim for optimizing the models beyond what the original authors have already done with the exception for base models used for comparison puposus. A more comprehensive is needed of more complex models that utelises cutting edge technologies, techniques, and theory. One of which is logic based models, for instance ASPER\cite{le_asper_2023} that tries to incoerate logical descriptions of the problem and limits the model for better or equal results based on fewer samples\cite{machot_bridging_2023}. Another approch is to incorporate randomness into the deterministic models to explain the variation in the data, for instance fractional Brownian motion\cite{di_crescenzo_model_2022}.\todo{move som of this to introduction}

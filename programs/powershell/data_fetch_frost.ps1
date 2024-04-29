@@ -13,7 +13,7 @@ $stationlist = @(
 
 
 $attributes = @(
-	"ID","Name","Long","Lati","FrostName","ErrorDist","S0","D0","S1","D1","S2","D2","S3","D3","S4","D4"
+	"ID","Name","Method","Long","Lati","FrostName","ErrorDist","S0","D0","S1","D1","S2","D2","S3","D3","S4","D4"
 )
 
 New-Item -Path $datafile -Value "$($attributes -join ";")`n" -Force
@@ -25,7 +25,7 @@ foreach($weatherel in @("surface_snow_thickness","mean(surface_snow_thickness)",
 	$frostlocal = curl "https://frost.met.no/sources/v0.jsonld?types=SensorSystem&geometry=nearest(POINT($($webreq.longitude)%20$($webreq.latitude)))" -u "$($FrostID):" | ConvertFrom-Json
 	$frostdata = curl "https://frost.met.no/sources/v0.jsonld?types=SensorSystem&elements=$($weatherel)&geometry=nearest(POINT($($webreq.longitude)%20$($webreq.latitude)))&nearestmaxcount=5&validtime=2014-03-01/2022-10-31" -u "$($FrostID):" | ConvertFrom-Json
 
-	Add-Content -Path $datafile -Value ";$($frostlocal.data.id);$($frostlocal.data.distance)" -NoNewline
+	Add-Content -Path $datafile -Value ";$($frostlocal.data.id);$($weatherel);$($frostlocal.data.distance)" -NoNewline
 	foreach($i in 0..4){
 		$substat = $frostdata.data[$i]
 		Add-Content -Path $datafile -Value ";$(@($substat.id, $substat.distance) -join ";")" -NoNewline
@@ -49,7 +49,7 @@ foreach($weatherel in @("surface_snow_thickness","mean(surface_snow_thickness)",
 			}
 		} catch {
 			Write-Host "Found for id $($id) at index $($j)"
-			Add-Content -Path $fileoutput -Value $weatherdata
+			Add-Content -Path $fileoutput -Value $weatherdata -Force
 		}
 		$j = $j + 1
 	} while($j -le ([math]::Min(5,$frostdata.data.Length) - 1))
