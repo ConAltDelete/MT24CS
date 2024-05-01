@@ -2,9 +2,13 @@
 \todo{Write a discussion}
 \todo{metion annomelies and resons}
 
-\subsection{The Fall descrepensy}
+\subsection{The Autumn descrepensy}
 
-A phenomenon that arrose during performence evaluations was that the linear models struggles with the Fall season. The difference graphs shows a clear over or under estimation that are larger than $10\sigma$. When inverstigating the coeffisents to the model \todo{Show table of parameters} this decrepsensy can be contributed to the intercept that during low temperature ($<5c^\circ$) giving either an over estimation or an under estimation. Further more when removing the calculation of the intersept the same phenomenon is still precent. 
+A phenomenon that arrose during performence evaluations was that the linear models struggles with the Autumn season. The difference graphs shows a clear over or under estimation that are larger than $10\sigma$. When inverstigating the coeffisents to the model \todo{Show table of parameters} this decrepsensy can be contributed to the intercept that during low temperature ($<5c^\circ$) giving either an over estimation or an under estimation. Further more when removing the calculation of the intersept the same phenomenon is still precent. 
+
+\subsubsection{Temperature seasons}
+
+In the diff plots there is a sutle distinction between Spring, Summer, and Autumn. This effect comes from the Winter where the snow lays ontop of the ground isolation the soil from air temperature changes creating a minimum temperature bound of around $0c^\circ$. 
 
 \subsection{Basis for results}
 
@@ -14,11 +18,23 @@ e^{z/D}\sin(\omega t - z/D + \phi)
 $$
 Since the term $exp(z/D)$ is constant we would be estimating $C\sin(\omega t - Q) = \sin(\omega t)\cos(Q) - \sin(Q)\cos(\omega t)$, where Q is $z/D - \phi$ and is constant. This will be extrapolated to a simple sum of sines and cosines as the model does. Together the Plauborg model would estimate
 $$
-E_{\text{year}}(T) + e^{z/D}\sin(\omega t - z/D + \phi) \approx E_{\text{period}}(T) + \sum e^{z/D}\sin(Q_i)\cos(i\omega t_i) + \sum e^{z/D}\cos(Q_i)\sin(i\omega t_i)
+E_{\text{year}}(T) + e^{z/D}\sin(\omega t - z/D + \phi) \approx E_{\text{period}}(T) + \sum e^{z/D}\sin(-Q_i)\cos(i\omega t_i) + \sum e^{z/D}\cos(-Q_i)\sin(i\omega t_i)
 $$
-A possible reason for the residuals could be the soiltypes at the stations making so a universal, high accurasy model would not be feasible unless including other metrological metrics (air pressure, humidity, soil type, soil texture, etc$\dots$) or including other non-linear features ($\sqrt{\text{temperature}}$,2D temperature change in depth and time, etc$\dots$).
+A possible reason for the residuals could be the soiltypes at the stations making so a universal, high accurasy model would not be feasible unless including other metrological metrics (air pressure, humidity, soil type, soil texture, etc$\dots$) or including other non-linear features ($\sqrt{\text{temperature}}$,ratio between temperature change in depth and time, etc$\dots$).
 
+\subsection{Plauborg}
 
+The result of the modelling (table \ref{tab:Plauborg:day:20} to \ref{tab:linreg:10}) show that modelig soil temperature without the inclution of time is an inneffichent, and innaccurat method of predicting soil temperatures.
+ 
+In this study the original model, that was trained for daily values was converted to predict hourly data to see if the same formulation could be used to make predictions. When comparing the results shown in table \ref{tab:Plauborg:hour:10} and table \ref{tab:Plauborg:hour:20} to their daily counterpart it shows similar values showing that the model proposed in \citeauthor{plauborg_simple_2002} can be extended to hourliy timeseries.
+ 
+\subsubsection{Attention-aware ILSTM}\todo{Make a comperason to BiLSTM}
+ 
+It is a know fact, since 1849\footnote{First weather prediction made by Joseph Henry in 1849}, that to know previous weather patterns will greatly improve prediction accuracy. To improve the accurasy even more a model can focus one specific patterns that has a big impact on the prediction. The ILSTM attempts to do this by including a new technique in data science called attention\cite{vaswani_attention_2017} that takes a collection of data and gives each element a weight associated with importance. When that paper was published it was focused on translation between English and German, however the paper published by \citeauthor{li_attention-aware_2022} uses this novel technique to do both time and feature importance and from that make a prediction.
+ 
+\subsubsection{BiLSTM results compeared to \citeauthor{li_modeling_2020} study}
+ 
+\todo{discuss the results with the paper} 
  
 \subsection{Future work}
 

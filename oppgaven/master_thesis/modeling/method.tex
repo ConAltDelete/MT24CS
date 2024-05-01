@@ -98,7 +98,7 @@ The data structure used to store the data from the different stations is called 
 
 \subsection{Data cleaning and treatment}
 
-To use the data in this study it must be cleaned and treated for training. The following methods were picked common practice in litterateur with new methods based on the decomposition of the data in the from of \acrfull{ac:stl}\cite{cleveland_stl_1990}\footnote{In this study we expand this for multiple seasons using \acrfull{ac:mstl}\cite{bandara_mstl_2021}, but the theory of this imputation method remains the same.}.
+To use the data in this study it must be cleaned and treated for training. Though the data has been examened by the suplier, however it still had outliers that needed to be treated before modeling. 
 
 \subsubsection{Outlier detection and removal}\todo{Revise so it reflects what you actialy do}
 
@@ -106,7 +106,7 @@ Though the data fetched from \acrshort{ac:nibio} is treated and controlled the e
 
 The method to quickly find obvious outliers was to look at the following condition
 $$
-	|\frac{|\Delta T|-µ(|\Delta T|)}{var(|\Delta T|)}|> 4℃
+	\left|\frac{|\Delta T|-µ(|\Delta T|)}{var(|\Delta T|)}\right|> 4C^\circ
 $$\todo{Make more clear}
 
 This condition looks at the absolute difference between consecutive measurements and calculates the z-score for each observation. It is expected that the change in temperature can't be too rapid. Further methods used to highlight potential outliers is 
@@ -166,18 +166,51 @@ The Plauborg regression will be formulated as a linear regression problem so tha
 
 \subsubsection{BiLSTM}
 
-\begin{figure}
+Information from earlier timesteps is important to say something about current timesteps, same can be said about the other time direction. To get the best of both direction one can use a bidirectional LSTM (BiLSTM) to combine the information from both approches. To make one of the models read the data backwards the model pipeline reverses the data and trains on that. A visualiation of this can be shown in the first layer in figure \ref{fig:bilstm}.
+
+\begin{figure}[H]
 	\centering
 	\includegraphics[width=0.7\linewidth]{figures/BiLSTM}
-	\caption[BiLSTM overview]{}
+	\caption[BiLSTM overview]{Simple diagram of the structure of the BiLSTM. The data from the input layer gets duplicated and passed to two LSTM's where one of them get the data in reverse. When both models have trained on the data they gets concatenated and passed to another LSTM that has half of the units as output. The final LSTM has a single cell as output leaving a single value as the prediction.}
 	\label{fig:bilstm}
 \end{figure}\todo{Complete caption, and improve figure}
 
-Soil temperatures are dependent on earlier timestemps meaning that to make a good prediction one needs to include temperature from $t,t-1,\dots,t-k$ to make a decent prediction. As a base model it is usefull to evalueate the data both forwards and backwards to find features that is only notisable in a sertan direction. The BiLSTM defined is crafted with Tensorflow's Keras module for ease of use. 
+Soil temperatures depend on earlier timestamps, so to make accurate predictions, it's essential to include temperature data from $t, t-1, \dots, t-k$. Evaluating the data both forwards and backwards helps identify features that are noticeable in specific directions. The BiLSTM model, implemented using TensorFlow's Keras module, consists of three layers:\todo{EXPAND}
 
-\subsubsection{Attention-aware ILSTM}
+\begin{itemize}
+	\item A Bidirectional LSTM layer for feature extraction.
+	\item A regular LSTM layer to condense information with a tanh activation function
+	\item An LSTM layer for prediction with a tanh activation function
+\end{itemize}
 
-It is a know fact, since 1849\footnote{First weather prediction made by Joseph Henry in 1849}, that to know previous weather patterns will greatly improve prediction accuracy. To improve the accurasy even more a model can focus one specific patterns that has a big impact on the prediction. The ILSTM attempts to do this by including a new thecnick in data science called attention\cite{vaswani_attention_2017} that takes a collection of data and gives each element a weight associated with importance. When that paper was published it was focused on translation between English and German, however the paper published by \citeauthor{li_attention-aware_2022} uses this novel teknick to do both time and feature importance and from that make a prediction.
+The activation functions used are hyperbolic tangent and sigmoid. The output layer employs the identity function ($f(x) = x$). The hidden layer has half as many recurrent cells as the input layer, and the output layer condenses the hidden layer's output to a single value. For more details, refer to Figure \ref{fig:bilstm} and Table \ref{tab:BiLSTM_params}.
+
+%\begin{table}
+%	\centering
+%	\begin{subtable}[t]{0.45\textwidth}
+%		\begin{tabular}{l|c}
+%			Parameter name & Range \\\hline\hline
+%			Epochs & [4,8] \\
+%			Units & \(\{2^6,2^7,2^8\}\) \\
+%			Lead time & \(12i\) for \(i \in [1,14]\)
+%		\end{tabular}
+%		\caption[Parameter space for BiLSTM]{The search space for the BiLSTM model. The units define the number of LSTM cells used in the LSTM output. The lead time specifies how many hours the model will take into account when predicting soil temperature. The square brackets indicate an interval including endpoints, while the curly brackets indicate a list of elements.}
+%		\label{tab:BiLSTM_params}
+%	\end{subtable}
+%	\hfill
+%	\begin{subtable}[t]{0.45\textwidth}
+%		\begin{tabular}{l|c}
+%			Parameter name & Range \\\hline\hline
+%			Sine terms & [1,10] \\
+%			Cosine terms & [1,10] \\
+%			Lag time & [1,14]
+%		\end{tabular}
+		%\caption[Parameter space for Plauborg]{The search space for the Plauborg model. The square %brackets indicate an interval including endpoints.}
+%		\label{tab:plauborg_params}
+%	\end{subtable}
+%\end{table}
+
+This model is an extention of \citetitle{li_modeling_2020}\cite{li_modeling_2020} written by \citeauthor{li_modeling_2020}. 
 
 \subsection{Metrics}
 
@@ -191,7 +224,6 @@ The metrics used in this study are
 	\item Log Condition number
 	\item digit sensitivity
 \end{itemize*}
-
 
 Soil temperatur as a differnet behavor than air temperature since energy (temperature) though the soil gets dampen and delayed. Since the data used in this study has outliers that was not cought during datatreatment, which has been addresed, the author of this study desided to include two more metrics that are not usually included in the evaluation; The log condition number, and digit sensitivity. Both metrics are based on the calculation of the condition number defined as 
 
@@ -208,7 +240,7 @@ This is not feasible to calculate since infinite calculations with infinitesimal
 	Let $\kappa_f$ be the function \ref{eq:kappa}\;
 	$\kappa\gets 0$\;
 	\For{$i \in {1 \dots |Data|}$}{
-		$\partial x \gets \mathcal{U}_{[-\sqrt{\varepsilon/|Data|},\sqrt{\varepsilon/|Data|]}}$\;
+		$\partial x \gets \mathcal{U}_{[-\sqrt{\varepsilon/|Data|},\sqrt{\varepsilon/|Data|}]}$\;
 		$k \gets$ calculate with $\kappa_f$ from $x$ and $x+\partial x$\;
 		\If{k > $\kappa$}{$\kappa \gets k$\;}
 	}
@@ -229,14 +261,18 @@ For the rest of the metrics, they are defined as follows
 
 Where $\vec{y}$ is the mean of the target, $y_{\text{pred}}$ is the predicted data, and $y_{\text{truth}}$ is the observed soil temperature.
 
-\subsection[Use of AI]{Use of Artificial Intelligence in this paper}
+\subsubsection{Model training}
 
-In this paper there has been used Artificial Intelligence (AI), specifically Bing Chat / Copilot hosted by Microsoft Cooperation with special agreement with \acrfull{ac:nmbu}, for the following purposes:
+The models get trained on air temperature, however the presise input for each model is not the same as seen in table \ref{tab:model_params}
 
-\begin{enumerate}
-	\item Formalising sentences and rephrasing sentences.
-	\item Spellchecking
-	\item Code generation of basic consepts and structures (tree traversal, template for generic classes) 
-\end{enumerate}
+\begin{table}
+	\begin{tabular}{|r|c|c|}
+		model name & features & transformations \\\hline
+		Linear regression & TM & Time get translated to hours by taking the day since new year and multiplying by 24 for then add the hour part. \\
+		Plauborg & &
+	\end{tabular}
+\end{table}
 
-It is important to emphasize that our engagement with AI have been actively curated and verified with known information. All code underwent rigorous manual inspection within a dedicated testing environment. Furthermore, no confidential or sensitive information was shared with the AI; our interactions focused solely on broad topics and general inquiries. To validate the accuracy of AI-generated responses, we cross-referenced them with established research papers and textbooks.
+
+
+

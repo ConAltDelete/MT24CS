@@ -5,11 +5,11 @@
 
 \subsection{Linear regression vs Plauborg}
 
-The result of the modelling (table \ref{tab:Plauborg:day:20} to \ref{tab:linreg:10}) show that modelig soil temperature without the inclution of time is an inneffichent, and innaccurat method of predicting soil temperatures. The global measure for the linear regression has an average error of $2.3C^\circ \pm 4.23 C^\circ$ while the global messure of the Plauborg daily model has an average error of $0.6C^\circ \pm 1.96 C^\circ$. Further more Plauborg has an hight $R^2$ value indicating that it follows the changes in the soil better than just scaling the air temperature. 
+The global measure for the linear regression has an average error of $2.3C^\circ \pm 4.23 C^\circ$ while the global messure of the Plauborg daily model has an average error of $0.6C^\circ \pm 1.96 C^\circ$. Further more Plauborg has an hight $R^2$ value indicating that it follows the temperature changes in the soil better than just scaling the air temperature by a scaling factor.
 
 \subsection{Modification of Plauborg}
 
-IN this study the original model, that was trained for daily values was converted to predict hourly data to see if the same formulation could be used to make predictions. When comparing the results shown in table \ref{tab:Plauborg:hour:10} and table \ref{tab:Plauborg:hour:20} to their daily counterpart it shows similar values showing that the model proposed in \citeauthor{plauborg_simple_2002} can be extended to hourliy timeseries.
+The Plauborg model as described in the article\cite{plauborg_simple_2002} shows similar results in Norway as in Denmark. With modification to the model to accept hourly data it still preforms as well as the daily data version.  
 
 \subsection{Deep learning models}
 \todo{If not gotten to work by 6.May, then delete. Try to do the stat (without model) to have results.}

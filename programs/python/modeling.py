@@ -24,12 +24,12 @@ import sklearn.model_selection
 import statsmodels as sm
 import torch.utils.data as Data
 
-#from tensorflow.keras.layers import Input, Conv2D, BatchNormalization, Activation 
-#from tensorflow.keras.layers import MaxPooling2D, Dropout, Conv2DTranspose
-#from tensorflow.keras.layers import concatenate, Concatenate
-#from tensorflow.keras.models import Model
-#from tensorflow.keras.optimizers import Adam
-#from tensorflow.keras import metrics
+# from tensorflow.keras.layers import Input, Conv2D, BatchNormalization, Activation 
+# from tensorflow.keras.layers import MaxPooling2D, Dropout, Conv2DTranspose
+# from tensorflow.keras.layers import concatenate, Concatenate
+# from tensorflow.keras.models import Model
+# from tensorflow.keras.optimizers import Adam
+# from tensorflow.keras import metrics
 
 #sklearn → model trening
 from sklearn.linear_model import LinearRegression
@@ -246,27 +246,17 @@ nibio_id = {
     }
 #@numba.njit
 def model_traning_testing(datafile,base_model,parameters,feature_target,min_length):
-    progess_file = open(OTHER_PATH + "M_{}.txt".format(model_name := type(base_model)),"a+")
+    #progess_file = open(OTHER_PATH + "M_{}.txt".format(model_name := type(base_model)),"a+")
     
     base_model_stats = {
         "global":{},
     }
-    def merge_func(left, right):
-                if isinstance(left, list) or isinstance(right, list):
-                    if not isinstance(left, list):
-                        left = [left]
-                    if not isinstance(right, list):
-                        right = [right]
-                    # Concatenate the lists
-                    combined_list = left + right
-                else:
-                    # Create a new list with left and right as elements
-                    combined_list = [left, right]
-                return combined_list
-    progess_file.write("[{} : {}] Begun training\n".format(datetime.datetime.now(),model_name))
+
+    #progess_file.write("[{} : {}] Begun training\n".format(datetime.datetime.now(),model_name))
     global_model = copy.deepcopy(base_model)
     for key,yr in datafile:
-            progess_file.write("[{} : {}] started {}\n".format(datetime.datetime.now(),model_name,key))
+            #progess_file.write("[{} : {}] started {}\n".format(datetime.datetime.now(),model_name,key))
+            print("[{}] started {}\n".format(datetime.datetime.now(),key))
             #data = datafile[regi,station,"2014":"2020"].shave_top_layer().merge_layer(level = 1,merge_func = merge_func).flatten() # looks at all previus years including this year
             # First we fetch region (regi), all stations (:), then relevant years ("2014":str(i)). Since we only look at one region at the time
             # we remove the root group (shave_top_layer()), then we merge the years (merge_layer(level = 1), level 1 since level 0 would be the stations at this point)
@@ -277,9 +267,9 @@ def model_traning_testing(datafile,base_model,parameters,feature_target,min_leng
                 if dt[1]-dt[0] < min_length:
                     continue
                 global_model.fit(d.loc[dt[0]:dt[1],parameters],d.loc[dt[0]:dt[1],feature_target])
-            progess_file.write("[{} : {}] ended {}\n".format(datetime.datetime.now(),model_name,key))
-    progess_file.write("[{} : {}] Ended training\n".format(datetime.datetime.now(),model_name))
-    progess_file.close()
+            #progess_file.write("[{} : {}] ended {}\n".format(datetime.datetime.now(),model_name,key))
+    #progess_file.write("[{} : {}] Ended training\n".format(datetime.datetime.now(),model_name))
+    #progess_file.close()
     base_model_stats["global"]["model"] = global_model
     return base_model_stats
 
@@ -426,7 +416,7 @@ def plot_model_performance(
     back_to_font = True
 ):
     model2check = available_stat[name]["global"]
-    target_slice = slice(lead_time) if back_to_font else slice(0,-lead_time)
+    target_slice = slice(lead_time-1,None,None) if back_to_font else slice(0,-lead_time,None)
     for region in nibio_id.keys():
         data_lin_list = dict(data[region,:,probing_year].shave_top_layer().flatten(return_key = True))
         #big_fig = plt.Figure()
@@ -448,12 +438,12 @@ def plot_model_performance(
                              linewidth=0,
                              alpha = figure_alpha,
                              label = i)
-            axs[0,1].scatter(x = model2check["model"].predict(data_lin[feature]),y = data_lin[target].to_numpy(),
+            axs[0,1].scatter(x = model2check["model"].predict(data_lin[feature]),y = data_lin[target].to_numpy()[target_slice],
                              s = point_size,
                              linewidth=0,
                              alpha = figure_alpha,
                              label = i)
-            subfig.plot(data_time,model2check["model"].predict(data_lin[feature])-data_lin[target].to_numpy()[target_slice],
+            subfig.plot(data_time[target_slice],model2check["model"].predict(data_lin[feature])-data_lin[target].to_numpy()[target_slice],
                         alpha = figure_alpha,
                         label = i)
             subfig.set_ylim(ymin = -10, ymax = 10)
@@ -491,7 +481,7 @@ def model_log_condition_number(arr,mod,epsilon = 0.01,iter = 100):
     #data_arr = arr.copy()
     #if "Time" in data_arr.columns and type(data_arr["Time"][0]) is pd.Timestamp:
     #    data_arr["Time"] = arr["Time"].transform({"Time":lambda x: x.day_of_year*24 + x.hour})
-    cond_num = 0
+    cond_num = 0.000000000001
     base_pred = mod.predict(arr)
     norm_pred = np.linalg.norm(base_pred)
     norm_arr = np.linalg.norm((arr.drop("Time",axis=1) if "Time" in arr.columns else arr).infer_objects(copy = False))
@@ -507,7 +497,7 @@ def model_log_condition_number(arr,mod,epsilon = 0.01,iter = 100):
     return np.log(cond_num)
 
 def append_stat_from_stat(y_true,y_pred,x_true,model_stat,model):
-    model_stat["log_cond"] = model_log_condition_number(x_true,model,iter = 100)  
+    model_stat["log_cond"] = model_log_condition_number(x_true,model,iter = 20)  
     model_stat["digit_sense"] = int(model_stat["log_cond"]) + (1 if int(model_stat["log_cond"]) > 0 else -1)
     model_stat["R^2"] = 1 - model_stat["SSE"]/model_stat["SST"]
     model_stat["MSE"] = model_stat["SSE"] / model_stat["n"]
@@ -530,6 +520,8 @@ def stat_model(y_true ,y_pred) -> dict[str,float]:
 
         unscaled: to unscale the relevant metric by |y| (R^2,bias)
     """
+    #print(y_true)
+    #print(y_pred)
     stats = {
         "SSE": ((y_true - y_pred) ** 2).sum(axis=0, dtype=np.float64),
         "SAE": np.abs(y_true - y_pred).sum(axis=0, dtype=np.float64),
@@ -541,13 +533,14 @@ def stat_model(y_true ,y_pred) -> dict[str,float]:
 
 def calc_stat_from_data(y_true ,x_true,model ,s_model_stat = dict()):
         current_stat = stat_model(y_true,model.predict(x_true))
+        #print(current_stat)
         for metric in current_stat: 
             s_model_stat.setdefault(metric,0)
             s_model_stat[metric] += current_stat[metric]
         return s_model_stat
     
 
-def recalc_stat(data: DFL.DataFileLoader,features: list[str], target: str, model, exclustion = [], lead_time = 0, back_to_front = True, old_model_stat: dict = dict()):
+def recalc_stat(data: DFL.DataFileLoader,features: list[str], target: str, model, exclustion = [], lead_time = 0, back_to_front = True, min_length = 1,old_model_stat: dict = dict()):
     """
         Assume data is grouped as wanted, the new groups are 'global', region (index 0), station (index 1). Index 2 is the year
     """
@@ -556,7 +549,7 @@ def recalc_stat(data: DFL.DataFileLoader,features: list[str], target: str, model
         "region": dict(),
         "local": dict()
     }
-    target_indexing = slice(lead_time) if back_to_front else slice(0,-lead_time)
+    target_indexing = slice(lead_time-1,None,None) if back_to_front else slice(0,-lead_time,None)
     y_pred = np.array([])
     y_ground = np.array([])
     for path in data:
@@ -567,6 +560,8 @@ def recalc_stat(data: DFL.DataFileLoader,features: list[str], target: str, model
         df.loc[df[[*features,target]].isna().any(axis=1),[*features,target]] = np.nan
         collected_indexes = []
         for dt in find_non_nan_ranges(path[1][target]):
+            if dt[1] - dt[0] < min_length:
+                continue
             collected_indexes.extend(range(dt[0],dt[1]+1))
             y_pred = np.append(y_pred,model.predict(path[1].loc[dt[0]:dt[1],features]))
             y_ground = np.append(y_ground,path[1].loc[dt[0]:dt[1],target][target_indexing])
@@ -582,6 +577,7 @@ def recalc_stat(data: DFL.DataFileLoader,features: list[str], target: str, model
                                                                    path[1].loc[dt[0]:dt[1],features],
                                                                    model,
                                                                    master_stat['local'].get(path[0][1],dict()))
+            #print("input_len :",dt[1]-dt[0],"ground_len :",len(y_ground),"pred_len :",len(y_pred))
     for scope in master_stat.keys():
         if scope == "global":
             master_stat["global"] = append_stat_from_stat(y_ground,
@@ -604,12 +600,13 @@ def recalc_stat(data: DFL.DataFileLoader,features: list[str], target: str, model
 
 parameters = ["Time","TM"]
 feature_target = "TJM20"
-min_length = 2*7*24 + 10 # minimum number of rows used in sequense
-search_area = {"input_shape":[n for n in range(12,2*7*24,18)],"lstm_units":[2**k for k in range(2,8,2)],"epochs":[n for n in range(1,6,2)]}
+min_length = 2*24 + 10 # minimum number of rows used in sequense
+search_area = {"input_shape":[n for n in range(24,7*24+1,24)],"lstm_units":[2**6,2**7,2**8],"epochs":[4,6,10]}
+#search_area = {"input_shape":[n for n in range(12,24,12)],"lstm_units":[2**k for k in range(5,7,2)],"epochs":[n for n in range(1,4,2)]}
 base_model = GridSearchCV(SE.KerasBiLSTM(),param_grid=search_area,pre_dispatch = 5,n_jobs = -1,cv=2)
 
 KerasBiLSTM_stats_20 = model_traning_testing(
-     datafile = imputed_nibio_data["Innlandet","11","2014":"2016"],
+     datafile = imputed_nibio_data[:,:,"2014":"2020"],
      base_model = base_model,
      parameters = parameters,
      feature_target = feature_target,
@@ -617,48 +614,184 @@ KerasBiLSTM_stats_20 = model_traning_testing(
 )
 
 KerasBiLSTM_stats_20["global"]["model"].best_estimator_.model.save(METADATA_PRELOAD_DATA_PATH + "KerasBiLSTM_stat_20.keras")
-open(METADATA_PRELOAD_DATA_PATH + "KerasBiLSTM_stat_20.json","w").write(KerasBiLSTM_stats_20["global"]["model"].best_estimator_.model.to_json()).close()
+#open(METADATA_PRELOAD_DATA_PATH + "KerasBiLSTM_stat_20.json","w").write(KerasBiLSTM_stats_20["global"]["model"].best_estimator_.model.to_json()).close()
+
+#print(imputed_nibio_data["Innlandet","11","2021":"2022"].flatten()[0])
 
 # compute stat then save without model
-
-KerasBiLSTM_stats_20 = recalc_stat(imputed_nibio_data,
+print("Finished training")
+KerasBiLSTM_stats_20 = recalc_stat(imputed_nibio_data[:,:,"2021":"2022"],
                             ["Time","TM"],
                             "TJM20",
                             KerasBiLSTM_stats_20["global"]["model"],
+                            min_length=min_length,
                             lead_time=KerasBiLSTM_stats_20["global"]["model"].best_estimator_.input_shape)
-
-KerasBiLSTM_stats_20["global"]["model"].best_estimator_.model = None
+KerasBiLSTM_stats_20 = {
+    "KerasBiLSTM_stats_20":KerasBiLSTM_stats_20
+}
+plot_model_performance(imputed_nibio_data,
+                       KerasBiLSTM_stats_20,
+                       ["Time","TM"],
+                        probing_year="2022",
+                        target="TJM20",
+                        lead_time=KerasBiLSTM_stats_20["KerasBiLSTM_stats_20"]["global"]["model"].best_estimator_.input_shape,
+                        name="KerasBiLSTM_stats_20"
+                    )
+plot_model_performance(imputed_nibio_data,
+                       KerasBiLSTM_stats_20,
+                       ["Time","TM"],
+                        probing_year="2021",
+                        target="TJM20",
+                        lead_time=KerasBiLSTM_stats_20["KerasBiLSTM_stats_20"]["global"]["model"].best_estimator_.input_shape,
+                        name="KerasBiLSTM_stats_20"
+                    )
+KerasBiLSTM_stats_20["KerasBiLSTM_stats_20"]["global"]["model"].best_estimator_.model = None
 
 pickle.dump(KerasBiLSTM_stats_20,f := open(METADATA_PRELOAD_DATA_PATH + "KerasBiLSTM_stat_20.bin","wb"))
 f.close()
 del KerasBiLSTM_stats_20
 
-feature_target = "TJM10"
 KerasBiLSTM_stats_10 = model_traning_testing(
-     datafile = imputed_nibio_data["Innlandet","11","2014":"2016"],
+     datafile = imputed_nibio_data[:,:,"2014":"2020"],
      base_model = base_model,
      parameters = parameters,
      feature_target = feature_target,
      min_length = min_length
 )
+
 KerasBiLSTM_stats_10["global"]["model"].best_estimator_.model.save(METADATA_PRELOAD_DATA_PATH + "KerasBiLSTM_stat_10.keras")
-KerasBiLSTM_stats_10["global"]["model"].best_estimator_.model = None
-# In[ ]:
+#open(METADATA_PRELOAD_DATA_PATH + "KerasBiLSTM_stat_20.json","w").write(KerasBiLSTM_stats_20["global"]["model"].best_estimator_.model.to_json()).close()
+
+#print(imputed_nibio_data["Innlandet","11","2021":"2022"].flatten()[0])
+
+# compute stat then save without model
+print("Finished training")
+KerasBiLSTM_stats_10 = recalc_stat(imputed_nibio_data[:,:,"2021":"2022"],
+                            ["Time","TM"],
+                            "TJM20",
+                            KerasBiLSTM_stats_10["global"]["model"],
+                            min_length=min_length,
+                            lead_time=KerasBiLSTM_stats_10["global"]["model"].best_estimator_.input_shape)
+KerasBiLSTM_stats_10 = {
+    "KerasBiLSTM_stats_20":KerasBiLSTM_stats_10
+}
+plot_model_performance(imputed_nibio_data,
+                       KerasBiLSTM_stats_10,
+                       ["Time","TM"],
+                        probing_year="2022",
+                        target="TJM20",
+                        lead_time=KerasBiLSTM_stats_10["KerasBiLSTM_stats_10"]["global"]["model"].best_estimator_.input_shape,
+                        name="KerasBiLSTM_stats_20"
+                    )
+plot_model_performance(imputed_nibio_data,
+                       KerasBiLSTM_stats_10,
+                       ["Time","TM"],
+                        probing_year="2021",
+                        target="TJM20",
+                        lead_time=KerasBiLSTM_stats_10["KerasBiLSTM_stats_10"]["global"]["model"].best_estimator_.input_shape,
+                        name="KerasBiLSTM_stats_10"
+                    )
+KerasBiLSTM_stats_10["KerasBiLSTM_stats_10"]["global"]["model"].best_estimator_.model = None
 
 pickle.dump(KerasBiLSTM_stats_10,f := open(METADATA_PRELOAD_DATA_PATH + "KerasBiLSTM_stat_10.bin","wb"))
 f.close()
+del KerasBiLSTM_stats_10
 
-del KerasBiLSTM_stats_10 # removes unesseserry data
+# ## -------------------------------------- modBiLSTM ---------------------------------------------
 
+# feature_target = "TJM20"
+# base_model = GridSearchCV(SE.modKerasBiLSTM(),param_grid=search_area,pre_dispatch = 5,n_jobs = -1,cv=2)
 
+# modKerasBiLSTM_stats_20 = model_traning_testing(
+#      datafile = imputed_nibio_data["Innlandet","11","2014":"2015"],
+#      base_model = base_model,
+#      parameters = parameters,
+#      feature_target = feature_target,
+#      min_length = min_length
+# )
 
+# modKerasBiLSTM_stats_20["global"]["model"].best_estimator_.model.save(METADATA_PRELOAD_DATA_PATH + "modKerasBiLSTM_stat_20.keras")
+# #open(METADATA_PRELOAD_DATA_PATH + "KerasBiLSTM_stat_20.json","w").write(KerasBiLSTM_stats_20["global"]["model"].best_estimator_.model.to_json()).close()
+
+# #print(imputed_nibio_data["Innlandet","11","2021":"2022"].flatten()[0])
+
+# # compute stat then save without model
+# print("Finished training")
+# modKerasBiLSTM_stats_20 = recalc_stat(imputed_nibio_data["Innlandet",:,"2021":"2022"],
+#                             ["Time","TM"],
+#                             "TJM20",
+#                             modKerasBiLSTM_stats_20["global"]["model"],
+#                             lead_time=modKerasBiLSTM_stats_20["global"]["model"].best_estimator_.input_shape)
+# modKerasBiLSTM_stats_20 = {
+#     "modKerasBiLSTM_stats_20":modKerasBiLSTM_stats_20
+# }
+# plot_model_performance(imputed_nibio_data,
+#                        modKerasBiLSTM_stats_20,
+#                        ["Time","TM"],
+#                         probing_year="2022",
+#                         target="TJM20",
+#                         lead_time=modKerasBiLSTM_stats_20["modKerasBiLSTM_stats_20"]["global"]["model"].best_estimator_.input_shape,
+#                         name="modKerasBiLSTM_stats_20"
+#                     )
+
+# plot_model_performance(imputed_nibio_data,
+#                        modKerasBiLSTM_stats_20,
+#                        ["Time","TM"],
+#                         probing_year="2021",
+#                         target="TJM20",
+#                         lead_time=modKerasBiLSTM_stats_20["modKerasBiLSTM_stats_20"]["global"]["model"].best_estimator_.input_shape,
+#                         name="modKerasBiLSTM_stats_20"
+#                     )
+
+# #KerasBiLSTM_stats_20["KerasBiLSTM_stats_20"]["global"]["model"].best_estimator_.model = None
+
+# #pickle.dump(KerasBiLSTM_stats_20,f := open(METADATA_PRELOAD_DATA_PATH + "KerasBiLSTM_stat_20.bin","wb"))
+# #f.close()
+# del modKerasBiLSTM_stats_20
+
+# feature_target = "TJM10"
+# modKerasBiLSTM_stats_10 = model_traning_testing(
+#      datafile = imputed_nibio_data["Innlandet","11","2014":"2015"],
+#      base_model = base_model,
+#      parameters = parameters,
+#      feature_target = feature_target,
+#      min_length = min_length
+# )
+# modKerasBiLSTM_stats_10["global"]["model"].best_estimator_.model.save(METADATA_PRELOAD_DATA_PATH + "modKerasBiLSTM_stat_10.keras")
+
+# modKerasBiLSTM_stats_10 = recalc_stat(imputed_nibio_data["Innlandet",:,"2021":"2022"],
+#                             ["Time","TM"],
+#                             "TJM10",
+#                             modKerasBiLSTM_stats_10["global"]["model"],
+#                             lead_time=modKerasBiLSTM_stats_10["global"]["model"].best_estimator_.input_shape)
+# modKerasBiLSTM_stats_10 = {
+#     "modKerasBiLSTM_stats_10":modKerasBiLSTM_stats_10
+# }
+# plot_model_performance(imputed_nibio_data,
+#                        modKerasBiLSTM_stats_10,
+#                        ["Time","TM"],
+#                         probing_year="2022",
+#                         target="TJM10",
+#                         lead_time=modKerasBiLSTM_stats_10["modKerasBiLSTM_stats_10"]["global"]["model"].best_estimator_.input_shape,
+#                         name="modKerasBiLSTM_stats_10"
+#                     )
+
+# plot_model_performance(imputed_nibio_data,
+#                        modKerasBiLSTM_stats_10,
+#                        ["Time","TM"],
+#                         probing_year="2021",
+#                         target="TJM10",
+#                         lead_time=modKerasBiLSTM_stats_10["modKerasBiLSTM_stats_10"]["global"]["model"].best_estimator_.input_shape,
+#                         name="modKerasBiLSTM_stats_10"
+#                     )
+
+# del modKerasBiLSTM_stats_10
 # ---------------------------- ILSTM ----------------------------------------
-
 # parameters = ["Time","TM"]
 # feature_target = "TJM20"
 # min_length = 12*14+2 # minimum number of rows used in sequense
-# search_area = {"input_shape":[12*n for n in range(2,14,4)],"lstm_units":[2**k for k in range(3,15,2)],"epochs":[2*n for n in range(5,15,3)]}
-# base_model = GridSearchCV(SE.ILSTM(),param_grid=search_area,n_jobs = -1,cv=3)
+# search_area = {"seq_length":[12*n for n in range(2,7,4)],"hidden_size":[2**k for k in range(3,4,2)],"learning_rate":[0.1,0.5,0.7],"total_epoch":[n for n in range(1,5,3)]}
+# base_model = GridSearchCV(SE.ILSTM(),param_grid=search_area,n_jobs = -1,cv=2)
 
 # ILSTM_stats_20 = model_traning_testing(
 #    datafile = imputed_nibio_data,

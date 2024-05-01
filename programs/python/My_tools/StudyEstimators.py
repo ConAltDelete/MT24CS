@@ -2,10 +2,11 @@ from typing import Literal
 from matplotlib.pylab import RandomState
 import numpy as np
 import pandas as pd
+import datetime
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.linear_model import LinearRegression
 from sklearn.neural_network import MLPRegressor
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 
 from keras.models import Sequential, Model
@@ -29,6 +30,8 @@ class KerasBiLSTM(MLPRegressor):
         self.batch_size: int = batch_size
         self.is_fitted_ = False
 
+        #self.history = None
+
         self.scaler_x = None
         self.scaler_y = None
     def fit(self, X, y):
@@ -41,18 +44,26 @@ class KerasBiLSTM(MLPRegressor):
         # Setting up model
         if not(self.is_fitted_):
             self.model = Sequential()
-            self.model.add(Input((All_data[0][0].shape[1], All_data[0][0].shape[2])))
+            self.model.add(Input(All_data[0][0].shape[1:]))
             #? add a convelution layer or two here?
-            self.model.add(Bidirectional(LSTM(self.lstm_units,return_sequences=True)))
-            self.model.add(LSTM(int(self.lstm_units / 2)+1)) # conjestion
-            self.model.add(Dense(self.num_classes, activation='softmax')) # conjegtion
+            self.model.add(Bidirectional(LSTM(self.lstm_units,return_sequences=True),merge_mode="concat"))
+            #self.model.add(LSTM(self.num_classes))
+            self.model.add(LSTM(int(self.lstm_units / 2)+1,return_sequences=True)) # conjestion
+            self.model.add(LSTM(self.num_classes))
             self.model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mean_squared_error','r2_score'])
             #print(self.model.output_shape)
         # fitting model
         #print(self.model.summary())
         #print("Input shape for LSTM:", All_data[0][0].shape)
 
-        self.model.fit(All_data, epochs=self.epochs, verbose=1)
+        h = self.model.fit(All_data, epochs=self.epochs, verbose=1)
+
+        f = open("logs/KerasBiLSTM" + "_" + str(datetime.datetime.today().strftime('%Y-%m-%d')) + ".hist","a+")
+        f.write("[{}]: ".format(str(datetime.datetime.now())))
+        f.write(str(h.history))
+        f.write("\n{}".format(str(self.__dict__)))
+        f.write("\n{}\n".format(str(self.model.__dict__)))
+        f.close()
 
         self.is_fitted_ = True
         return self
@@ -69,13 +80,22 @@ class KerasBiLSTM(MLPRegressor):
         """
 
         # convert dataframe to numpy array
+        if self.scaler_x is None:
+            self.scaler_x = MinMaxScaler(feature_range=(-1,1)) # StandardScaler() #
+            self.scaler_x.data_min_ = -10
+            self.scaler_x.data_max_ = 25
+            self.scaler_x.n_samples_seen_ = 2
+        if self.scaler_y is None:
+            self.scaler_y = MinMaxScaler(feature_range=(-1,1)) # StandardScaler() #
+            self.scaler_y.data_min_ = -1
+            self.scaler_y.data_max_ = 20
+            self.scaler_y.n_samples_seen_ = 2
 
-        self.scaler_x = StandardScaler()
-        self.scaler_y = StandardScaler()
-
-        new_X = self.scaler_x.fit_transform(X).astype("float32")
+        new_X = self.scaler_x.partial_fit(X)
+        new_X = self.scaler_x.transform(X).astype("float32")
         if y is not None:
-            new_y = self.scaler_y.fit_transform(y.reshape(-1, 1)).astype("float32")
+            new_y = self.scaler_y.partial_fit(y.reshape(-1, 1))
+            new_y = self.scaler_y.transform(y.reshape(-1, 1)).astype("float32")
         else:
             new_y = None
         
@@ -87,13 +107,14 @@ class KerasBiLSTM(MLPRegressor):
         return self.transformed_data
 
     def _data_generate(self,X,y):
-        transformed_data = TimeseriesGenerator(np.flip(X,axis=0), np.flip(y,axis=0), # Due to spaceing we remove the first target values so we get the relavant target
+        transformed_data = TimeseriesGenerator(np.flip(X,axis=0), y, # Due to spaceing we remove the first target values so we get the relavant target
                                length=self.input_shape, stride=self.spaceing,
                                batch_size=self.batch_size)
 
         return transformed_data
 
     def predict(self, X):
+        X = X.copy()
         check_is_fitted(self, 'is_fitted_')
         if "Time" in X.columns:
             X["Time"] = X["Time"].transform({"Time":lambda x: x.day_of_year*24 + x.hour})
@@ -113,7 +134,7 @@ class KerasBiLSTM(MLPRegressor):
         #print(pred_y)
         trans_y = self.scaler_y.inverse_transform(pred_y.reshape((-1,1)))
         #print(np.shape(trans_y))
-        return trans_y
+        return trans_y.flatten()
     
     def score(self,X,y, sample_weight=None):
         """
@@ -136,23 +157,30 @@ class modKerasBiLSTM(KerasBiLSTM):
         # Setting up model
         if not(self.is_fitted_):
             
-            input_layer = Input((All_data[0][0].shape[1], All_data[0][0].shape[2]))
+            input_layer = Input(All_data[0][0].shape[1:])
             #? add a convelution layer or two here?
-            conv_layer = Conv1D(2*self.lstm_units, 24, padding = "same")(input_layer)
+            conv_layer = Conv1D(2*self.lstm_units, int(self.input_shape / 2), padding = "same")(input_layer)
             Concatenate_layer = Concatenate()([input_layer,conv_layer])
             #Bidirectional(LSTM(self.lstm_units,return_sequences=True))(Concatenate_layer)
             
             bi_layer = Bidirectional(LSTM(self.lstm_units,return_sequences=True))(Concatenate_layer)
-            lstm_layer = LSTM(int(self.lstm_units / 2)+1)(bi_layer) # conjestion
-            summary_layer = Dense(self.num_classes, activation='softmax')(lstm_layer) # conjegtion
-            self.model = Model(inputs = input_layer,outputs = summary_layer)
+            lstm_layer = LSTM(self.num_classes,activation=None)(bi_layer) # conjestion
+            #summary_layer = Dense(self.num_classes, activation='softmax')(lstm_layer) # conjegtion
+            self.model = Model(inputs = input_layer,outputs = lstm_layer)
             self.model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mean_squared_error','r2_score'])
             #print(self.model.output_shape)
         # fitting model
         #print(self.model.summary())
         #print("Input shape for LSTM:", All_data[0][0].shape)
 
-        self.model.fit(All_data, epochs=self.epochs, verbose=1)
+        h = self.model.fit(All_data, epochs=self.epochs, verbose=1)
+
+        f = open("logs/modKerasBiLSTM" + "_" + str(datetime.datetime.today().strftime('%Y-%m-%d')) + ".hist","a+")
+        f.write("[{}]: ".format(str(datetime.datetime.now())))
+        f.write(str(h.history))
+        f.write("\n{}".format(str(self.__dict__)))
+        f.write("\n{}\n".format(str(self.model.__dict__)))
+        f.close()
 
         self.is_fitted_ = True
         return self
@@ -298,68 +326,67 @@ class RankinRegresson(LinearRegression):
                 T_z[t+1] = T_z[t+1]*np.exp(-X["snow"].iloc[t]*self.fs)
         return T_z
 
-# from .ILSTM_Soil_model_main import lstm_interprety_soil_moisture as ILSTM
-# import torch.utils.data as Data
+from .lstm_interprety_soil_moisture import nibio_data_transform, LSTMDataGenerator, ILSTM_SV, train_lstm, create_predictions 
+import torch.utils.data as Data
 
-# class ILSTM(MLPRegressor):
-#     def __init__(self,lead_time = 1, batch_size = 752,seq_length = 24, hidden_size = 2**8,learning_rate = 0.5,total_epoch = 20,**kwarg):
-#         super().__init__(**kwarg)
-#         self.lead_time = lead_time
-#         self.batch_size = batch_size
-#         self.seq_length = seq_length
-#         self.hidden_size = hidden_size
-#         self.learning_rate = learning_rate
-#         self.total_epoch = total_epoch
+class ILSTM(MLPRegressor):
+    def __init__(self,lead_time = 1, batch_size = 64,seq_length = 24, hidden_size = 2**5,learning_rate = 0.5,total_epoch = 3,**kwarg):
+        super().__init__(**kwarg)
+        self.lead_time = lead_time
+        self.batch_size = batch_size
+        self.seq_length = seq_length
+        self.hidden_size = hidden_size
+        self.learning_rate = learning_rate
+        self.total_epoch = total_epoch
+        self.is_fitted_ = False
 
-#     def fit(self,raw_data, target_label):
+    def fit(self,X, y):
 
-#         # TODO:  remember to add data["Time"].transform({"Time":lambda x: x.day_of_year*24 + x.hour})
-#         data,self.scaler,self.scaler1 = ILSTM.nibio_data_transform(raw_data, target_label)
-#         data = self.scaler1.transform(data)
+        # TODO:  remember to add data["Time"].transform({"Time":lambda x: x.day_of_year*24 + x.hour})
+        data,self.scaler,self.scaler1 = nibio_data_transform(X, y)
+        data = self.scaler1.transform(data)
 
-#         # TODO: Generate the tensor for lstm model
+        # TODO: Generate the tensor for lstm model
 
-#         [data_x, data_y,_] = ILSTM.LSTMDataGenerator(data, self.lead_time, self.batch_size, self.seq_length)
+        [data_x, data_y,_] = LSTMDataGenerator(data, self.lead_time, self.batch_size, self.seq_length)
 
-#         # concat all variables.
-#         # TODO: Flexible valid split
-#         #data_train_x = data_x[:int((data_x.shape[0])-400*24)]
-#         #data_train_y = data_y[:int(data_x.shape[0]-400*24)]
+        # concat all variables.
+        # TODO: Flexible valid split
+        data_train_x = data_x[:int((data_x.shape[0])-400)]
+        data_train_y = data_y[:int(data_x.shape[0]-400)]
 
-#         train_data = Data.TensorDataset(data_x, data_y)
-#         train_loader = Data.DataLoader(
-#             dataset=train_data,
-#             batch_size=self.batch_size,
-#             shuffle=False,
-#             num_workers=0
-#         )
+        train_data = Data.TensorDataset(data_train_x, data_train_y)
+        train_loader = Data.DataLoader(
+            dataset=train_data,
+            batch_size=self.batch_size,
+            shuffle=False,
+            num_workers=0
+        )
 
-#         #data_valid_x      = data_x[int(data_x.shape[0]-400*24):int(data_x.shape[0]-365*24)] # -> trener 35 dager
-#         #data_valid_y      = data_y[int(data_x.shape[0]-400*24):int(data_x.shape[0]-365*24)] # -> tester 35 dager
-#         #self.data_test_x  = data_x[int(data_x.shape[0]-365*24):int(1.0 * data_x.shape[0])] # -> validerer på resterende
-#         #self.data_testd_z = data_z[int(data_x.shape[0]-365*24):int(1.0 * data_x.shape[0])] # -> stat på rest
+        data_valid_x      = data_x[int(data_x.shape[0]-400):int(data_x.shape[0]-365)]
+        data_valid_y      = data_y[int(data_x.shape[0]-400):int(data_x.shape[0]-365)]
 
-#         # TODO: Flexible input shapes and optimizer
-#         # IMVTensorLSTM,IMVFullLSTM
-#         if not(self.is_fitted_):
-#             self.model = ILSTM.ILSTM_SV(data_x.shape[2],data_x.shape[1], 1, self.hidden_size)
-#         if torch.cuda.is_available():
-#             self.model = self.model.cuda()
-#         # TODO: Trian LSTM based on the training and validation sets
-#         self.model,_,_=ILSTM.train_lstm(self.model,self.learning_rate,self.total_epoch,train_loader,data_x,data_y,"./results/lstm_1d.h5")
-#         self.is_fitted_ = True
-#         return self
+        # TODO: Flexible input shapes and optimizer
+        # IMVTensorLSTM,IMVFullLSTM
+        if not(self.is_fitted_):
+            self.model = ILSTM_SV(data_x.shape[2],data_x.shape[1], 1, self.hidden_size)
+        if torch.cuda.is_available():
+            self.model = self.model.cuda()
+        # TODO: Trian LSTM based on the training and validation sets
+        self.model,_,_= train_lstm(self.model,self.learning_rate,self.total_epoch,train_loader,data_valid_x,data_valid_y,"./results/lstm_1d.h5")
+        self.is_fitted_ = True
+        return self
     
-#     def predict(self,X):
-#         # predicting area from here!
-#         check_is_fitted(self,"is_fitted_")
-#         data,self.scaler,self.scaler1 = ILSTM.nibio_data_transform(X, None)
-#         data = self.scaler1.transform(data)
+    def predict(self,X):
+        # predicting area from here!
+        check_is_fitted(self,"is_fitted_")
+        data,self.scaler,self.scaler1 = nibio_data_transform(X, None)
+        data = self.scaler1.transform(data)
 
-#         # TODO: Create predictions based on the test sets
-#         pred, _, _, _ = ILSTM.create_predictions(self.model, data,self.scaler)
+        # TODO: Create predictions based on the test sets
+        pred, _, _, _ = create_predictions(self.model, data,self.scaler)
 
-#         return self.scaler.inverse_transform(pred).flatten()
+        return self.scaler.inverse_transform(pred).flatten()
 
 
 # def ILSTM_train(raw_data, target_label,total_epoch = 50,hidden_size=16,lerningrate=1e-3, lead_time=1, seq_length=24, batch_size=16):

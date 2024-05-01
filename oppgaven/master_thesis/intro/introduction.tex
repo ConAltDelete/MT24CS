@@ -18,7 +18,7 @@
 
 % resultat
 
-\keywords{Soil temperature, Machine learning, regression,hour, ...}
+\keywords{Soil temperature, Machine learning, regression,hour, weather forecasting data}
 
 \section{Introduction}
 
@@ -28,8 +28,6 @@ If it's important, why don't institutions measure it everywhere? There are sever
 
 There has been done research into heat conductivity in soil that has lead to differential equations\cite{karvonen_model_1988}, however these equations\cite{fourier_analytical_2009,karvonen_model_1988} are computationally expensive and difficult to simulate, or calculate\cite{rankinen_simple_2004}. \comment{To add to the complexity the heat dynamics change depending on soil temperature as they change the physical stucture of the soil}{Find source!, if not remove}
 
-There are also massive developments in types of models, one of which are ASPER\cite{le_asper_2023} that combines logical statments with deep learning models to aceve better or similar results to "non-logical" deep learning models, but on fewer samples. A study has been preformed with the model which shows that the model can reduse the number of samples/observations needed by a factor of 1/1000\cite{machot_bridging_2023}. After an intervju with the study resercher (\citeauthor{machot_bridging_2023}), although the model needs a strict ruleset it is possible to incoporate baysioan statitics to make the model more geneneral for more applications by weaking the ruleset and imply that the rulse given might not be 100\% accurate and can be relaxed. 
-
-Furter more there are investigation into introducing randomness to the model to improve prediction. As an example is a study into Brownian fractional motion to predict temperature fluxiations at the Campi Flegrei Caldera area. 
+There are also massive developments in types of models, one of which are ASPER\cite{le_asper_2023} that combines logical statments with deep learning models to aceve better or similar results to "non-logical" deep learning models, but on fewer samples. A study has been preformed with the model which shows that the model can reduse the number of samples/observations needed by a factor of 1/1000\cite{machot_bridging_2023}. After an intervju with the study resercher (\citeauthor{machot_bridging_2023}), although the model needs a strict ruleset it is possible to incoporate baysioan statitics to make the model more geneneral for more applications by weaking the ruleset and imply that the rules given might not be 100\% accurate and can be relaxed. Another cutting-edge method used is attention-awareness, same method used in ChatGPT, and other modern AI technologies for generative media. This method has been utilised to predict soil temperatures and soil moisture\cite{li_attention-aware_2022}.
 
 In this study 4 methods will be compared and evaluated for the sake of further research into interpolation of missing data in northic countries based on as few features as possible. This study has chosen 2 types of models; Analytical, and Data-Driven models. There will also be base models to compare against, one for each model type. 
