@@ -3,13 +3,74 @@
 \todo{Make sections}
 \todo{Include tables}
 
+\begin{table}
+	\centering
+	\begin{adjustwidth}{-1in}{-1in}
+		\resizebox{1.35\textwidth}{!}{
+			\input{tables/station_table_p1}
+		}
+	\end{adjustwidth}
+\end{table}
+
+
+\begin{table}
+	\centering
+	\begin{adjustwidth}{-1in}{-1in}
+		\resizebox{1.35\textwidth}{!}{
+			\input{tables/station_table_p2}
+		}
+	\end{adjustwidth}
+\end{table}
+
 \subsection{Linear regression vs Plauborg}
 
 The global measure for the linear regression has an average error of $2.3C^\circ \pm 4.23 C^\circ$ while the global messure of the Plauborg daily model has an average error of $0.6C^\circ \pm 1.96 C^\circ$. Further more Plauborg has an hight $R^2$ value indicating that it follows the temperature changes in the soil better than just scaling the air temperature by a scaling factor.
 
 \subsection{Modification of Plauborg}
 
-The Plauborg model as described in the article\cite{plauborg_simple_2002} shows similar results in Norway as in Denmark. With modification to the model to accept hourly data it still preforms as well as the daily data version.  
+The Plauborg model trained in Norway was found to only need 3 days ($t_0,t_{-1},t_{-2}$) compared to \cite{plauborg_simple_2002} that needed 4 days ($t_0,t_{-1},t_{-2},t_{-3}$). However for the Fourier terms both models (Danish model and the Norwegian model) required 2 sine and cosine terms. For the 20cm target the models diverge in the sense of quantity of terms. It was found that the 20cm model needs 14 sine terms and 2 cosine terms, however only needs 2 days.
+\begin{figure}
+	\begin{subfigure}{0.45\textwidth}
+		\centering
+		\includegraphics[width=0.7\linewidth]{../../results/plots/diffplot_Plauborg_day_stat_10_Innlandet_2022_TJM10}
+		\caption[Plauborg daily TJM10]{The daily model of Plauborg model}
+		\label{fig:diffplotplauborgdaystat10innlandet2022tjm10}
+	\end{subfigure}
+	\begin{subfigure}{0.45\textwidth}
+		\centering
+		\includegraphics[width=0.7\linewidth]{../../results/plots/diffplot_Plauborg_stat_10_Innlandet_2022_TJM10}
+		\caption[Plauborg hourly TJM10]{The hourly model of Plauborg model}
+		\label{fig:diffplotplauborgstat10innlandet2022tjm10}
+	\end{subfigure}
+	\caption{Comperasion of daily versus hourly predictions}
+\end{figure}
+
+The modification to Plauborg's model is minor, by replacing the $\omega$ with a larger coefficient it can be used with hourly data. As seen in figure \ref{fig:diffplotplauborgstat10innlandet2022tjm10} the variation is stronger than \ref{fig:diffplotplauborgdaystat10innlandet2022tjm10} however the overall performance is comparable as seen in table \ref{tab:Plauborg:day:10} and table \ref{tab:Plauborg:hour:10}. 
+
+\begin{table}
+	\centering
+	\resizebox{\textwidth}{!}{
+		\input{tables/table_Plauborg_stat_10.tex}
+	}
+	\caption{Hourly Plauborg model results.}
+	\label{tab:plauborg_hour_res}
+\end{table}
+
+\begin{table}
+	\centering
+	\resizebox{\textwidth}{!}{
+		\input{tables/table_Plauborg_day_stat_10.tex}
+	}
+	\caption{Daily Plauborg model results.}
+	\label{tab:plauborg_day_res}
+\end{table}
+
+With modification to the model to accept hourly data it still preforms approximately as well as the daily data version. With a average error of $0.597C^\circ \pm 2.529C^\circ$ for TJM10 and $0.528C^\circ \pm 2.676C^\circ$ for TJM20. It was found that the modified Plauborg model only needs 2 sine terms to make a good prediction and 12h of air temperature which would translate to half a day instead of 3 days.
 
 \subsection{Deep learning models}
-\todo{If not gotten to work by 6.May, then delete. Try to do the stat (without model) to have results.}
+
+
+
+\subsection{Model comperison}
+
+The Plauborg has a clear advantage over linear regression.

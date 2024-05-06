@@ -19,7 +19,7 @@ from tensorflow.keras.utils import timeseries_dataset_from_array
 import torch
 
 class KerasBiLSTM(MLPRegressor):
-    def __init__(self, input_shape = None, num_classes = 1, lstm_units=None, epochs=None, batch_size = 768,**kwargs):
+    def __init__(self, input_shape = 24, num_classes = 1, lstm_units=24, epochs=10, batch_size = 768,**kwargs):
         super().__init__(**kwargs)
         self.input_shape: int = input_shape
         self.num_classes: int = num_classes
@@ -107,7 +107,7 @@ class KerasBiLSTM(MLPRegressor):
         return self.transformed_data
 
     def _data_generate(self,X,y):
-        transformed_data = TimeseriesGenerator(np.flip(X,axis=0), y, # Due to spaceing we remove the first target values so we get the relavant target
+        transformed_data = TimeseriesGenerator(X, y, # Due to spaceing we remove the first target values so we get the relavant target
                                length=self.input_shape, stride=self.spaceing,
                                batch_size=self.batch_size)
 
@@ -122,7 +122,7 @@ class KerasBiLSTM(MLPRegressor):
         if "Time" in X and isinstance(X.iloc[0,"Time"],pd.Timestamp):
             X["Time"] = X["Time"].transform({"Time":lambda x: x.day_of_year*24 + x.hour})
         #print(X.shape)
-        trans_X = timeseries_dataset_from_array(np.flip(self.scaler_x.transform(X).astype("float32"),axis=0),targets = None,
+        trans_X = timeseries_dataset_from_array(self.scaler_x.transform(X).astype("float32"),targets = None,
                             sequence_length=self.input_shape,
                             sequence_stride=self.spaceing,
                             shuffle=False             
@@ -141,10 +141,66 @@ class KerasBiLSTM(MLPRegressor):
             Modified score function that removes the first target values.
         """
         return super().score(X = X,
-                            y = np.flip(y[self.input_shape-1::self.spaceing],axis=0),
+                            y = y[:-(self.input_shape-1):self.spaceing],
                             sample_weight=sample_weight
                             )
 
+
+class l1KerasBiLSTM(KerasBiLSTM):
+    def fit(self, X, y):
+        if "Time" in X.columns:
+            X["Time"] = X["Time"].transform({"Time":lambda x: x.day_of_year*24 + x.hour})
+
+        X, y = check_X_y(X, y) # Checks if values are finite and not too sparce.
+        # Data treatment
+        All_data = self._data_treatment(X,y) # Takes both just incase.
+        # Setting up model
+        if not(self.is_fitted_):
+            self.model = Sequential()
+            self.model.add(Input(All_data[0][0].shape[1:]))
+            #? add a convelution layer or two here?
+            self.model.add(Bidirectional(LSTM(self.num_classes),merge_mode="ave"))
+            self.model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mean_squared_error','r2_score'])
+
+        h = self.model.fit(All_data, epochs=self.epochs, verbose=1)
+
+        f = open("logs/l1KerasBiLSTM" + "_" + str(datetime.datetime.today().strftime('%Y-%m-%d')) + ".hist","a+")
+        f.write("[{}]: ".format(str(datetime.datetime.now())))
+        f.write(str(h.history))
+        f.write("\n{}".format(str(self.__dict__)))
+        f.write("\n{}\n".format(str(self.model.__dict__)))
+        f.close()
+
+        self.is_fitted_ = True
+        return self
+
+class l2KerasBiLSTM(KerasBiLSTM):
+    def fit(self, X, y):
+        if "Time" in X.columns:
+            X["Time"] = X["Time"].transform({"Time":lambda x: x.day_of_year*24 + x.hour})
+
+        X, y = check_X_y(X, y) # Checks if values are finite and not too sparce.
+        # Data treatment
+        All_data = self._data_treatment(X,y) # Takes both just incase.
+        # Setting up model
+        if not(self.is_fitted_):
+            self.model = Sequential()
+            self.model.add(Input(All_data[0][0].shape[1:]))
+            #? add a convelution layer or two here?
+            self.model.add(LSTM(self.num_classes))
+            self.model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mean_squared_error','r2_score'])
+
+        h = self.model.fit(All_data, epochs=self.epochs, verbose=1)
+
+        f = open("logs/l2KerasBiLSTM" + "_" + str(datetime.datetime.today().strftime('%Y-%m-%d')) + ".hist","a+")
+        f.write("[{}]: ".format(str(datetime.datetime.now())))
+        f.write(str(h.history))
+        f.write("\n{}".format(str(self.__dict__)))
+        f.write("\n{}\n".format(str(self.model.__dict__)))
+        f.close()
+
+        self.is_fitted_ = True
+        return self
 
 class modKerasBiLSTM(KerasBiLSTM):
     def fit(self, X, y):

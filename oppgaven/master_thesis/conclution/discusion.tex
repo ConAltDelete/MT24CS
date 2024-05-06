@@ -4,38 +4,44 @@
 
 \subsection{The Autumn descrepensy}
 
-A phenomenon that arrose during performence evaluations was that the linear models struggles with the Autumn season. The difference graphs shows a clear over or under estimation that are larger than $10\sigma$. When inverstigating the coeffisents to the model \todo{Show table of parameters} this decrepsensy can be contributed to the intercept that during low temperature ($<5c^\circ$) giving either an over estimation or an under estimation. Further more when removing the calculation of the intersept the same phenomenon is still precent. 
+A phenomenon that arose during performance evaluations was that the linear models struggles with the Autumn season. The difference graphs showed a clear over or under estimation that are larger than $10\sigma$. When investigating the coeffisents to the model \todo{Show table of parameters} this decrepsensy can be contributed to the intercept that during low temperature ($<5c^\circ$) giving either an over estimation or an under estimation. Further more when removing the calculation of the intersept the same phenomenon is still precent possibility due to the adaptation to summmer season.
 
 \subsubsection{Temperature seasons}
 
 In the diff plots there is a sutle distinction between Spring, Summer, and Autumn. This effect comes from the Winter where the snow lays ontop of the ground isolation the soil from air temperature changes creating a minimum temperature bound of around $0c^\circ$. 
 
-\subsection{Basis for results}
-
-The inclution of previous temperatures gives an improved estimation, even on hourly basis. The coefficents for both daily and hourly are observed to be <1 making it a mean temperature and the fourier terms would estimate the function\cite{holmes_estimating_2008}
-$$
-e^{z/D}\sin(\omega t - z/D + \phi)
-$$
-Since the term $exp(z/D)$ is constant we would be estimating $C\sin(\omega t - Q) = \sin(\omega t)\cos(Q) - \sin(Q)\cos(\omega t)$, where Q is $z/D - \phi$ and is constant. This will be extrapolated to a simple sum of sines and cosines as the model does. Together the Plauborg model would estimate
-$$
-E_{\text{year}}(T) + e^{z/D}\sin(\omega t - z/D + \phi) \approx E_{\text{period}}(T) + \sum e^{z/D}\sin(-Q_i)\cos(i\omega t_i) + \sum e^{z/D}\cos(-Q_i)\sin(i\omega t_i)
-$$
-A possible reason for the residuals could be the soiltypes at the stations making so a universal, high accurasy model would not be feasible unless including other metrological metrics (air pressure, humidity, soil type, soil texture, etc$\dots$) or including other non-linear features ($\sqrt{\text{temperature}}$,ratio between temperature change in depth and time, etc$\dots$).
-
 \subsection{Plauborg}
 
-The result of the modelling (table \ref{tab:Plauborg:day:20} to \ref{tab:linreg:10}) show that modelig soil temperature without the inclution of time is an inneffichent, and innaccurat method of predicting soil temperatures.
- 
+The result of the modelling (table \ref{tab:Plauborg:day:20} to \ref{tab:linreg:10}) show that modelig soil temperature without the inclusion of time is an inefficient, and inaccurate method of predicting soil temperatures.
+
 In this study the original model, that was trained for daily values was converted to predict hourly data to see if the same formulation could be used to make predictions. When comparing the results shown in table \ref{tab:Plauborg:hour:10} and table \ref{tab:Plauborg:hour:20} to their daily counterpart it shows similar values showing that the model proposed in \citeauthor{plauborg_simple_2002} can be extended to hourliy timeseries.
+
+\subsection{Explenation for good results of Plauborg}
+
+The inclusion of previous temperatures gives an improved estimation, even on hourly basis. The coefficents for both daily and hourly are observed to be <1 making it a mean temperature and the fourier terms would estimate the soil function\eqref{eq:soil_equation}\cite{holmes_estimating_2008}.
+
+\begin{equation}
+E_{\text{year}}(T) + e^{z/D}\sin(\omega t - z/D + \phi)\label{eq:soil_equation}
+\end{equation}
+
+Since the term $exp(z/D)$ is constant we would be estimating $\sin(\omega t - Q) = \sin(\omega t)\cos(Q) - \sin(Q)\cos(\omega t)$, where Q is $z/D - \phi$ and is considered constant. This will be extrapolated to a simple sum of sines and cosines as the model does. Together the Plauborg model would estimate the approximation \eqref{eq:plauborg_expand}. The extra terms are nessesery to include external factors that affects the temperature (rain, soil type, atmosphere, etc). 
+
+\begin{align}
+E_{\text{year}}(T) + e^{z/D}\sin(\omega t - z/D + \phi) \\
+\approx E_{\text{period}}(T) + \sum \alpha_ie^{z/D}\sin(-Q_i)\cos(i\omega t_i) + \sum \beta_je^{z/D}\cos(-Q_j)\sin(i\omega t_j)\label{eq:plauborg_expand}
+\end{align}
+
+A possible reason for the residuals could be the soiltypes at the stations making so a universal, high accurasy model would not be feasible unless including other metrological metrics (air pressure, humidity, soil type, soil texture, etc$\dots$) or including other non-linear features ($\sqrt{\text{temperature}}$,ratio between temperature change in depth and time, etc$\dots$).
  
-\subsubsection{Attention-aware ILSTM}\todo{Make a comperason to BiLSTM}
+\subsubsection{RNN results compared to other studies}
  
+The BiLSTM is an improvement over LSTM and the modified BiLSTM with layers is a clear indication that added complexity to a deep learning model is the way to go. This progression of improvements has been shown in other studies\cite{feng_estimation_2019,citakoglu_comparison_2017,li_attention-aware_2022,li_gans-lstm_2020,wang_modeling_2022}. None of the deep learning models has been optimised, however in according to earlier studies that focused on these types of model the authors did find that adding layers to the models does improve the model performance. 
+
+\subsubsection{Further developments}\todo{Make a comperason to BiLSTM}
+
 It is a know fact, since 1849\footnote{First weather prediction made by Joseph Henry in 1849}, that to know previous weather patterns will greatly improve prediction accuracy. To improve the accurasy even more a model can focus one specific patterns that has a big impact on the prediction. The ILSTM attempts to do this by including a new technique in data science called attention\cite{vaswani_attention_2017} that takes a collection of data and gives each element a weight associated with importance. When that paper was published it was focused on translation between English and German, however the paper published by \citeauthor{li_attention-aware_2022} uses this novel technique to do both time and feature importance and from that make a prediction.
- 
-\subsubsection{BiLSTM results compeared to \citeauthor{li_modeling_2020} study}
- 
-\todo{discuss the results with the paper} 
- 
+
 \subsection{Future work}
 
-The models chosen in this study is not a representative sample of current knowledge of soil temperature modelling, and this study did not aim for optimizing the models beyond what the original authors have already done with the exception for base models used for comparison puposus. A more comprehensive is needed of more complex models that utelises cutting edge technologies, techniques, and theory. One of which is logic based models, for instance ASPER\cite{le_asper_2023} that tries to incoerate logical descriptions of the problem and limits the model for better or equal results based on fewer samples\cite{machot_bridging_2023}. Another approch is to incorporate randomness into the deterministic models to explain the variation in the data, for instance fractional Brownian motion\cite{di_crescenzo_model_2022}.\todo{move som of this to introduction}
+The models chosen in this study is not a representative sample of current knowledge of soil temperature modelling, and this study did not aim for optimizing the models beyond what the original authors have already done with the exception for base models used for comparison pouposus. A more comprehensive is needed of more complex models that utelises cutting edge technologies, techniques, and theory. One of which is logic based models, for instance ASPER\cite{le_asper_2023} that tries to incorporate logical descriptions of the problem and limits the model for better or equal results based on fewer samples\cite{machot_bridging_2023}. Another approch is to use the newest deep learning method of the attention mechanism\cite{vaswani_attention_2017} combined with recurrent neural networks to elivate the accuracy and speed of the model. As the author of the paper \cite{li_attention-aware_2022} has show great promise with that approch
+
