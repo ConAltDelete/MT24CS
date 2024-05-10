@@ -2,50 +2,77 @@
 
 This section discusses the theory behind the models used in the study, there are a few base models (section \ref{sec:theory:linreg}, and \ref{sec:theory:lstm}) based on the interpretation of the papers hand picked for this study
 
+\subsection{Soil temperature}
+
+THe difficulti in predicting the soil tempearatutre comes from that the enviroment is highly variant and radicaly diffenrent from each other. A farmer in Sunndal in Middle-Norway would have to do different considerations than a farmer in Karasjok in Nord-Norge or a farmer in Bergen in Sør-Norge simple due to differn climat and soil profile. There exist methods to help farmers get an local estiamte of current soil state; Methods such as soil texture, soil smell, soil feel, and colour. These methods works to make on-the-spot desition to when plant crops, water the crops, or when to harvest. A better approch is to have a model to predict the upcoming tempartues so farmers have a window of time to prepere for crop harvest or planting.
+
+A simple naive way to predict soil temperature would be to use the equation found by \cite{van_wijk_wr_periodic_1963}
+\begin{equation}
+	\text{daily soil temperature} \approx \widetilde{T}_{\text{soil,year}} + e^{-z/D}\sin(\omega t - z/D + \phi)
+\end{equation}
+
+This analytical formula has its limitations as it does not take into account rain fall, snow melt, freezing, and re-freezing. Futher more, the formula does not incoporate the importance of the surface temperature and its inpact on the soil layers over time. An ideal formula would incorporate all of these elements and possibly more, but that would require more computation power than currently available.
+
+An expantion of this soultion was expanded by \cite{roodenburg_estimating_1985} by including the solar movement to predict daily soil temperatures. The sun does heat up the soil differently depending on it angle over horizon and the cloud blocking or not hiding the sun. It is commented by the author of \cite{roodenburg_estimating_1985} that this simple model does not describe the soil temperature the effect of snow cover or precipitations effekts..
+
+From current understanding of soil physics a modern model researches in cooperate the saturated hydraulic conductivity and the unfrozen water content to their equations\cite{stuurop_influence_2022}. Some of these formulas contains nested exponentials\cite{stuurop_influence_2022}. This formulation introduces numerical limitations as the estimation at the center of the formula would be amplified as the computation continues. A commonly used approch is \acrfull{ac:fdm} where a differntial equation gets decomposed to several equation that gets mapped to a grid with boundry conditions\cite{singh_numerical_2017,rankinen_simple_2004,cleall_analytical_2015}. 
+
+\todo{Discuss the problem with predicting soil temeprature}
+
 \subsection{Linear regression}\label{sec:theory:linreg}
 
-The regression model will be for the sake of convenience be expressed as the following expression
-$$
-\vec{F}(\mathbf{A})\vec{\beta}=\vec{y}+\vec{\varepsilon}
-$$
+Air temperature has a direct connection to soil temperature as the main source of thermal energy next to solar radiation. A primitiv relation between air temperature and soil temperature at a given depth would be
 
-Where $\vec{F}$\marginpar{The $\vec{F}$ is not important, just that your data is shaped by a function.}\todo{Remove} is a vector function with following domain $\vec{F}:\mathbb{R}^{m\times n}\to \mathbb{R}^{m\times p}$ where $m,n,p\in \mathbb{N}$, $\mathbf{A}$ is the data in matrix form with dimensions $\mathbb{R}^{m\times n}$, $\vec{\beta}$ is the regression terms, $\vec{y}$ is the target (TJM10 or TJM20), and $\vec{\varepsilon}$ is the residual error.
+\begin{equation}
+	T_{\text{Soil, n cm}} \approx \beta_{\text{n cm}} T_{\text{Air}} + \vec{varepsilon}
+\end{equation}
+The $\beta_{\text{n cm}}$ represent the scaling factor for the air-soil relation. The regression model will be for the sake of convenience be expressed as the following expression
+\begin{equation}
+	\vec{F}(\mathbf{A})\vec{\beta}=\vec{y}+\vec{\varepsilon}
+\end{equation}
+
+Where $\vec{F}$ is a vector function with following domain $\vec{F}:\mathbb{R}^{n\times m}\to \mathbb{R}^{n\times p}$ where $m,n,p\in \mathbb{N}$, $\mathbf{A}$ is the data in matrix form with dimensions $\mathbb{R}^{n\times m}$, $\vec{\beta}$ is the regression terms with shape $\mathbb{R}^{p\times 1}$, $\vec{y}$ is the target (TJM10 or TJM20) with shape $\mathbb{R}^{n\times 1}$, and $\vec{\varepsilon}$ is the residual error with the same shape as$\vec{y}$.
 
 This basic model to express the linearity of the components to soil temperature. This will function as the base model for regression models. 
 
 \subsection[Plauborg Regression]{Plauborg linear regression model with Fourier terms}\label{sec:theory:pluborg}
 
-An improvemnt over an time independent linear regression model would be a time dependent linear regression model that takes not only current time into account of the calculations but also previus messurments. It is current knowlage that soil temperatures depends on previous temperatures and metrological phenomenons. In the paper \citetitle{plauborg_simple_2002} the author chose to extend the features from only air temperature at current time to include also previus days of year and the air temperature from those days. This means the following F function that \citeauthor{plauborg_simple_2002} used would be 
+An improvement over an time independent linear regression model would be a time dependent linear regression model that takes not only current time into account of the calculations but also previus messurments. It is current knowlage that soil temperatures depends on previous temperatures and meteorological phenomenons. In the paper \citeauthor{plauborg_simple_2002} \cite{plauborg_simple_2002} extend the features from only air temperature at current time to include also previus days of year and the air temperature from those days as an extention of \cite{roodenburg_estimating_1985}. This means the following F function that \citeauthor{plauborg_simple_2002} used would be 
 $$
 \vec{F} := [air_t , air_{t-1}, air_{t-2}, air_{t-3}, \sin(\omega t) , \cos(\omega t), \sin(2*\omega t), \cos(2*\omega t)]^T
 $$
 
 Where $air_t$ is the air temperature at time $t$ expressed in day of the year (0-365), $\omega$ is the angular frequency in radians per hour or radians per day, depending on the time unit. The sine/cosine elements in the F function represent the variations through the day by fitting $\vec{\beta}$ to the yearly variation. To adapt the authors model to an hourly time unit would be to either
 \begin{enumerate}
-	\item Extend the F function to include a larger $\omega$ coefficient to reflect hourly oscillations in conjunction with daily fluxiations
+	\item Extend the F function to include a larger $\omega$ coefficient to reflect hourly oscillations in conjunction with daily fluctuation
 	\item Refit the Fourier terms with a larger $\omega$ coefficient to make the oscillations more representative of daily temperature changes.
 \end{enumerate}
 
 The larger coefficient could be expressed as $\pi/12$ while the smaller $\omega$ for daily values would be rescaled to $2\pi/365$.
 
-The problem with this approsh would be Fouriers Sine-Cosine series approximation which would suggest that \citeauthor{plauborg_simple_2002}'s method could be subject to overfitting with addition of more terms. On the other hand it gives us a way to compute the coefficients $\alpha_i$ and $\gamma_i$ for sine and cosine terms respectively, though it would be more numerically stable with a pseudo-inverse computation or a max log likelihood approach.
+The problem with this approach would be Fouriers Sine-Cosine series approximation which would suggest that \citeauthor{plauborg_simple_2002}'s method could be subject to overfitting with addition of more terms. On the other hand it gives us a way to compute the coefficients $\alpha_i$ and $\gamma_i$ for sine and cosine terms respectively, though it would be more numerically stable with a pseudo-inverse computation or a max log likelihood approach.
 
 %\include{Rankin_mod.tex} % remove if not looked at
 
-\subsection{Long Short Term Memory model}\label{sec:theory:lstm}
+\subsection{\acrfull{ac:lstm} model}\label{sec:theory:lstm}
 \begin{figure}[ht]
 	\centering
 	\includegraphics[width=0.7\linewidth]{figures/LSTM_Cell}
-	\caption{LSTM cell,  Artist: \textcite{chevalier_english_2018}}
+	\caption{LSTM cell,  From: \textcite{chevalier_english_2018}}
 	\label{fig:lstmcell}
-\end{figure}\todo{Do propper credit of picture}
-When modeling soil temperature it is important to know the previus hours or days to predict the next timestep, for this a natural selection for a data driven model is a recurrent network. This type of network makes prediction based on previus timesteps in the data, however the longer timespan the model takse into account the less important are the erlier timesteps in the data. 
+\end{figure}
+When modeling soil temperature it is important to know the previus hours or days to predict the next timestep, for this a natural selection for a data driven model is a recurrent network. This type of network makes prediction based on previus timesteps in the data, however the longer timespan the model takse into account the less important are the earlier time-steps in the data. 
 
-To combat this there was developed an improved model called Long-Short Term Memory model\cite{hochreiter_long_1997} that deploys a memory cell that feeds information from earlier timesteps to the late ones. To make sure that redundant information or unimportant informantion don't get feed forward there are also forgetting gates that removes some of the newly learned patterns and integrates it into the memory cell. \todo{Write more}
+To combat this there was developed an improved model called Long-Short Term Memory model\cite{hochreiter_long_1997} that deploys a memory cell that feeds information from earlier timesteps to the late ones. To make sure that redundant information or unimportant features don't get feed forward there is forgetting gates that removes some of the newly learned patterns and integrates it into the memory cell. \todo{Write more}
 
 The most common problem in Neural networks is the vanishing gradient problem where updating the first few layers of a large network becomes exponentially more difficult since the adjustments gets smaller and smaller for each layer towards the start rather than the reverse. \gls{gl:lstm} changes this by caring information from the previous cells forward thereby allowing updating earlier cells with bigger impact than the standard approach\cite{hochreiter_long_1997}. \acrshort{ac:lstm} is part of a family of \gls{gl:rnn}'s that passes information to other cells in the same layer.
 
+\subsection{\acrfull{ac:gru}}
 
-
-\subsection[ILSTM]{Attention aware LSTM model}\label{sec:theory:Ilstm}\todo{Consider removing if not model}
-
+The comlexaty of soil temperatures and its dependensy of previus time-steps make \gls{gl:rnn}'s a natural chose of a deep learning model, but the intricasy of an \acrshort{ac:lstm} makes it difficult to fine tune. An alternative to LSTM is the GRU model\cite{cho_learning_2014} that has fewer parameters to adjust however it has a memory mechanism that allows it to forget and remember information that is passes to other cells in the model. 
+\begin{figure}[H]
+	\centering
+	\missingfigure{Insert GRU scetch}
+	\caption[GRU model scetch]{The GRU model where the memory cell gets more efficiently adjusted by the update gate (z) and appended information via the reset gate (r).}
+\end{figure}
+The GRU model has the advantage over LSTM to be smaller, and more efficiently convergence due to the integration of memory and prediction layer.

@@ -2,36 +2,33 @@
 
 % talk about how this study answers you research questions
 
-Soil temperature significantly impacts agriculture, influencing pest prevention, conservation, yield prediction, and more. Despite its importance, widespread measurement remains challenging due to cost limitations and technical issues. Interpolating missing data using methods like global mean approximation is common but has drawbacks including requiring a previus messurements of the soil temperature. Incorporating exogenous features can improve soil temperature estimation. Advancements in prediction and measurement are crucial for sustainable agriculture and accurate climate models.
+Soil temperature significantly impacts agriculture, influencing pest prevention, conservation, yield prediction, and more. Despite its importance, widespread measurement remains challenging due to cost limitations and technical issues. Interpolating missing data using methods like global mean approximation is common but has drawbacks including requiring a previus measurements of the soil temperature. Incorporating exogenous features can improve soil temperature estimation. Advancements in prediction and measurement are crucial for sustainable agriculture and accurate climate models.
 
-Methods used in this study are 
+Method used in this study are
+\begin{enumerate}
+	\item Fetch avalible data to use as training and testing set
+	\item Compile the data and treat it to be used in the modelig
+	\item Train all the models on the same traning data (2014 to 2020)
+	\item calculate and plot relavent statitics (2021 to 2022)
+	\item compile the results
+\end{enumerate} 
 
-The prediction of soil temperatures is an important subject of study for the civil population, and the scientific community. For that reason a good model that can be generalised and applied globally is an desired thing.
+The results of this study show that promising results can be achieved with few parameters, however further studies need to be done to see the effekt of adding more parameters or making the models more complex by adding more structure\footnote{Sturcture as in more layers, augmentations of input and features from feature extraction.}. As for regression modeling; Adding time to a regression model does improve the model predictive power over a time independent model.
 
-The resutls show that good results can be achived with few parameters, however furter studies need to be done to see the effekt of adding more parameters. As for modeling; Adding time to a regression model does improve the model predictive power over a time independent model. 
-
-There is a clear advantage to further investigation into deep learning models as the models shows good results, as is show in other studies\cite{feng_estimation_2019,li_attention-aware_2022,li_modeling_2020}. 
+There is a clear advantage to data-driven modeling to further the investigation into deep learning models as the models shows comparable results to analytical models, as is show in other studies\cite{feng_estimation_2019,li_attention-aware_2022,li_modeling_2020}. 
 
 \subsection{Limitations}
 
 This study faced a multitude of technical difficulties including,
 \begin{itemize}
-	\item Getting the models to run
-	\item Finding proper parameters
-	\item Insufficient computing power
-	\item Getting TensorFlow to work
+	\item Trying to get the models to run properly
+	\item Finding proper parameters to limit memory usage and time
+	\item Insufficient computing power for some parameters
+	\item Getting TensorFlow to work on Windows 10/11\footnote{This has later in the study that was futile as the project had moved from being Windows compatible to being exclusively runnable on Linux unless choosing an outdated version of Tensorflow.}
 \end{itemize}
+This study would be more comprehensive if these unforseen difficulties did not occure, and it is recommended that it would be done a new study going more in depth into other type of deep learning models suitable for time-series data.
+
 
 \section{Acknowledgements}
-\subsection[Use of AI]{Use of Artificial Intelligence in this paper}
-
-In this paper there has been used Artificial Intelligence (AI), specifically Bing Chat / Copilot hosted by Microsoft Cooperation with special agreement with \acrfull{ac:nmbu}, for the following purposes:
-
-\begin{enumerate}
-	\item Formalising sentences and rephrasing sentences.
-	\item Spellchecking
-	\item Code generation of basic consepts and structures (tree traversal, template for generic classes) 
-\end{enumerate}
-
-It is important to emphasize that our engagement with AI have been actively curated and verified with known information. All code underwent rigorous manual inspection within a dedicated testing environment. Furthermore, no confidential or sensitive information was shared with the AI; our interactions focused solely on broad topics and general inquiries. To validate the accuracy of AI-generated responses, we cross-referenced them with established research papers and textbooks.
+The progenitor of this study presently partakes in an interval of non-occupational repose, traditionally associated with restorative diversion from vocational pursuits as of immediate effect of thesis submission.
 \label{pg:LastBread}

@@ -239,13 +239,21 @@ csv_dekkning_file_name <- paste0(TABLE_PATH,"na_cover.csv")
 report_name <- paste0(OTHER_PATH,"NB_data.txt")
 mix_data_name <- paste0(OTHER_PATH,"data.txt")
 
+if(!file.exists(csv_na_file_name)){
+  file.create(csv_na_file_name)
+}
 cat(csv_title_cumsum_count,
             file = csv_na_file_name,sep="\n")
+if(!file.exists(csv_dekkning_file_name)){
+  file.create(csv_dekkning_file_name)
+}
 cat(csv_title_dekkning,
             file = csv_dekkning_file_name,sep="\n")
+if(!file.exists(report_name)){
+  file.create(report_name)
+}
 cat(paste("notable runs,defined by nb length",notible_run,"and warning length",warning_run,"\n###############################"),
             file = report_name,sep="\n")
-
 station_names <- read.csv(DATA_INFO_NIBIO_FILE,
                           header=TRUE,
                           row.names="ID",
@@ -613,7 +621,7 @@ all.id <- as.numeric(rownames(station_names))
 
 for(id in all.id){
     # beginning plot
-    pdf(file = paste0(PLOTS_PATH,"plot-",id,".pdf"))
+    pdf(file = paste0(PLOTS_PATH,"washed_plot-",id,".pdf"))
     plot(NULL,
          sub = "hourly time From 2014-03-01 to year 2022-10-31",
          xlab="Date", ylab="NA location",

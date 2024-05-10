@@ -22,6 +22,8 @@ for (b,a),val in epoch_dict.items():
     val = (val - np.min(val))/(np.max(val)-np.min(val))
     plt.plot(val,label = "({},{})".format(a,b))
 plt.title("Scaled performence per epoch")
+plt.suptitle("Extended BiLSTM")
 plt.xlabel("n epochs")
+plt.ylabel("MinMax scaled")
 plt.legend(title="(hours,n LSTM cells)")
 plt.show()

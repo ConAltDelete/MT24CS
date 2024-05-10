@@ -1,16 +1,11 @@
-\addcontentsline{toc}{section}{Abstracts}
-\begin{center}
-\begin{minipage}[t]{0.45\textwidth}
-	\centering
-	\textbf{Abstract}\\
-	This study focuses on 3 models that have been used in the literature to predict soil temperatures. The depths chosen as targets are 10cm, and 20cm in 4 regions; Innlandet, Østfold, Vestfold, and Trøndelag. In each region there are 4 stations with self-draining or saturated soils.
-\end{minipage}
-\begin{minipage}[t]{0.45\textwidth}
-	\centering
-	\textbf{Oppsummering}\\
-	Denne studien ser på modeler som predikerer jordtemperaturer
-\end{minipage}
-\end{center}	\todo{Fill out when soon done}
+
+\section*{Abstract}
+This study focuses on 3 models that have been used in the literature to predict soil temperatures. The depths chosen as targets are 10cm, and 20cm in 4 regions; Innlandet, Østfold, Vestfold, and Trøndelag. In each region there are 4 stations spread along the region to get the most coverage of area to be the most representative of the local area. The models chosen had been used in the literature to predict soil temperatures. The data used in this study was collected from \acrshort{ac:kilden} with the features; hourly air temperature from 2m height, soil temperature from 10cm depth, soil temperature from 20cm depth.
+
+The models chosen are LSTM, BiLSTM, GRU, linear regression, and linear regression model modified by \citeauthor{plauborg_simple_2002}. All the models performed within 2℃ RMSE and an absolutt bias of 1.5|℃| except linear regression that had an RMSE of 4.5℃ RMSE  and absolutt bias of 
+
+\section*{Oppsumering}
+Denne studien ser på modeler som predikerer jordtemperaturer
 
 % hva gjør vi
 
@@ -18,19 +13,42 @@
 
 % resultat
 
-\keywords{Soil temperature, Machine learning, regression,hour, weather forecasting data}
+%Er det kun økonomiske og tekniske årsaker til at vi ikke måler overalt? Det er mange steder hvor det ikke er mulig å måle. Det er heller ikke mulig å ha et uendelig antall sensorer over alt. Det finnes mange steder hvor en ønsker å beregne jordtemperatur hvor det er en viss avstand til en eksisterende værstasjon, kanskje det er andre geografiske forhold, eller lokale klimaforhold som påvirker. Som du skriver, er det også ønskelig å kunne beregne jordtemperatur fremover i tid.
+
+\keywords{LSTM, GRU, RNN, Soil temperature, Machine learning, regression,hourly, weather forecasting data}
 
 \section{Introduction}
 
-In agriculture soil temperature is one of the important parameters to put into consideration when thinking about pest prevention, conservation, and yield prediction. The reasoning for this is that knowing the soil temperature is knowing climate change \cite{li_attention-aware_2022}, water management \cite{alizamir_advanced_2020}, yield \cite{sim_prediction_2020}, nitrogen processes \cite{rankinen_simple_2004} in the soil, calculation of plant-growth \cite{li_modeling_2020}, when seeds start to sprout \cite{li_modeling_2020}, potential flooding and erosions\cite{stuurop_influence_2022}, and predicting when insect eggs hatch that were laid last winter. Being able to predict the soil temperature into the future will be a huge advantage for farmers, civilians, and scientists.
+In agriculture soil temperature is one of the important parameters to put into consideration when thinking about pest prevention, conservation, and yield prediction. The reasoning for this is that knowing the soil temperature is gaining useful insight into
+gain important info for water management \cite{alizamir_advanced_2020},
+potential yields \cite{sim_prediction_2020},
+calculation of plant-growth \cite{li_modeling_2020},
+and predicting hatching insect eggs\cite{nanushi_pest_2022,johnson_effects_2010}.
+Being able to predict the soil temperature a few days in advance does give insight into
+potential flooding and erosions\cite{stuurop_influence_2022},
+when seeds start to sprout \cite{li_modeling_2020},
+nitrogen processes \cite{rankinen_simple_2004} in the soil.
+Due to climate change it is more important to know soil temperatures at given 
 
-If it's important, why don't institutions measure it everywhere? There are several reasons for this, but a common reason is that it's expensive to install new equipment on old weather stations. Sometimes the weather station do have the sensors in the fields reading soil temperature at given levels, but due to technical misadventures and unforeseen phenomenons there might be gaps or misreadings that need to be replaced with approximations or NULL values\footnote{These values are different from 0 as they represent "no data" and can't be used to do calculations.}. There are algorithms, models, and statistical tools to interpolate these missing values but they have their drawbacks. For instance approximation by global mean, which is a common method used in timeseries\cite{lepot_interpolation_2017}. This method is preserved global statistics, however does not represent local changes. Further more for a good estimation of soil temperature it is useful to include exogenous\footnote{Variable that can affect the model, but is not not directly described by the model.} features.
+If it's important, why don't institutions measure it everywhere? There are several reasons for this, but a common reason is that it's expensive to install new equipment on old weather stations. Furthermore it is unfeasible to install sensors absolutely everywhere at any depth, however it is not nessesery with full coverage of an area as it is sufficient to have a few samples here and there to get an overview of the current state of the soil. Another thing is that it might be impractical to install sensors in some areas due to climate, soil quality (or lack there of), or the misrepresentation of the area if its an geographical or meteorological special case.
 
-There has been done research into heat conductivity in soil that has lead to differential equations\cite{karvonen_model_1988}, however these equations\cite{fourier_analytical_2009,karvonen_model_1988} are computationally expensive and difficult to simulate, or calculate\cite{rankinen_simple_2004}. \comment{To add to the complexity the heat dynamics change depending on soil temperature as they change the physical stucture of the soil}{Find source!, if not remove}
+Sometimes the weather station do have the sensors in the fields reading soil temperature at given levels, but due to technical misadventures and unforeseen phenomenons there might be gaps or misreadings that need to be replaced with approximations or NULL values\footnote{These values are different from 0 as they represent "no data" and can't be used to do calculations.}. \remove{However the absolute necessity to messure soil temperature everywhere is not critical since the usefulness of the soil temperature is to give an overview of the area and how it would develop in the future. }
 
-There are also massive developments in the types of models, one of which are ASPER that combines logical statments\footnote{Statements can be tought of as formulas, nature laws, knowledge about the solution} with deep learning models to achieve better or similar results to "non-logical" deep learning models, but on fewer samples\cite{le_asper_2023}. A study has been preformed with the model which shows that the model can reduse the number of samples/observations needed by a factor of 1/1000\cite{machot_bridging_2023}. After an intervju with the study resercher (\citeauthor{machot_bridging_2023}), although the model needs a strict ruleset it is possible to incorporate baysioan statistics to make the model more general for more applications by weakening the ruleset and imply that the rules given might not be 100\% accurate and can be relaxed. Another cutting-edge method used is attention-awareness, same method used in ChatGPT, and other modern AI technologies for generative media. This method has been utilised to predict soil temperatures and soil moisture\cite{li_attention-aware_2022}.
+Previous research has investigated soil heat conductivity, leading to the formulation of differential equations \cite{karvonen_model_1988}. However, these mathematical statements, which involve heat transfer, are computationally demanding and challenging to simulate or calculate \cite{fourier_analytical_2009, karvonen_model_1988}. Numerical solutions are not the only obstacle; the dynamic nature of heat within the soil also plays a crucial role. For instance, frost in Scandinavian countries significantly alters soil heat conductivity \cite{stuurop_influence_2022}, further complicating accurate calculations. As part of this study, data will be collected from Norway, situated within the Scandinavian region.
+
+Deeplearning models
 
 A beneficial model would be one using the fewest number of parameters as possible while returning results within acceptable tolerances. This study will consider models that can use only time and air temperature as those two features are the most common measurements measured at weather stations, since soil temperature is not necessarily calculated as stated earlier. A good metric in this study will be considered to be a combination of Root Mean Square Error and Explained Variance (see section \ref{sec:method:metric}). 
 
-The goal of this study is to find which type of model is worth to do further research on. The models selected is a small poll of models in the literature that are being used to predict soil temperature using metrological observations. The scope of metrological is limited to time (as either day of the year, or the hour of the year) as these are common observations in the literature and in Norwegian weather stations. 
+This study aims to address the following key questions:
+\begin{itemize}
+	\item Achieving Good Results with Minimal Parameters: Can satisfactory predictions be obtained using a limited set of meteorological and chronological parameters?
+	
+	\item Deep Learning Models for Soil Temperature Prediction: Is it feasible to employ deep learning models for predicting soil temperatures?
+	
+	\item Complexity of Deep Learning Models: Is it necessary to utilize complex deep learning architectures when predicting soil temperatures?
+	
+	\item Suitable model for northic climate: Is there a model that fits for the Scandinavian climate?
+\end{itemize}
 
+Regarding deep learning models, this study primarily focuses on \gls{gl:rnn} networks and explores various compositions of this technology. The definition of a "good result" will be relative to the performance of other models in the field and to similar studies that employ comparable architectures. Additionally, the \acrfull{ac:gru} has been considered as an alternative to LSTM in this context due to its simplicity, and yet mechanically similar to the LSTM.
