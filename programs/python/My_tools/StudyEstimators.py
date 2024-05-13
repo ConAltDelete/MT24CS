@@ -231,6 +231,34 @@ class KerasGRU(KerasBiLSTM):
         self.is_fitted_ = True
         return self
 
+class KerasBiGRU(KerasBiLSTM):
+    def fit(self, X, y):
+        if "Time" in X.columns:
+            X["Time"] = X["Time"].transform({"Time":lambda x: x.day_of_year*24 + x.hour})
+
+        X, y = check_X_y(X, y) # Checks if values are finite and not too sparce.
+        # Data treatment
+        All_data = self._data_treatment(X,y) # Takes both just incase.
+        # Setting up model
+        if not(self.is_fitted_):
+            self.model = Sequential()
+            self.model.add(Input(All_data[0][0].shape[1:]))
+            #? add a convelution layer or two here?
+            self.model.add(Bidirectional(GRU(self.num_classes),merge_mode="ave"))
+            self.model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mean_squared_error','r2_score'])
+
+        h = self.model.fit(All_data, epochs=self.epochs, verbose=1)
+        self.history = h
+
+        f = open("logs/KerasBiGRU" + "_" + str(datetime.datetime.today().strftime('%Y-%m-%d')) + ".hist","a+")
+        f.write("[{}]: ".format(str(datetime.datetime.now())))
+        f.write(str(h.history))
+        f.write("\n{}".format(str(self.__dict__)))
+        f.write("\n{}\n".format(str(self.model.__dict__)))
+        f.close()
+
+        self.is_fitted_ = True
+        return self
 
 class modKerasBiLSTM(KerasBiLSTM):
     def fit(self, X, y):

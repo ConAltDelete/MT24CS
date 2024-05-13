@@ -2,7 +2,7 @@
 \section*{Abstract}
 This study focuses on 3 models that have been used in the literature to predict soil temperatures. The depths chosen as targets are 10cm, and 20cm in 4 regions; Innlandet, Østfold, Vestfold, and Trøndelag. In each region there are 4 stations spread along the region to get the most coverage of area to be the most representative of the local area. The models chosen had been used in the literature to predict soil temperatures. The data used in this study was collected from \acrshort{ac:kilden} with the features; hourly air temperature from 2m height, soil temperature from 10cm depth, soil temperature from 20cm depth.
 
-The models chosen are LSTM, BiLSTM, GRU, linear regression, and linear regression model modified by \citeauthor{plauborg_simple_2002}. All the models performed within 2℃ RMSE and an absolutt bias of 1.5|℃| except linear regression that had an RMSE of 4.5℃ RMSE  and absolutt bias of 
+The models chosen are LSTM, BiLSTM, GRU, linear regression, and linear regression model modified by \citeauthor{plauborg_simple_2002}. All the models performed within 2$^\circ C$ RMSE and an absolute bias of 1.5|$^\circ C$| except linear regression that had an RMSE of 4.5℃ RMSE  and absolute bias of 
 
 \section*{Oppsumering}
 Denne studien ser på modeler som predikerer jordtemperaturer
@@ -28,11 +28,11 @@ Being able to predict the soil temperature a few days in advance does give insig
 potential flooding and erosions\cite{stuurop_influence_2022},
 when seeds start to sprout \cite{li_modeling_2020},
 nitrogen processes \cite{rankinen_simple_2004} in the soil.
-Due to climate change it is more important to know soil temperatures at given 
+Due to climate change it is more important to know soil temperatures at given depths.
 
-If it's important, why don't institutions measure it everywhere? There are several reasons for this, but a common reason is that it's expensive to install new equipment on old weather stations. Furthermore it is unfeasible to install sensors absolutely everywhere at any depth, however it is not nessesery with full coverage of an area as it is sufficient to have a few samples here and there to get an overview of the current state of the soil. Another thing is that it might be impractical to install sensors in some areas due to climate, soil quality (or lack there of), or the misrepresentation of the area if its an geographical or meteorological special case.
+If it's important, why don't institutions measure it everywhere? There are several reasons for this, but a common reason is that it's expensive to install new equipment on old weather stations. Furthermore, it is unfeasible to install sensors absolutely everywhere at any depth, however it is not necessary with full coverage of an area as it is sufficient to have a few samples here and there to get an overview of the current state of the soil. Another thing is that it might be impractical to install sensors in some areas due to climate, soil quality (or lack there of), or the misrepresentation of the area if it's a geographical or meteorological special case.
 
-Sometimes the weather station do have the sensors in the fields reading soil temperature at given levels, but due to technical misadventures and unforeseen phenomenons there might be gaps or misreadings that need to be replaced with approximations or NULL values\footnote{These values are different from 0 as they represent "no data" and can't be used to do calculations.}. \remove{However the absolute necessity to messure soil temperature everywhere is not critical since the usefulness of the soil temperature is to give an overview of the area and how it would develop in the future. }
+Sometimes the weather station do have the sensors in the fields reading soil temperature at given levels, but due to technical misadventures and unforeseen phenomenons there might be gaps or misreadings that need to be replaced with approximations or NULL values\footnote{These values are different from 0 as they represent "no data" and can't be used to do calculations.}.
 
 Previous research has investigated soil heat conductivity, leading to the formulation of differential equations \cite{karvonen_model_1988}. However, these mathematical statements, which involve heat transfer, are computationally demanding and challenging to simulate or calculate \cite{fourier_analytical_2009, karvonen_model_1988}. Numerical solutions are not the only obstacle; the dynamic nature of heat within the soil also plays a crucial role. For instance, frost in Scandinavian countries significantly alters soil heat conductivity \cite{stuurop_influence_2022}, further complicating accurate calculations. As part of this study, data will be collected from Norway, situated within the Scandinavian region.
 
@@ -48,7 +48,7 @@ This study aims to address the following key questions:
 	
 	\item Complexity of Deep Learning Models: Is it necessary to utilize complex deep learning architectures when predicting soil temperatures?
 	
-	\item Suitable model for northic climate: Is there a model that fits for the Scandinavian climate?
+	\item Suitable model for Nordic climate: Is there a model that fits for the Scandinavian climate?
 \end{itemize}
 
 Regarding deep learning models, this study primarily focuses on \gls{gl:rnn} networks and explores various compositions of this technology. The definition of a "good result" will be relative to the performance of other models in the field and to similar studies that employ comparable architectures. Additionally, the \acrfull{ac:gru} has been considered as an alternative to LSTM in this context due to its simplicity, and yet mechanically similar to the LSTM.

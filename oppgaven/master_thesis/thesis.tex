@@ -33,7 +33,10 @@
 
 	\include{conclution/conclution.tex}
 	
-	\pagenumbering{Alph}
+	\renewcommand{\thepage}{\alphalph{\value{page}}}
+	\setcounter{page}{1}
+	
+		
 	\include{glossery_library.tex}
 	\section{Bibliography}
 	\printbibliography

@@ -50,14 +50,14 @@ All stations are sampled from the date\footnote{Format month-day} 03-01 to 10-31
 
 \subsubsection{Selection process}
 
-An array of stations was provided by LMT based on their possession of the necessary data. All stations were reviewed, checked for missing data, and those with excessive gaps were removed from the list or replace with another station. After compiling a list of stations, each one was re-examined to identify outliers present in the data and eliminate them accordingly. If certain stations had an excessive number of missing values after the outlier check, nearby stations were sought, and the affected station was replaced and the outlier check was re-done. Table \ref{fig:plot-17} is showing station 17 (Apelsvoll, Innlandet) before treatment, and table \ref{fig:plot-17-treated} shows the same station cleaned and ready for being used as training/testing data.
+An array of stations was provided by LMT based on their possession of the necessary data. All stations were reviewed, checked for missing data, and those with excessive gaps were removed from the list or replace with another station. After compiling a list of stations, each one was re-examined to identify outliers present in the data and eliminate them accordingly. If certain stations had an excessive number of missing values after the outlier check, nearby stations were sought, and the affected station was replaced and the outlier check was re-done. Table \ref{fig:plot-17} is showing Fåvang before treatment, and table \ref{fig:plot-17-treated} shows the same station cleaned and ready for being used as training/testing data.
 
 \begin{figure}
 		\centering
 		\begin{adjustwidth}{-1in}{-1in}
 			\includegraphics[height=0.9\textheight, width=\textwidth, angle=90]{"../../results/plots/Plot_test_naive_nan_k17_fTJM20.pdf"}
 		\end{adjustwidth}
-		\caption[Visual representation of station 17]{Visual representation of missing values at station 17 from 2014 to 2022 at the parameter "TJM20". The left numbers indicated how many hours that are missing and how many of them are shorter than or longer than 5 hours. The yellow markings indicate possible outliers based on the given year, all markings was checked if they were actual outliers. The red colouring indicate missing values in the data (represented in the data with code "NULL").}
+		\caption[Visual representation of Fåvang]{Visual representation of missing values at Fåvang from 2014 to 2022 at the parameter "TJM20". The left numbers indicated how many hours that are missing and how many of them are shorter than or longer than 5 hours. The yellow markings indicate possible outliers based on the given year, all markings was checked if they were actual outliers. The red colouring indicate missing values in the data (represented in the data with code "NULL").}
 		\label{fig:plot-17}
 \end{figure}
 \begin{figure}
@@ -65,7 +65,7 @@ An array of stations was provided by LMT based on their possession of the necess
 		\begin{adjustwidth}{-1in}{-1in}
 			\includegraphics[height=0.9\textheight, width=\textwidth, angle=90]{"../../results/plots/Plot_test_naive_nan_treated_k17_fTJM20.pdf"}
 		\end{adjustwidth}
-		\caption[Visual representation of station 17 treated]{Visual representation of missing values at station 17 from 2014 to 2022 at the parameter "TJM20" after treating for outliers. The left numbers indicated how many hours that are missing and how many of them are shorter than or longer than 5 hours, however for this visualisation they indicate the untreated version of the data. The yellow markings indicate possible outliers based on the given year, all markings was checked if they were actual outliers. The red colouring indicate missing values in the data (represented in the data with code "NULL"). The years 2014 and 2015 was removed from the dataset but not coloured in due to technical limitations of reusable code, and furthermore half of 2016 was removed due to suspicion of misreading from sensor at this station.}
+		\caption[Visual representation of Fåvang treated]{Visual representation of missing values at Fåvang from 2014 to 2022 at the parameter "TJM20" after treating for outliers. The left numbers indicated how many hours that are missing and how many of them are shorter than or longer than 5 hours, however for this visualisation they indicate the untreated version of the data. The yellow markings indicate possible outliers based on the given year, all markings was checked if they were actual outliers. The red colouring indicate missing values in the data (represented in the data with code "NULL"). The years 2014 and 2015 was removed from the dataset but not coloured in due to technical limitations of reusable code, and furthermore half of 2016 was removed due to suspicion of misreading from sensor at this station.}
 		\label{fig:plot-17-treated}
 \end{figure}
 
@@ -74,10 +74,10 @@ The data plots (see figure \ref{fig:plot-17} and \ref{fig:plot-17-treated} as ex
 \subsubsection{Collection of data}
 
 \begin{table}
-	\begin{tabular}{lcc}
-		Name       &                    version                    &                       description                        \\ \hline
-		Powershell &                    7.3.11                     &            Windows native scripting language             \\
-		Curl       & 8.4.0 (windows) libcurl/8.4.0 Schannel WinIDN & Commandline tool to communicate with servers using http. \\
+	\begin{tabular}{l|p{3cm}|p{3cm}}
+		Name       &version&                       description                        \\ \hline
+		Powershell &7.3.11 & Windows native scripting language \\\hline
+		Curl       & 8.4.0 (windows) libcurl/8.4.0 Schannel WinIDN & Commandline tool to communicate with servers using http. \\\hline
 		python     &                    3.9.11                     &                popular Scripting language
 	\end{tabular}
 	\caption[software version description]{The description the software used in this study}
@@ -109,6 +109,8 @@ The data structure used to store the data from the different stations is called 
 	\item Transforming all the data with the same function
 	\item loading and unloading of a large collection of data
 \end{enumerate}
+
+This tree-structure uses recursion to search the dictonary to find the appropriate dataset to output. 
 
 \subsection{Data cleaning and treatment}
 
@@ -172,53 +174,18 @@ Where the $E()$ is the expected value, and $Var()$ is the variance. This conditi
 
 \subsubsection{Missing value imputation}\label{sec:method:interpolation}
 
-The data has missing values, in particular during early Autumn when there were sub-zero temperatures meaning any rain measurements done during this period would have unpredictable fluctuations since at negative temperatures water can freeze, get clogged up with residual bio-material from the surrounding area \todo{Rewrite this part to reflect what is going on}. When interpolating values the method chosen is a linear interpolation with a maximum period of 5 consecutive hours for soil temperatures, and 3 consecutive hours for air temperatures. The reasoning for this is that the soil temperatures are more reliable makeing it safer to interpolate without loosing too much information, while air temperatures has a higher variance making it more difficult to interpolate without cutting values.
+The data has missing values, in particular during early Autumn when there were sub-zero temperatures meaning any rain measurements done during this period would have unpredictable fluctuations since at negative temperatures water can freeze, get clogged up with residual bio-material from the surrounding area \todo{Rewrite this part to reflect what is going on}. When interpolating values the method chosen is a linear interpolation with a maximum period of 5 consecutive hours for soil temperatures, and 3 consecutive hours for air temperatures. The reasoning for this is that the soil temperatures are more reliable making it safer to interpolate without loosing too much information, while air temperatures has a higher variance making it more difficult to interpolate without cutting values.
 
 \subsubsection{Summary of data}
 
-After going to the prosedure the current form of the station are
+After going to the procedure of removing outliers and interpolating missing values, the current form of the station are
 
 \begin{table}
-	\begin{adjustwidth}{-1in}{-0.8in}
-	\input{tables/station_summary_table_air_p1.tex}
+	\centering
+	\begin{adjustwidth}{-1in}{1in}
+		\input{tables/station_summary_table_all.tex}
 	\end{adjustwidth}
-	\caption[Table of station statitics for air]{Every cell of the table has the }
-\end{table}
-
-\begin{table}
-	\begin{adjustwidth}{-1in}{-0.8in}
-	\input{tables/station_summary_table_tjm10_p1.tex}
-	\end{adjustwidth}
-	\caption[Table of station statitics for soil 10cm]{Every cell of the table has the }
-\end{table}
-
-\begin{table}
-	\begin{adjustwidth}{-1in}{-0.8in}
-	\input{tables/station_summary_table_tjm20_p1.tex}
-	\end{adjustwidth}
-	\caption[Table of station statitics for soil 20cm]{Every cell of the table has the }
-\end{table}
-\begin{table}
-	\begin{adjustwidth}{-1in}{-0.8in}
-	\input{tables/station_summary_table_air_p2.tex}
-	\end{adjustwidth}
-	\caption[Table of station statitics for air]{Every cell of the table has the }
-\end{table}
-
-
-\begin{table}
-	\begin{adjustwidth}{-1in}{-0.8in}
-	\input{tables/station_summary_table_tjm10_p2.tex}
-	\end{adjustwidth}
-	\caption[Table of station statitics for soil 10cm]{Every cell of the table has the }
-\end{table}
-
-
-\begin{table}
-	\begin{adjustwidth}{-1in}{-0.8in}
-	\input{tables/station_summary_table_tjm20_p2.tex}
-	\end{adjustwidth}
-	\caption[Table of station statitics for soil 20cm]{Every cell of the table has the }
+	\caption[Table of station statistics]{The table shows the statistics of each station for each feature except for Time as it is a strictly monotonic sequence.}
 \end{table}
 
 \subsection{Setup of models}\todo{In general, write more on all subsections}
@@ -231,121 +198,72 @@ The linear model (section \ref{sec:theory:linreg}) utilises in the study is crea
 
 \subsubsection{Plauborg}
 
-The Plauborg regression will be formulated as a linear regression problem so that the LinearRegression function in the Sci-kit module can be used. For the parameters used in the paper\cite{plauborg_simple_2002} the F function defined in section \ref{sec:theory:pluborg} will be formulated with loops to give rise 3 more parameters for fine-tuning the model. Nan-values generated from the procedure get replaced with 0, since the data fed to the model is significantly larger than 10h (the minimum for the training is 24h).
+The Plauborg regression will be formulated as a linear regression problem so that the 'LinearRegression' function in the Sci-kit module can be used. For the parameters used in the paper\cite{plauborg_simple_2002} the F function defined in section \ref{sec:theory:pluborg} will be formulated with loops to give rise 3 more parameters for fine-tuning the model. NULL-values generated from the procedure get replaced with 0, since the data fed to the model is significantly larger than 10h (the minimum for the training is 24h).
 
 \subsubsection{LSTM}\todo{rewrite or possibaly move}
 
-LSTM\cite{hochreiter_long_1997} was developed in the field of Economy to predict the rise and fall of stocks, but has shown to be applicable to other problems that relies on time-series. It has been used to predict soil temperatures\cite{citakoglu_comparison_2017,elmaz_cnn-lstm_2021,feng_estimation_2019,kandasamy_performance_2023,li_attention-aware_2022,li_gans-lstm_2020,li_modeling_2020,wang_modeling_2022,mehdizadeh_modelling_2020}
-
-Long Short-Term Memory (LSTM) networks are a specialized type of Recurrent Neural Network (RNN) designed to handle long-term dependencies in sequential data. Unlike regular RNNs, which often suffer from vanishing gradient problems, LSTMs utilize a more complex cell structure that allows them to capture long-term dependencies more effectively.
-
-\begin{itemize}
-	\item \textbf{Input Gate (it​)}:
-	$ a_i = \sigma(W_{xi} \cdot X_t + W_{hi} \cdot H_{t-1} + b_i) $
-	\item \textbf{Forget Gate ($f_t$)}:
-	$ a_f = \sigma(W_{xf} \cdot X_t + W_{hf} \cdot H_{t-1} + b_f) $
-	\item \textbf{Cell State Update ($\tilde{C}_t$)}:
-	$ \tilde{C}_t = \tanh(W_{xc} \cdot X_t + W_{hc} \cdot H_{t-1} + b_c) $
-	\item \textbf{New Cell State ($C_t$)}:
-	$ C_t = f_t \cdot C_{t-1} + i_t \cdot \tilde{C}_t $
-	\item \textbf{Output Gate ($o_t$)}:
-	$ a_o = \sigma(W_{xo} \cdot X_t + W_{ho} \cdot H_{t-1} + b_o) $
-	\item \textbf{Hidden State ($H_t$)}:
-	$ H_t = o_t \cdot \tanh(C_t) $
-\end{itemize}
-Where:
-\begin{itemize}
-	\item[\(X_t\)] represents the input at time step (t).
-	\item[\(H_{t-1}\)]  is the hidden state from the previous time step.
-	\item[\(W\) and \(b\)]  are weight matrices and bias terms.
-	\item[\(\sigma\)]  denotes the sigmoid activation function
-	\item[\(\tanh\)]  represents the hyperbolic tangent activation function.
-\end{itemize}
-
-LSTMs have proven effective in various tasks such as natural language processing, speech recognition, and time series prediction. They provide a powerful mechanism for modeling sequential data while mitigating the vanishing gradient problem commonly encountered in vanilla RNNs.
-
-\subsubsection{BiLSTM}\todo{rewrite}
-
-Bidirectional Long Short-Term Memory (BiLSTM) networks enhance traditional LSTMs by considering context from both forward and backward directions. Here’s how they work:
-
-BiLSTMs consist of two LSTM layers operating simultaneously:
-
-- The forward LSTM processes the input sequence from the beginning to the end.
-- The backward LSTM processes the input sequence from the end to the beginning. By combining the outputs of these two LSTMs, BiLSTMs effectively capture information from both past and future context.
-- This context expansion is particularly useful in tasks where context matters in both directions:
-
-Natural Language Processing (NLP): BiLSTMs excel in tasks like part-of-speech tagging, named entity recognition, and sentiment analysis.
-- Speech Recognition: Capturing context from both sides of an audio sequence improves accuracy.
-- Time Series Prediction: BiLSTMs enhance predictions by leveraging past and future data points.
-- Mathematically, the final hidden state of the BiLSTM at time step (t) is the concatenation of the forward and backward LSTM hidden states: \[ H_t = [H_t^{(f)}, H_t^{(b)}] \] The resulting output can be used for downstream tasks such as classification, regression, or sequence labeling.
-
-Information from earlier timesteps is important to say something about current timesteps, same can be said about the other time direction. To get the best of both direction one can use a bidirectional LSTM (BiLSTM) to combine the information from both approches. To make one of the models read the data backwards the model pipeline reverses the data and trains on that. A visualiation of this can be shown in the first layer in figure \ref{fig:bilstm}.
-
-\subsubsection{Modified BiLSTM}
-
-To investigate the posssibility of RNN a more complex model was developed to see if the introduction of more layers would improve the accuratsy of the base model. 
-
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=0.7\linewidth]{figures/BiLSTM}
-	\caption[modified BiLSTM overview]{Simple diagram of the structure of the BiLSTM. The data from the input layer gets duplicated and passed to two LSTM's where one of them get the data in reverse. When both models have trained on the data they gets concatenated and passed to another LSTM that has half of the units as output. The final LSTM has a single cell as output leaving a single value as the prediction.}
-	\label{fig:bilstm}
-\end{figure}\todo{Complete caption, and improve figure}
-
-Soil temperatures depend on earlier timestamps, so to make accurate predictions, it's essential to include temperature data from $t, t-1, \dots, t-k$. Evaluating the data both forwards and backwards helps identify features that are noticeable in specific directions. The BiLSTM model, implemented using TensorFlow's Keras module, consists of three layers:\todo{EXPAND}
-
-\begin{itemize}
-	\item A Bidirectional LSTM layer for feature extraction.
-	\item A regular LSTM layer to condense information with a tanh activation function
-	\item An LSTM layer for prediction with a tanh activation function
-\end{itemize}
-
-The activation functions used are hyperbolic tangent and sigmoid. The output layer employs the identity function ($f(x) = x$). The hidden layer has half as many recurrent cells as the input layer, and the output layer condenses the hidden layer's output to a single value. For more details, refer to Figure \ref{fig:bilstm} and Table \ref{tab:subtab:BiLSTM_params}.
+The LSTM used in this study came from the keras module using standard settings.
 
 \begin{table}
 	\centering
-	\begin{subtable}[t]{0.45\textwidth}
-		\begin{tabular}{l|c}
-			Parameter name & Range \\\hline\hline
-			Epochs & [4,8] \\
-			Units & \(\{2^6,2^7,2^8\}\) \\
-			Lag time & \(12i\) for \(i \in [1,14]\)
-		\end{tabular}
-		\caption[Parameter space for modified BiLSTM]{The search space for the modified BiLSTM model. The units define the number of LSTM cells used in the LSTM output. The lag time specifies how many hours the model will take into account when predicting soil temperature. The square brackets indicate an interval including endpoints, while the curly brackets indicate a list of elements.}
-		\label{tab:subtab:BiLSTM_params}
-	\end{subtable}
-	\hfill
-	\begin{subtable}[t]{0.45\textwidth}
-		\begin{tabular}{l|c}
-			Parameter name & Range \\\hline\hline
-			Sine terms & [1,10] \\
-			Cosine terms & [1,10] \\
-			Lag time & [1,14]
-		\end{tabular}
-		\caption[Parameter space for Plauborg]{The search space for the Plauborg model. The square brackets indicate an interval including endpoints. The "Lag time" indicated the number of time-steps before current time-steps do the model include ($t_{-1},t_{-2},\dots$)}
-		\label{tab:subtab:plauborg_params}
-	\end{subtable}
-	\begin{subtable}[t]{0.45\textwidth}
-		\begin{tabular}{l|c}
-			Parameter name & Range \\\hline\hline
-			Epochs & [4,10]\\
-			Lead time & $\{24*n|n\in[1,7]\}$\\
-		\end{tabular}
-		\caption[Parameter space for BiLSTM and LSTM]{Parameter space for both LSTM and BiLSTM. The square brackets indicate an interval including endpoints. The "Lag time" indicated the number of time-steps before current time-steps do the model include ($t_{-1},t_{-2},\dots$)}
-	\end{subtable}
-	\caption{Parameter search space for the different deep learning models}
-	\label{tab:model_params}
+	\begin{tabular}{l|l|l|l}
+		Parameter&value&Parameter&value\\\hline
+		activation&"tanh"&kernel\_constraint&None\\
+		recurrent\_activation&"sigmoid"&recurrent\_constraint&None\\
+		use\_bias&True&bias\_constraint&None\\
+		kernel\_initializer&"glorot\_uniform"&dropout&0.0\\
+		recurrent\_initializer&"orthogonal"&recurrent\_dropout&0.0\\
+		bias\_initializer&"zeros"&seed&None\\
+		unit\_forget\_bias&True&return\_sequences&False\\
+		kernel\_regularizer&None&return\_state&False\\
+		recurrent\_regularizer&None&go\_backwards&False\\
+		bias\_regularizer&None&stateful&False\\
+		activity\_regularizer&None&unroll&False\\
+		use\_cudnn&"auto"&&
+	\end{tabular}
+	\caption[LSTM standard paramters]{All the hyperparameters that are available to the Keras LSTM Layer and the standard options that this study chose to remain unchanged}
+	\label{tab:lstm:params}
 \end{table}
-
-This model is an extention of \citetitle{li_modeling_2020}\cite{li_modeling_2020} written by \citeauthor{li_modeling_2020}. 
 
 \subsubsection{GRU}
 
-The \acrfull{ac:gru} is a simplification of the LSTM cell with fewer total gates, and no output gate. This makes it quicker to train and better for memory deficient computers/servers. The model used in this study is the Keras defult GRU layer. 
+The GRU model used in this study is fetched from TensorFlow-Keras python module with standard settings.  The model used in this study is the Keras default GRU layer. 
 
-GRU shares similarities with \acrshort{ac:lstm} networks but simplifies the architecture by using two gates: the update gate and the reset gate. These gates allow GRU to selectively retain relevant information from previous time steps while avoiding unnecessary washing of information. The update gate determines how much past information should be passed to the future, while the reset gate controls how much past information to forget. GRU has been effective in various sequence modelling tasks.
+The standard model settings are
 
- \todo{EXPAND, and add formulas}
+\begin{table}
+	\begin{tabular}{l|l|l|l}
+		Parameter&value&Parameter&value\\\hline
+		activation&"tanh"&recurrent\_constraint&None\\
+		recurrent\_activation&"sigmoid"&bias\_constraint&None\\
+		use\_bias&True&dropout&0.0\\
+		kernel\_initializer&"glorot\_uniform"&recurrent\_dropout&0.0\\
+		recurrent\_initializer&"orthogonal"&seed&None\\
+		bias\_initializer&"zeros"&return\_sequences&False\\
+		kernel\_regularizer&None&return\_state&False\\
+		recurrent\_regularizer&None&go\_backwards&False\\
+		bias\_regularizer&None&stateful&False\\
+		activity\_regularizer&None&unroll&False\\
+		kernel\_constraint&None&reset\_after&True\\
+		use\_cudnn&"auto"&&
+	\end{tabular}
+	\caption[GRU standard parameters]{All the hyperparameters that are available to the Keras GRU Layer and the standard options that this study chose to remain unchanged}
+	\label{tab:gru:params}
+\end{table}
+
+\subsubsection{Bi-Directional layer}\todo{rewrite}
+
+The Bi-directional layer used in this study came from the keras module using standard settings except for "merge\_mode" which is set to "ave" for averaging the output values.
+
+\begin{table}
+	\begin{tabular}{l|l}
+		Parameter&value\\\hline
+		merge\_mode&"ave"\\
+		weights&None\\
+		backward\_layer&None
+	\end{tabular}
+\end{table}
+
 
 \subsection{Metrics}\label{sec:method:metric}
 
@@ -355,12 +273,12 @@ The metrics used in this study are
 	\item \acrfull{ac:rmse}
 	\item \acrfull{ac:mae}
 	\item \acrfull{ac:r2}
-	\item bias
+	\item Bias
 	\item \acrfull{ac:kappa}
 	\item digit sensitivity
 \end{itemize*}
 
-Soil temperatur as a different behaviour than air temperature since energy (temperature) though the soil gets dampen and delayed. Since the data used in this study has outliers that was not cought during data treatment, which has been addresed, the author of this study desided to include two more metrics that are not usually included in the evaluation; The log condition number, and digit sensitivity. Both metrics are based on the calculation of the condition number defined as 
+Soil temperature as a different behavior than air temperature since energy (temperature) though the soil gets dampen and delayed. Since the data used in this study has outliers that was not caught during data treatment, which has been addressed, the author of this study decided to include two more metrics that are not usually included in the evaluation; The log condition number, and digit sensitivity. Both metrics are based on the calculation of the condition number defined as 
 
 \begin{equation}\label{eq:kappa}
 \kappa = \lim\limits_{\varepsilon \to 0^+} \sup\limits_{|\partial x|\leq\varepsilon}  \frac{\left|f(x+\partial x) - f(x)\right|}{|f(x)|}*\frac{|x|}{|\partial x|} 
@@ -380,11 +298,11 @@ Calculating this directly is impossible due to the limitations of handling infin
 		\If{k > $\kappa$}{$\kappa \gets k$\;}
 	}
 	\Return{$\kappa$}
-	\caption[Randommised $\kappa$ algorithm]{Method for calculating $\kappa$. $\mathcal{U}$ is a uniform random distrebution in a range.}
+	\caption[Randommised $\kappa$ algorithm]{Method for calculating $\kappa$. $\mathcal{U}$ is a uniform random distribution in a range.}
 	\label{alg:cond_num}
 \end{algorithm}
 
-The digit sensitivity is included to give an intuitive understanding of $\kappa$ and is computed simply as $\log_e(\kappa)+1$. This number tells us the significant digit generated from the model. If the number is less than 0 then its the ith digit after the decimal point.
+The digit sensitivity is included to give an intuitive understanding of $\kappa$ and is computed simply as $\log_e(\kappa)+1$. This number tells us the significant digit generated from the model. If the number is less than 0 then it's the nth digit after the decimal point.
 
 For the rest of the metrics, they are defined as follows
 \begin{itemize}
@@ -398,14 +316,14 @@ Where $\vec{y}$ is the mean of the target, $y_{\text{pred}}$ is the predicted da
 
 \subsubsection{Model training}
 
-The models get trained on air temperature, however the precise input for each model is not the same for all. The features used for each model are described in table \ref{tab:model_params} and their transformation in table \ref{tab:model_trans}.
+The models get trained on air temperature, however the precise input for each model is not the same for all. The features used for each model are described in table \ref{tab:model_trans} and their transformation in table \ref{tab:model_trans}.
 
-The models get a sample of the training data at the time due to the size and the amount for missing data (for example figure \ref{fig:plot-17}) The algorithm used to fetch reliable indexes are demonstrated at algorithm \ref{alg:find_non_nan_ranges_abstract}.
+The models get a sample of the training data at the time due to the size and the amount for missing data (for example figure \ref{fig:plot-17}) The algorithm used to fetch reliable indexes are demonstrated at algorithm \ref{alg:find_non_NULL_ranges_abstract}.
 
 \begin{algorithm}
 	\caption{Find Non-NULL Ranges (Abstract)}
-	\label{alg:find_non_nan_ranges_abstract}
-	\SetKwFunction{FindNonNaNRanges}{FindNonNaNRanges}
+	\label{alg:find_non_NULL_ranges_abstract}
+	\SetKwFunction{FindNonNULLRanges}{FindNonNULLRanges}
 	\SetKwInOut{Input}{Input}
 	\SetKwInOut{Output}{Output}
 	
@@ -414,11 +332,11 @@ The models get a sample of the training data at the time due to the size and the
 	
 	\BlankLine
 	\SetKwData{StartIdx}{start}
-	\SetKwData{NonNaNRanges}{ranges}
+	\SetKwData{NonNULLRanges}{ranges}
 	\SetKwData{Item}{item}
 	
-	\FindNonNaNRanges{$\text{data}$}{
-		$\NonNaNRanges \gets$ empty list\;
+	\FindNonNULLRanges{$\text{data}$}{
+		$\NonNULLRanges \gets$ empty list\;
 		$\StartIdx \gets$ None\;
 		
 		\For{$\Item \text{ in } \text{data}$}{
@@ -429,26 +347,27 @@ The models get a sample of the training data at the time due to the size and the
 			}
 			\Else{
 				\If{$\StartIdx \text{ is not None}$}{
-					Add ($\StartIdx$, $\Item$ index - 1) to $\NonNaNRanges$\;
+					Add ($\StartIdx$, $\Item$ index - 1) to $\NonNULLRanges$\;
 					$\StartIdx \gets$ None\;
 				}
 			}
 		}
 		\If{$\StartIdx \text{ is not None}$}{
-			Add ($\StartIdx$, Last index) to $\NonNaNRanges$\;
+			Add ($\StartIdx$, Last index) to $\NonNULLRanges$\;
 		}
-		\Return $\NonNaNRanges$\;
+		\Return $\NonNULLRanges$\;
 	}
 \end{algorithm}
 
+After the missing values has been identified rows get removed in such a way that if any of the features or target values is missing then that row get removed. At the end all the rows get concatenated , so there is just one complete dateset for the training. 
 
 \begin{table}[H]
 	\centering
 	\begin{tabular}{|r|c| p{6cm}|}
-		\hline model name & features & transformations \\\hline\hline
-		Linear regression & TM & Time get translated to hours by taking the day since new year and multiplying by 24 for then add the hour part. \\\hline
-		Plauborg & Time, TM & Time get translated in two way; the current day since new year if looking at daily values, and hours since new year if looking at hourly predictions. When converting TM to daily values the hourly data get averaged. \\\hline
-		BiLSTM &Time, TM& Time get translated to hours since new year.\\\hline
+		\hline Model name & features & transformations \\\hline\hline
+		Linear regression & TM & --- \\\hline
+		Plauborg & Time, TM & Time get translated in two way; the current day since new year if looking at daily values, and hours since new year if looking at hourly predictions. When converting TM to daily values the hourly data get averaged in 24 hour periods from midnight to 23:00\\\hline
+		Deep learning models &Time, TM& Time get translated to hours since new year by taking the day of the year and multiplying it by 24 and adding the hour.\\\hline
 	\end{tabular}
 	\caption[Model parameters]{Parameters used for predicting soil temperatures at depth 10cm and 20cm.}
 	\label{tab:model_trans}
@@ -459,7 +378,7 @@ The models get a sample of the training data at the time due to the size and the
 In this paper there has been used Artificial Intelligence (AI), specifically Bing Chat / Copilot hosted by Microsoft Cooperation according to the current guidelines for use of artificial intelligence at the faculty of \acrfull{ac:nmbu}, for the following purposes:
 
 \begin{enumerate}
-	\item Formalising sentences and rephrasing sentences.
+	\item Formalizing sentences and rephrasing sentences.
 	\item Spellchecking
 	\item Code generation of basic consepts and structures (tree traversal, template for generic classes) 
 \end{enumerate}
