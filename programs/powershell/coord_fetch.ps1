@@ -31,7 +31,7 @@ New-Item -Path $newstationinfofile -Value "$($tabel_names -join ";")`n"
 
 $lmt_info = Import-CSV -Path $stationinfofile -Delimiter ";"
 
-foreach($id in $stationlist){
+foreach($id in $active_ids){
 	$webreq = Invoke-WebRequest -Uri "https://lmt.nibio.no/services/rest/weatherstation/getstation?weatherStationId=$($id)" | ConvertFrom-Json
 	Add-Content -Path $datafile -Value (@($webreq.weatherStationId,$webreq.name,$webreq.latitude,$webreq.longitude) -join ";") -NoNewline -Encoding "UTF8"
 	$frostlocal = curl "https://frost.met.no/sources/v0.jsonld?types=SensorSystem&geometry=nearest(POINT($($webreq.longitude)%20$($webreq.latitude)))" -u "$($FrostID):" | ConvertFrom-Json
@@ -39,9 +39,10 @@ foreach($id in $stationlist){
 	if($id -in $active_ids){
 		$i = $lmt_info.ID.indexof("$($id)")
 		$row = $lmt_info[$i]
+		Write-Host $webreq.altitude
 		Add-Content -Path $newstationinfofile -Value (@($webreq.weatherStationId,$webreq.name,$webreq.longitude,$webreq.latitude,$webreq.altitude) -join ";") -NoNewline
 		# Region;Name;ID;Soil drainage;Soil category;Texture;closest MET code
-		Add-Content -Path $newstationinfofile -Value $row
+		Add-Content -Path $newstationinfofile -Value ";$($row)"
 	}
 
 	$frostdata = curl "https://frost.met.no/sources/v0.jsonld?types=SensorSystem&elements=sum(precipitation_amount%20PT1H)&geometry=nearest(POINT($($webreq.longitude)%20$($webreq.latitude)))&nearestmaxcount=5" -u "$($FrostID):" | ConvertFrom-Json

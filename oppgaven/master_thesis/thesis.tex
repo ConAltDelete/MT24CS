@@ -2,7 +2,7 @@
 %          spconf.sty  - ICASSP/ICIP LaTeX style file, and
 %          IEEEbib.bst - IEEE bibliography style file.
 % --------------------------------------------------------------------------
-\documentclass[a4paper]{article}
+\documentclass[a4paper,twoside]{article}
 
 \include{preamble_settings.tex}
 
@@ -34,20 +34,19 @@
 	\include{conclution/conclution.tex}
 	
 	\renewcommand{\thepage}{\alphalph{\value{page}}}
+	%\pagenumbering{alph}
 	\setcounter{page}{1}
-	
-		
+	\newpage		
 	\include{glossery_library.tex}
 	\section{Bibliography}
 	\printbibliography
-	\newpage
 	\printglossaries
 	\appendix
 
 \include{appendix/code.tex}
 \include{appendix/figures.tex}
 \include{appendix/tabels.tex}
-
+\ifoddpage\else\shipout\null\fi
 \includepdf[pages=-,fitpaper=true]{last_page.pdf}
 
 \end{document}
