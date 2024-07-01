@@ -1,0 +1,47 @@
+\subsection[Rankin algorithm]{Rankin's finite difference method of simplified heat flow in snow covered soil}\label{sec:theory:rankin}\todo{Consider removing since not implemented correctly}
+
+A more direct method based on laws of physics develop by \citeauthor{karvonen_model_1988} involves forming a Finite Difference Method (FDM) around point of interest with simplifications to the equations described in \citetitle{karvonen_model_1988}. A team of researchers collaborating with the original author found an algorithm by making simplifications to the general differential equations forming a iterative 2-step procedure seen at the procedure \ref{alg:rankin}.
+
+\begin{algorithm}[h]
+	\SetAlgoLined
+	\KwData{ $D,f_d$ }
+	\KwResult{$T_Z$}
+	$\alpha_t \gets \frac{\partial T / \partial t}{\partial^2 T / \partial z^2}$\;
+	\For{$t\in T$}{
+		$T_*^{t+1} \gets T_Z^t + \Delta t \times \frac{\alpha_t}{(2Z)^2} \times (T^t_{air}-T_Z^t)$\;
+		$T_Z^{t+1} \gets T_*^{t+1}*e^{-f_d\times D}$\;
+	}
+	\caption{Rankin algorithm}
+	\label{alg:rankin}
+\end{algorithm}
+
+Where $\alpha_t = K_T/C_A$ is the Thermal diffusivity from Fourier's law in thermodynamics, $K_T$ is average soil thermal conductivity, $C_A$ is the apparent heat capacity, and $f_d$ is the damping parameter that has to be empirically derived however for this study it will be estimated from the data through the following estimation
+
+$$
+f_d \approx \frac{-\ln\left(\frac{T_Z^{t+1}}{T_Z^t + \Delta t \frac{\alpha_t}{(2Z)^2} (T^t_{air}-T_Z^t)}\right)}{2D}
+$$
+
+The approximation used in the algorithmn \ref{alg:rankin} assumes that $K_T$ is not dependend on depth . To make the approximation of $\alpha_t$ more accurate the inclusion of rain ($\theta$) to introduce variation can be approximated with
+$$
+\alpha_t \approx \frac{b_1 + b_2\theta +b_3\sqrt{\theta}}{a_1 + a_2\theta}
+$$
+
+proposed by \citeauthor{kodesova_thermal_2013}\cite{kodesova_thermal_2013}\footnote{This representation was not proposed by the author however the linear approximations was proposed to approximate $K_T$ and $C_A$ respectfully. Since $\theta \propto m_w$ we can substitute water content with rain in mm since the area is constant and during all messurement the soil type will be the same, however this would need to be resestimated if a station contains a different soil type as the constant has a wide range of values\cite{kodesova_thermal_2013}.}. To make the computation easier of this Padé-Puiseux\footnote{Padé Approximation is a of the form $\frac{\sum_{i=0}^\infty c_ix^i}{\sum_{j=0}^\infty c_jx^j}$ and a Puiseux series is a $\sum_{j=N}^\infty c_jx^{j/N}$} approximation hybrid we will realize that $\alpha_t$ is expressed by
+
+$$
+\frac{b_1 + b_2\theta +b_3\sqrt{\theta}}{a_1 + a_2\theta} \approx \alpha_t \approx \frac{(T_z^{t+1} - T_{air})*(2z)^2}{( T_{air} - T_z^{t})*\Delta t} 
+$$
+Thereby only needing a linear regression of two F-functions; $F_1 = [ 1,\theta ,\sqrt{\theta} ]^T$ and $F_2 = [1 , \theta]^T$ rather than a three step approximation. This algorithm (algorithm \ref{alg:rankin}) will approximate the following integral
+
+$$
+T = \int_{t_0}^{t_{max}} \frac{K_T}{C_A}\frac{\partial^2 T}{\partial z^2} dt
+$$
+
+via a Finite Difference Method, although other methods are possible with higher accuracy\footnote{For example fourth degree Runge-Kutta method\cite{runge_ueber_1895} which converges quicker than forward-Euler method or FDM.}.\alert{Must verify for this case!} This study will use the FDM used by the author for the purpose of making the results in this study comparable with the study presented in the paper \citetitle{rankinen_simple_2004}. 
+
+For inital values this study are utelizing 2 methods under different assumtions:
+$$
+T_z^0 \approx \frac{k\exp(D)}{1+\exp(D)\times(k-1)}\times T_{air}
+$$
+
+Where k is $ K_T*\Delta t/ (C_A * (2Z)^2)$, and D is $-f_d*Snow_{Depth}$. This assumes constant air temperature above a constant layer of snow, though unrealistic since air temperature has a tendensy to change during the day due to solar radiation and other climate factors that can cool down or heat up the air. Another problem is the fact that the snow level ramins the same which is also untrue.

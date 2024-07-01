@@ -15,10 +15,10 @@
 \foreach \reg in {Innlandet,Trøndelag,Østfold, Vestfold}{
 	\foreach \dep in {10,20}{
 		\foreach \yr in {2021,2022}{
-			\begin{figure}
+			\begin{figure}[H]
 				\label{apx:plots:diffplot:linreg:\reg:\yr:\dep}
 				\includegraphics{../../results/plots/diffplot_lin_stat_\dep_\reg_\yr_TJM\dep.pdf}
-				\caption{Difference plot for linear regression model in year \yr\ and region \reg}
+				\caption[Diff plot for Linear Regression, region \reg, year \yr, at depth \dep]{Difference plot for Linear Regression model in year \yr\ and region \reg at depth \dep.The station names can be found in table \ref{tab:station:names}.}
 			\end{figure}
 			\clearpage
 		}
@@ -31,7 +31,7 @@
 			\begin{figure}
 				\label{apx:plots:diffplot:Plauborgday:\reg:\yr:\dep}
 				\includegraphics{../../results/plots/diffplot_Plauborg_day_stat_\dep_\reg_\yr_TJM\dep.pdf}
-				\caption{Difference plot for daily Plauborg model in year \yr\ and region \reg}
+				\caption[Diff plot for Plauborg (day), region \reg, year \yr, at depth \dep]{Difference plot for daily Plauborg model in year \yr\ and region \reg at depth \dep.The station names can be found in table \ref{tab:station:names}.}
 			\end{figure}
 			\clearpage
 		}
@@ -44,7 +44,7 @@
 			\begin{figure}
 				\label{apx:plots:diffplot:Plauborg:\reg:\yr:\dep}
 				\includegraphics{../../results/plots/diffplot_Plauborg_stat_\dep_\reg_\yr_TJM\dep.pdf}
-				\caption{Difference plot for hourly Plauborg model in year \yr\ and region \reg}
+				\caption[Diff plot for Plauborg (hour), region \reg, year \yr, at depth \dep]{Difference plot for hourly Plauborg model in year \yr\ and region \reg at depth \dep.The station names can be found in table \ref{tab:station:names}.}
 			\end{figure}
 			\clearpage
 		}
@@ -57,7 +57,7 @@
 			\begin{figure}
 				\label{apx:plots:diffplot:l1KerasBiLSTM:\reg:\yr:\dep}
 				\includegraphics{../../results/plots/diffplot_l1KerasBiLSTM_stat_\dep_\reg_\yr_TJM\dep.pdf}
-				\caption{Difference plot for BiLSTM model in year \yr\ and region \reg}
+				\caption[Diff plot for BiLSTM, region \reg, year \yr, at depth \dep]{Difference plot for BiLSTM model in year \yr\ and region \reg at depth \dep.The station names can be found in table \ref{tab:station:names}.}
 			\end{figure}
 			\clearpage
 		}
@@ -70,7 +70,7 @@
 			\begin{figure}
 				\label{apx:plots:diffplot:l2KerasBiLSTM:\reg:\yr:\dep}
 				\includegraphics{../../results/plots/diffplot_l2KerasBiLSTM_stat_\dep_\reg_\yr_TJM\dep.pdf}
-				\caption{Difference plot for LSTM model in year \yr\ and region \reg}
+				\caption[Diff plot for LSTM, region \reg, year \yr, at depth \dep]{Difference plot for LSTM model in year \yr\ and region \reg at depth \dep.The station names can be found in table \ref{tab:station:names}.}
 			\end{figure}
 			\clearpage
 		}
@@ -82,8 +82,8 @@
 		\foreach \yr in {2021,2022}{
 			\begin{figure}
 				\label{apx:plots:diffplot:KerasGRU:\reg:\yr:\dep}
-				\includegraphics{../../results/plots/diffplot_KerasGRU_stats_\dep_\reg_\yr_TJM\dep.pdf}
-				\caption{Difference plot for GRU model in year \yr\ and region \reg}
+				\includegraphics{../../results/plots/diffplot_KerasGRU_stat_\dep_\reg_\yr_TJM\dep.pdf}
+				\caption[Diff plot for GRU, region \reg, year \yr, at depth \dep]{Difference plot for GRU model in year \yr\ and region \reg at depth \dep.The station names can be found in table \ref{tab:station:names}.}
 			\end{figure}
 			\clearpage
 		}
@@ -96,8 +96,8 @@
 	\foreach \feat in {TM,TJM10,TJM20}{
 		\begin{figure}
 			\label{apx:plots:data:untreated:\st:\feat}
-			\includegraphics[height=0.9\textheight, width=\textwidth, angle=90]{../../results/plots/Plot_test_naive_nan_k\st_f\feat.pdf}
-			\caption[Visual representation of station \st\ treated]{Visual representation of missing values at station \st\ from 2014 to 2022 at the parameter "\feat" after treating for outliers. The left numbers indicated how many hours that are missing and how many of them are shorter than or longer than 5 hours, however for this visualisation they indicate the untreated version of the data. The yellow markings indicate possible outliers based on the given year, all markings was checked if they were actual outliers. The red colouring indicate missing values in the data (represented in the data with code "NULL").}
+			\includegraphics[height=0.7\textheight, width=1.1\textwidth]{../../results/plots/Plot_test_naive_nan_k\st_f\feat.pdf}
+			\caption[Visual representation of station \st\ untreated for \feat]{Visual representation of missing values at station \st\ from 2014 to 2022 at the parameter "\feat" after treating for outliers. The left numbers indicated how many hours that are missing and how many of them are shorter than or longer than 5 hours, however for this visualization they indicate the untreated version of the data. The yellow markings indicate possible outliers based on the given year, all markings was checked if they were actual outliers. The red colouring indicate missing values in the data (represented in the data with code "NULL").The station names can be found in table \ref{tab:station:names}.}
 		\end{figure}
 		\clearpage
 	}
@@ -109,8 +109,8 @@
 	\foreach \feat in {TM,TJM10,TJM20}{
 		\begin{figure}
 			\label{apx:plots:data:treated:\st:\feat}
-			\includegraphics[height=0.9\textheight, width=\textwidth, angle=90]{../../results/plots/Plot_test_naive_nan_treated_k\st_f\feat.pdf}
-			\caption[Visual representation of station \st\ treated]{Visual representation of missing values at station \st\ from 2014 to 2022 at the parameter "\feat" after treating for outliers. The left numbers indicated how many hours that are missing and how many of them are shorter than or longer than 5 hours, however for this visualisation they indicate the untreated version of the data. The yellow markings indicate possible outliers based on the given year, all markings was checked if they were actual outliers. The red colouring indicate missing values in the data (represented in the data with code "NULL").}
+			\includegraphics[height=0.7\textheight, width=1.1\textwidth]{../../results/plots/Plot_test_naive_nan_treated_k\st_f\feat.pdf}
+			\caption[Visual representation of station \st\ treated for \feat]{Visual representation of missing values at station \st\ from 2014 to 2022 at the parameter "\feat" after treating for outliers. The left numbers indicated how many hours that are missing and how many of them are shorter than or longer than 5 hours, however for this visualization they indicate the untreated version of the data. The yellow markings indicate possible outliers based on the given year, all markings was checked if they were actual outliers. The red colouring indicate missing values in the data (represented in the data with code "NULL").The station names can be found in table \ref{tab:station:names}.}
 		\end{figure}
 		\clearpage
 	}

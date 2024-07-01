@@ -2,33 +2,51 @@
 
 % talk about how this study answers you research questions
 
-Soil temperature significantly impacts agriculture, influencing pest prevention, conservation, yield prediction, and more. Despite its importance, widespread measurement remains challenging due to cost limitations and technical issues. Interpolating missing data using methods like global mean approximation is common but has drawbacks including requiring a previus measurements of the soil temperature. Incorporating exogenous features can improve soil temperature estimation. Advancements in prediction and measurement are crucial for sustainable agriculture and accurate climate models.
+Soil temperature significantly impacts agriculture, influencing pest prevention, conservation, yield prediction, and more. Despite its importance, widespread measurement remains challenging due to cost limitations and technical issues. Interpolating missing data using methods like global mean approximation is common but has drawbacks including requiring previous measurements of the soil temperature. Incorporating other features can improve soil temperature estimation to account for the variations that are not explained by air temperature alone. Advancements in prediction and measurement are crucial for sustainable agriculture and accurate climate models.
 
 Method used in this study are
 \begin{enumerate}
-	\item Fetch avalible data to use as training and testing set
-	\item Compile the data and treat it to be used in the modelig
-	\item Train all the models on the same traning data (2014 to 2020)
-	\item calculate and plot relavent statitics (2021 to 2022)
+	\item Fetch available data to use as training and testing set
+	\item Compile the data and treat it to be used in the model
+	\item Train all the models on the same training data, data from 2014 to 2020
+	\item calculate and plot relevant statistics using 2021 to 2022 test data
 	\item compile the results
 \end{enumerate} 
 
-The results of this study show that promising results can be achieved with few parameters, however further studies need to be done to see the effekt of adding more parameters or making the models more complex by adding more structure\footnote{Sturcture as in more layers, augmentations of input and features from feature extraction.}. As for regression modeling; Adding time to a regression model does improve the model predictive power over a time independent model. This make a simple model to predict soil temperatures in areas with no soil temperature measurement. 
+The results of this study show that promising results can be achieved with few parameters, however further studies need to be done to see the effect of adding more parameters or making the models more complex by adding more structure\footnote{Structure as in more layers, augmentations of input and performing feature extraction as part of the model.}. As for regression modelling; Adding time to a regression model does improve the model predictive power over a time independent model. This make a simple model to predict soil temperatures in areas with no soil temperature measurement. 
 
-There is a clear advantage to data-driven modeling to further the investigation into deep learning models as the models shows comparable results to analytical models, as is show in other studies\cite{feng_estimation_2019,li_attention-aware_2022,li_modeling_2020}. However to improve the model performance even more more features is required to make the model more general and adaptible to other local enviroments outside of the nortic climate. 
+There is a clear advantage to data-driven modelling to further the investigation into deep learning models as the models shows comparable results to analytical models, as is show in other studies\cite{feng_estimation_2019,li_attention-aware_2022,li_modeling_2020}. However, to improve the model performance more features is recommended to make the model more general and adaptable to other local environments outside the nortic climate. It was found in this study that none of the models had an RMSE less than 1 for any station or region, suggesting there are more variation in the data that is not captured by only time and air temperature alone.
 
-\subsection{Limitations}
+\subsection{Discussion of research goals}
+
+This study wanted to answer four questions;
+\begin{enumerate}
+	\item Achieving Good Results with Minimal Parameters: Can satisfactory predictions be obtained using a limited set of meteorological and chronological parameters?
+	
+	\item Deep Learning Models for Soil Temperature Prediction: Is it feasible to employ deep learning models for predicting soil temperatures?
+	
+	\item Complexity of Deep Learning Models: Is it necessary to utilize complex deep learning architectures when predicting soil temperatures?
+	
+	\item Suitable model for Nordic climate: Is there a model that fits for the Scandinavian climate?
+\end{enumerate}
+
+To address each research question in order
+\begin{enumerate}
+	\item This study found that satisfactory results can be achieved with few parameters however there will be variations that the model will not be able to explain.
+	\item Yes, deep learning models has shown to have the capacity to capture difficult patterns in the data and to adapt to the seasons from only Time, and air temperature.
+	\item This study did not go deeper into adding more complexity to the models due to limitations in this study, see section \ref{sec:limits} for more details. However, it was found that making the models bidirectional improved the deep learning models.
+	\item It is found in this study that the bidirectional models performed better than only training in one time direction. The BiLSTM performed the best in predicting 10 cm soil temperature, however BiGRU did perform better in predicting soil temperature at 20 cm depth. It is recommended that Bidirectional models should be further researched at a broader range of depths. However, due to the limitations of this study it is also recommended that further research being conducted into alternative models and newer deep learning techniques.
+\end{enumerate}
+
+\subsection{Limitations}\label{sec:limits}
 
 This study faced a multitude of technical difficulties including,
 \begin{itemize}
 	\item Trying to get the models to run properly
 	\item Finding proper parameters to limit memory usage and time
 	\item Insufficient computing power for some parameters
-	\item Getting TensorFlow to work on Windows 10/11\footnote{This has later in the study that was futile as the project had moved from being Windows compatible to being exclusively runnable on Linux unless choosing an outdated version of Tensorflow.}
+	\item Getting TensorFlow to work on Windows 10/11\footnote{This was later found in the study that the TensorFlow project had moved from being Windows compatible to being exclusively runnable on Linux unless choosing an outdated version of TensorFlow.}
 \end{itemize}
-This study would be more comprehensive if these unforseen difficulties did not occure, and it is recommended that it would be done a new study going more in depth into other type of deep learning models suitable for time-series data.
+This study would be more comprehensive if these unforeseen difficulties did not occur, and it is recommended that it would be done a new study going more in depth into other type of deep learning models suitable for time-series data and investigating other potential features to include in the modelling. 
 
-
-\section{Acknowledgements}
-The progenitor of this study presently partakes in an interval of non-occupational repose, traditionally associated with restorative diversion from vocational pursuits as of immediate effect of thesis submission.
 \label{pg:LastBread}

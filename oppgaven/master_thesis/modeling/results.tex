@@ -1,84 +1,81 @@
-\section{Results}\todo{Summerize results}
+\section{Results}\label{sec:result}
 
-\todo{Make sections}
-\todo{Include tables}
+In this section will the outcome of the training be presented. The result for each model will be presented individualy as the comperation between the models will be discused in section \ref{sec:discussion}. The statitical analesys is based on the data from year 2021 and 2022, which was used as the test dataset. Its to be noted that the difference plots presented in this section is only showing results from 2022, the resoning for this is that the results are similar enough that 2022 reflects also 2021. Plots for 2021 are avalible in the appendix in section \ref{apx:plots}.
 
 \foreach \dept in {10,20}{
 	\foreach \p in {1,2}{
-		\begin{table}
+		\begin{table}[H]
 			\centering
 			\begin{adjustwidth}{-1in}{-1in}
 				\resizebox{1.35\textwidth}{!}{
 					\input{tables/station_table_\dept cm_p\p}
 				}
 			\end{adjustwidth}
-			\caption{Statitics of the models for depth \dept}
+			\caption[Model performance for each station at \dept cm, part \p]{Statistics of the models for depth \dept, part \p. The numbers are for year 2021, and 2022 collectively, and the average column is for all the stations in the year 2021, and 2022. The station names can be found in table \ref{tab:station:names}.}
 		\end{table}	
 	}
 }
 
-
-\todo{En model av gangen}
 \subsection{Linear model}
 
-% insert good, bad, avg diff
-
 \begin{figure}
-	\begin{subfigure}{0.45\textwidth}
+	\begin{subfigure}{0.8\textwidth}
 		\centering
 		\includegraphics[width = 0.9\textwidth]{../../results/plots/diffplot_lin_stat_10_Østfold_2022_TJM10.pdf}
-		\caption[Best Difference plot of Linear model]{Differnce plot for daily Plauborg model in year 2022 and region Østfold}
+		\caption[Difference plot of Linear Regression model with lowest RMSE]{Difference plot for  Linear Regression model in year 2022 and region Østfold with the lowest RMSE.}
 	\end{subfigure}
-	\begin{subfigure}{0.45\textwidth}
+	\vfill
+	\begin{subfigure}{0.8\textwidth}
 		\centering
-		\includegraphics[width = 0.9\textwidth]{../../results/plots/diffplot_lin_stat_20_Innlandet_2021_TJM20.pdf}
-		\caption{Worst plot for Linear Regression model in year 2021 and region Innlandet}
+		\includegraphics[width = 0.9\textwidth]{../../results/plots/diffplot_lin_stat_20_Innlandet_2022_TJM20.pdf}
+		\caption[Difference plot of Linear model highest RMSE]{Difference plot for Linear Regression model in year 2022 and region Innlandet with the highest RMSE.}
+		\label{fig:diff:lin:high}
 	\end{subfigure}
-	\hfill
-	\begin{subfigure}{0.90\textwidth}
-		\centering
-		\includegraphics[width = 0.9\textwidth]{../../results/plots/diffplot_lin_stat_10_Trøndelag_2022_TJM10.pdf}
-		\caption{Average plot for Linear Regression model in year 2022 and region Trøndelag}
-	\end{subfigure}
+	\caption[Difference plots of extremal regions Linear Regression]{Difference plots of the extremal regions based on the RMSE measure. The station names can be found in table \ref{tab:station:names}.}
+	\label{fig:diff:lin:bestworst}
 \end{figure}
 
-% stat
+From figure \ref{fig:diff:lin:bestworst} there is a large difference from March to late April and from there hovers around $0^\circ C$ in difference. 
+There is also a clear distinction in of seasons in figure \ref{fig:diff:lin:high} when looking at air temperature versus soil temperature at 20 cm depth. \label{text:lin:seasons}
+Furthermore, when looking at ground truth versus predicted values there is a repetition in shape from the air versus soil temperature. 
 
 \begin{table}
 	\begin{subtable}{0.8\textwidth}
 		\input{tables/table_lin_stat_20.tex}
-		\caption{Performance table for Linear regression 20cm}
+		\caption{Performance table for Linear Regression 20cm. Negative numbers in $R^2$ should be treated as an indicator that the particular station/scope is not well-fitted to the data.}
 	\end{subtable}
 	%\hfill
 	\begin{subtable}{0.8\textwidth}
 		\input{tables/table_lin_stat_10.tex}
-		\caption{Performance table for Linear regression 10cm}
+		\caption{Performance table for Linear Regression 10cm. Negative numbers in $R^2$ should be treated as an indicator that the particular station/scope is not well-fitted to the data.}
 	\end{subtable}
-	\caption{Performance table for Linear Regession at 10 cm depth and 20 cm depth.}
+	\caption{Performance table for Linear Regression at 10 cm depth and 20 cm depth. The station names can be found in table \ref{tab:station:names}.}
+	\label{tab:lin:performance}
 \end{table}
+
+From the tables \ref{tab:lin:performance} it is clear that the model does not fit fell with the data on the background of low $R^2$ (less than 0.5). The model consistently overestimates the soil temperature regardless of the station. Furthermore, the digit sensitivity shows that the model is sensitive to small changes.
 
 % eclipse
 
 \begin{figure}
-	\begin{subfigure}{0.45\linewidth}
-		\centering
-		\includegraphics[width=0.8\linewidth]{../../results/plots/conf_elips_lin_stat_10}
-		\caption[Confidence eclipse of Linear Regression 10cm]{The plot shows the ground truth against the predicted value of Linear Regression. The eclipses demonstrates the 65\% (inner eclipse), 95\% (middle eclipse), and 99\% (outer eclipse) confidence interval for the model.}
-		\label{fig:confelipslinstat10}
-	\end{subfigure}
+		\begin{subfigure}{0.45\linewidth}
+			\centering
+			\includegraphics[width=\linewidth]{../../results/plots/conf_elips_lin_stat_10}
+			\caption[Confidence eclipse of Linear Regression 10cm]{The plot shows the ground truth against the predicted value of Linear Regression. The eclipses demonstrate the 68\% (inner eclipse), 95\% (middle eclipse), and 99\% (outer eclipse) confidence interval for the model.}
+			\label{fig:confelipslinstat10}
+		\end{subfigure}
 	\hfill
-	\begin{subfigure}{0.45\textwidth}
-		\centering
-		\includegraphics[width=0.8\linewidth]{../../results/plots/conf_elips_lin_stat_20}
-		\caption[Confidence eclipse of Linear regression 20cm]{The plot shows the ground truth against the predicted value of Linear Regression. The eclipses demonstrates the 65\% (inner eclipse), 95\% (middle eclipse), and 99\% (outer eclipse) confidence interval for the model.}
-		\label{fig:confelipslinstat20}
-	\end{subfigure}
-	\caption{Plots showing ground truth vs predicted values from the linear Regression models with their 65\%, 95\%, and 99\% conficence eclipses. The conficense eclipses function the same as confidence intervals but in two dimentions, meaning the area covered by the eclipse denotes where one can expect the points to be with a given confidence procence.}
+		\begin{subfigure}{0.45\textwidth}
+			\centering
+			\includegraphics[width=\linewidth]{../../results/plots/conf_elips_lin_stat_20}
+			\caption[Confidence eclipse of Linear Regression 20cm]{The plot shows the ground truth against the predicted value of Linear Regression. The eclipses demonstrate the 68\% (inner eclipse), 95\% (middle eclipse), and 99\% (outer eclipse) confidence interval for the model.}
+			\label{fig:confelipslinstat20}
+		\end{subfigure}
+	\caption{Plots showing ground truth vs predicted values from the linear Regression models with their 68\%, 95\%, and 99\% confidence eclipses. The confidence eclipses function the same as confidence intervals but in two dimensions, meaning the area covered by the eclipse denotes where one can expect the points to be with a given confidence percent. These plots contain a subset of the data, however the ellipses and $\lambda_0$ are calculated with all the data.}
+	\label{fig:lin:eclipse}
 \end{figure}
 
-
-The linear model scales the air temperature by a single factor making the model follow the form of the air temperature with the exception of Autumn where it diverges until April. After April the model fits better however it still has a high variance through out the years.
-
+From the confidence eclipses in figure \ref{fig:lin:eclipse} it is clear that the model does not fit well to the data due to being off the symmetry line and having a large $\lambda_0$.
 
 \subsection{Plauborg daily}
 
@@ -86,22 +83,21 @@ The linear model scales the air temperature by a single factor making the model 
 	\begin{subfigure}{0.45\textwidth}
 		\centering
 		\includegraphics[width = 0.9\textwidth]{../../results/plots/diffplot_Plauborg_day_stat_10_Østfold_2022_TJM10.pdf}
-		\caption[Best Difference plot of daily values Plauborg model]{Differnce plot for daily Plauborg model in year 2022 and region Østfold}
-	\end{subfigure}
-	\begin{subfigure}{0.45\textwidth}
-		\centering
-		\includegraphics[width = 0.9\textwidth]{../../results/plots/diffplot_Plauborg_day_stat_20_Innlandet_2021_TJM20.pdf}
-		\caption[Worst Difference plot of daily values Plauborg model]{Worst plot for daily values Plauborg model in year 2021 and region Innlandet}
+		\caption[Difference plot of daily Plauborg model with lowest RMSE]{Difference plot for daily Plauborg model with the lowest RMSE in year 2022 and region Østfold.}
 	\end{subfigure}
 	\hfill
-	\begin{subfigure}{0.90\textwidth}
+	\begin{subfigure}{0.45\textwidth}
 		\centering
-		\includegraphics[width = 0.9\textwidth]{../../results/plots/diffplot_Plauborg_day_stat_10_Trøndelag_2022_TJM10.pdf}
-		\caption[Average Difference plot of daily values Plauborg model]{Average plot for daily values Plauborg model in year 2022 and region Trøndelag}
+		\includegraphics[width = 0.9\textwidth]{../../results/plots/diffplot_Plauborg_day_stat_20_Innlandet_2022_TJM20.pdf}
+		\caption[Difference plot of hourly PLauborg model with highest RMSE]{Difference plot for daily Plauborg model with the highest RMSE in year 2022 and region Innlandet.}
+		\label{fig:playborg:day:worst}
 	\end{subfigure}
+		\caption[Difference plots of extremal regions daily Plauborg]{Difference plots of the extremal regions based on the RMSE measure. The station names can be found in table \ref{tab:station:names}.}
+		\label{fig:plauborg:day:bestworst}
 \end{figure}
 
-% stat
+Figure \ref{fig:plauborg:day:bestworst} shows that the model fit well to the data by staying close to the symmetry line. 
+The high RMSE plot in figure \ref{fig:playborg:day:worst} shows a difference between the Autumn months and Summer months where there is an high difference in Autumn and and increase in difference in Spring while during Summer it stays around $0^\circ C$ in difference.
 
 \begin{table}
 	\begin{subtable}{0.8\textwidth}
@@ -111,36 +107,46 @@ The linear model scales the air temperature by a single factor making the model 
 	\vfill
 	\begin{subtable}{0.8\textwidth}
 		\input{tables/table_Plauborg_day_stat_10.tex}
-		\caption{Performance table for Linear regression 10cm}
+		\caption{Performance table for daily values Plauborg 10cm}
 	\end{subtable}
-	\caption{Performance table for daily values Plauborg model at 10 cm depth and 20 cm depth.}
+	\caption{Performance table for daily values Plauborg model at 10 cm depth and 20 cm depth. The station names can be found in table \ref{tab:station:names}.}
+	\label{tab:plauborg:day:performance}
 \end{table}
 
-% eclipse
+Performance notes from table \ref{tab:plauborg:day:performance}:
+\begin{itemize}
+	\item Daily Plauborg can explain most of the variation in the data.
+	\item It's a balanced model that does not overestimate more than $0.8^\circ C$ in general.
+\end{itemize}
 
 \begin{figure}
-	\begin{subfigure}{0.45\linewidth}
+	\begin{subfigure}{0.4\linewidth}
 		\centering
-		\includegraphics[width=0.8\linewidth]{../../results/plots/conf_elips_Plauborg_day_stat_10}
+		\includegraphics[width=\linewidth]{../../results/plots/conf_elips_Plauborg_day_stat_10}
 		\caption[Confidence eclipse of daily values Plauborg model 10cm]{The plot shows the ground truth against the predicted value of daily values Plauborg model. The eclipses demonstrates the 65\% (inner eclipse), 95\% (middle eclipse), and 99\% (outer eclipse) confidence interval for the model.}
 		\label{fig:confelipsplauborgdaystat10}
 	\end{subfigure}
-	%\vfill
-	\begin{subfigure}{0.45\textwidth}
+	\hfill
+	\begin{subfigure}{0.4\textwidth}
 		\centering
-		\includegraphics[width=0.8\linewidth]{../../results/plots/conf_elips_Plauborg_day_stat_20}
+		\includegraphics[width=\linewidth]{../../results/plots/conf_elips_Plauborg_day_stat_20}
 		\caption[Confidence eclipse of daily values Plauborg model 20cm]{The plot shows the ground truth against the predicted value of daily values Plauborg model. The eclipses demonstrates the 65\% (inner eclipse), 95\% (middle eclipse), and 99\% (outer eclipse) confidence interval for the model.}
 		\label{fig:confelipsplauborgdaystat20}
 	\end{subfigure}
-	\caption{Plots showing ground truth vs predicted values from the daily values Plauborg models with their 65\%, 95\%, and 99\% conficence eclipses. The conficense eclipses function the same as confidence intervals but in two dimentions, meaning the area covered by the eclipse denotes where one can expect the points to be with a given confidence procence.}
+	\caption{Plots showing ground truth vs predicted values from the daily Plauborg models with their 68\%, 95\%, and 99\% confidence eclipses. The confidence eclipses function the same as confidence intervals but in two dimensions, meaning the area covered by the eclipse denotes where one can expect the points to be with a given confidence percent. These plots contain a subset of the data, however the ellipses and $\lambda_0$ are calculated with all the data.}
+	\label{fig:plauborg:day:eclipse}
 \end{figure}
 
+Figure \ref{fig:plauborg:day:eclipse} shows that it is a good fit for the models.
 
-The Plauborg model follows strongly the soil temperature ant thereby has good prediction, with the exception of a few staitions. There are two stations that does not follow the same trend as the other stations, those are station Fåvang in year 2021 predicting soil temperatures at 10cm (se figure \ref{apx:plots:diffplot:Plauborgday:Innlandet:2022:10} and \ref{apx:plots:diffplot:Plauborgday:Innlandet:2022:20}) and Apelsvoll in year 2022 and year 2021 (se figure \ref{apx:plots:diffplot:Plauborgday:Innlandet:2021:10} and \ref{apx:plots:diffplot:Plauborgday:Innlandet:2022:20}). 
+\begin{figure}
+	\centering
+	\includegraphics[width=\linewidth]{../../results/plots/diffplot_Plauborg_day_stat_20_Innlandet_2022_TJM20}
+	\caption{Difference plot for daily Plauborg model in year 2022 and region Innlandet for 20cm soil temperature.}
+	\label{fig:plauborg:day:special}
+\end{figure}
 
-%Talk about Østfold 2021
-
-In the region Østfold year 2021 there is a divergence at predicting the 10 cm soil temperature, this arises as an effect from an old code used to plot the graph of this model. In the old code the NULL values was set by default to 0 meaning when calculation the difference between predicted values and ground truth it in essence created a copy of the air temperature.
+The Plauborg model follows strongly the soil temperature ant thereby has good prediction, except for a few stations. There are two stations that does not follow the same trend as the other stations, those are station Fåvang in year 2021 predicting soil temperatures at 10cm (see figure \ref{apx:plots:diffplot:Plauborgday:Innlandet:2022:10} and \ref{apx:plots:diffplot:Plauborgday:Innlandet:2022:20}) and Apelsvoll in year 2022 and year 2021 (see figure \ref{apx:plots:diffplot:Plauborgday:Innlandet:2021:10} and \ref{apx:plots:diffplot:Plauborgday:Innlandet:2022:20}). 
 
 \subsection{Plauborg hourly}
 
@@ -148,22 +154,22 @@ In the region Østfold year 2021 there is a divergence at predicting the 10 cm s
 	\begin{subfigure}{0.45\textwidth}
 		\centering
 		\includegraphics[width = 0.9\textwidth]{../../results/plots/diffplot_Plauborg_stat_10_Østfold_2022_TJM10.pdf}
-		\caption[Best Difference plot of hourly values Plauborg model]{Differnce plot for hourly Plauborg model in year 2022 and region Østfold}
+		\caption[Difference plot of hourly PLauborg model with lowest RMSE]{Difference plot for hourly PLauborg model with the lowest RMSE in year 2022 and region Østfold.}
 	\end{subfigure}
 	\begin{subfigure}{0.45\textwidth}
 		\centering
-		\includegraphics[width = 0.9\textwidth]{../../results/plots/diffplot_Plauborg_stat_20_Innlandet_2021_TJM20.pdf}
-		\caption[Worst Difference plot of hourly values Plauborg model]{Worst plot for hourly values Plauborg model in year 2021 and region Innlandet}
+		\includegraphics[width = 0.9\textwidth]{../../results/plots/diffplot_Plauborg_stat_20_Innlandet_2022_TJM20.pdf}
+		\caption[Difference plot of hourly Plauborg model with highest RMSE]{Difference plot for hourly Plauborg model with the highest RMSE in year 2022 and region Innlandet.}
 	\end{subfigure}
-	\hfill
-	\begin{subfigure}{0.90\textwidth}
-		\centering
-		\includegraphics[width = 0.9\textwidth]{../../results/plots/diffplot_Plauborg_stat_10_Trøndelag_2022_TJM10.pdf}
-		\caption[Average Difference plot of hourly values Plauborg model]{Average plot for hourly values Plauborg model in year 2022 and region Trøndelag}
-	\end{subfigure}
+		\caption[Difference plots of extremal regions hourly Plauborg]{Difference plots of the extremal regions based on the RMSE measure. The station names can be found in table \ref{tab:station:names}.}
+		\label{fig:plauborg:hour:bestworst}
 \end{figure}
 
-% stat
+Notes on figure \ref{fig:plauborg:hour:bestworst}:
+\begin{itemize}
+	\item The difference plot show that there is a shift from Autumn month to the rest of the year.
+	\item There is a seasonal grouping as described in Linear Regression (see \ref{text:lin:seasons})
+\end{itemize}
 
 \begin{table}
 	\begin{subtable}{0.8\textwidth}
@@ -175,56 +181,136 @@ In the region Østfold year 2021 there is a divergence at predicting the 10 cm s
 		\input{tables/table_Plauborg_stat_10.tex}
 		\caption{Performance table for hourly values Plauborg model 10cm}
 	\end{subtable}
-	\caption{Performance table for hourly values Plauborg model at 10 cm depth and 20 cm depth.}
+	\caption{Performance table for hourly values Plauborg model at 10 cm depth and 20 cm depth. The station names can be found in table \ref{tab:station:names}.}
+	\label{tab:plauborg:hour:performance}
 \end{table}
 
-% eclipse
+Notes on tabel \ref{tab:plauborg:hour:performance}:
+\begin{itemize}
+	\item From $R^2$ measure it shows that the model captured much of the variance in the data.
+	\item It tends to overestiamte by $0.5^\circ C$ on average.
+	\item It is sensitive to small changes to the input as shown by the digit sensitivity measure.
+\end{itemize}
 
 \begin{figure}
-	\begin{subfigure}{0.6\linewidth}
+	\begin{subfigure}{0.45\linewidth}
 		\centering
-		\includegraphics[width=0.8\linewidth]{../../results/plots/conf_elips_Plauborg_stat_10}
-		\caption[Confidence eclipse of hourly values Plauborg model 10cm]{The plot shows the ground truth against the predicted value of hourly values Plauborg model. The eclipses demonstrates the 65\% (inner eclipse), 95\% (middle eclipse), and 99\% (outer eclipse) confidence interval for the model.}
+		\includegraphics[width=\linewidth]{../../results/plots/conf_elips_Plauborg_stat_10}
+		\caption[Confidence eclipse of hourly values Plauborg model 10cm]{The plot shows the ground truth against the predicted value of hourly values Plauborg model. The eclipses demonstrate the 68\% (inner eclipse), 95\% (middle eclipse), and 99\% (outer eclipse) confidence interval for the model.}
 		\label{fig:confelipsplauborgstat10}
 	\end{subfigure}
 	\hfill
-	\begin{subfigure}{0.6\textwidth}
+	\begin{subfigure}{0.45\textwidth}
 		\centering
-		\includegraphics[width=0.8\linewidth]{../../results/plots/conf_elips_Plauborg_stat_20}
-		\caption[Confidence eclipse of hourly values Plauborg model 20cm]{The plot shows the ground truth against the predicted value of hourly values Plauborg model. The eclipses demonstrates the 65\% (inner eclipse), 95\% (middle eclipse), and 99\% (outer eclipse) confidence interval for the model.}
+		\includegraphics[width=\linewidth]{../../results/plots/conf_elips_Plauborg_stat_20}
+		\caption[Confidence eclipse of hourly values Plauborg model 20cm]{The plot shows the ground truth against the predicted value of hourly values Plauborg model. The eclipses demonstrates the 68\% (inner eclipse), 95\% (middle eclipse), and 99\% (outer eclipse) confidence interval for the model.}
 		\label{fig:confelipsplauborgstat20}
 	\end{subfigure}
-	\caption{Plots showing ground truth vs predicted values from the hourly values Plauborg models with their 65\%, 95\%, and 99\% conficence eclipses. The conficense eclipses function the same as confidence intervals but in two dimentions, meaning the area covered by the eclipse denotes where one can expect the points to be with a given confidence procence.}
+	\caption{Plots showing ground truth vs predicted values from the hourly Plauborg models with their 68\%, 95\%, and 99\% confidence eclipses. The confidence eclipses function the same as confidence intervals but in two dimensions, meaning the area covered by the eclipse denotes where one can expect the points to be with a given confidence percent. These plots contain a subset of the data, however the ellipses and $\lambda_0$ are calculated with all the data.}
+	\label{fig:plauborg:hour:eclipse}
 \end{figure}
 
-The hourly Plauborg shows high variance but promising explained variance. During May and April the model shows a rise in prediction difference, likely due to the effect of snow keeping the temperature relative constant and therefore getting a copy-effect of the air temperature.
+The hourly Plauborg shows high variance but promising explained variance. During May and April the model shows a rise in prediction difference, likely due to the effect of snow keeping the temperature relative constant and therefore getting a copy-effect of the air temperature. Figure \ref{fig:plauborg:hour:eclipse} shows that the model is a good fit as the confidence eclipse lines up with the symmetry line.
 
 \subsection{\acrfull{ac:lstm}}
 
-The \acrshort{ac:lstm} shows a great fit to the data with the exception of the May/April month where there is a trend of constant over estimation with a constant value with few stations showing a spike in difference error in April.
+\begin{figure}
+	\begin{subfigure}{0.45\textwidth}
+		\centering
+		\includegraphics[width = 0.9\textwidth]{../../results/plots/diffplot_l2KerasBiLSTM_stat_20_Vestfold_2022_TJM20.pdf}
+		\caption[Difference plot of LSTM model with highest RMSE]{Difference plot for LSTM model with the highest RMSE in year 2022 and region Vestfold.}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.45\textwidth}
+		\centering
+		\includegraphics[width = 0.9\textwidth]{../../results/plots/diffplot_l2KerasBiLSTM_stat_20_Innlandet_2022_TJM20.pdf}
+		\caption[Difference plot of LSTM model with lowest RMSE]{Difference plot for LSTM model with the lowest RMSE in year 2022 and region Innlandet}
+	\end{subfigure}
+		\caption[Difference plots of extremal regions LSTM]{Difference plots of the extremal regions based on the RMSE measure. The station names can be found in table \ref{tab:station:names}.}
+		\label{fig:lstm:bestworst}
+\end{figure}
+
+Figure \ref{fig:lstm:bestworst} shows that the LSTM has two modes, one for Autumn and one for the remanding year. In Spring it starts to overestimate the soil predictions. 
+
+\begin{table}
+	\begin{subtable}{0.8\textwidth}
+		\input{tables/table_l2KerasBiLSTM_stat_20.tex}
+		\caption{Performance table for LSTM model 20cm}
+	\end{subtable}
+	%\hfill
+	\begin{subtable}{0.8\textwidth}
+		\input{tables/table_l2KerasBiLSTM_stat_10.tex}
+		\caption{Performance table for LSTM model 10cm}
+	\end{subtable}
+	\caption{Performance table for LSTM model at 10 cm depth and 20 cm depth. The station names can be found in table \ref{tab:station:names}.}
+	\label{fig:lstm:eclipse}
+\end{table}
+
+Figure \ref{fig:lstm:eclipse} shows that the LSTM is good at capturing the variation, and is not sensitive to small changes. It has a consistent RMSE over all scopes on around $1.6^\circ C$.
+
+\begin{figure}
+	\begin{subfigure}{0.45\linewidth}
+		\centering
+		\includegraphics[width=0.8\linewidth]{../../results/plots/conf_elips_l2KerasBiLSTM_stat_10}
+		\caption[Confidence eclipse of LSTM model 10cm]{The plot shows the ground truth against the predicted value of LSTM model. The eclipses demonstrates the 68\% (inner eclipse), 95\% (middle eclipse), and 99\% (outer eclipse) confidence interval for the model.}
+		\label{fig:confelipsl2KerasBiLSTMstat10}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.45\textwidth}
+		\centering
+		\includegraphics[width=0.8\linewidth]{../../results/plots/conf_elips_l2KerasBiLSTM_stat_20}
+		\caption[Confidence eclipse of LSTM model 20cm]{The plot shows the ground truth against the predicted value of LSTM model. The eclipses demonstrates the 68\% (inner eclipse), 95\% (middle eclipse), and 99\% (outer eclipse) confidence interval for the model.}
+		\label{fig:confelipsl2KerasBiLSTMstat20}
+	\end{subfigure}
+	\caption{Plots showing ground truth vs predicted values from the LSTM models with their 68\%, 95\%, and 99\% confidence eclipses. The confidence eclipses function the same as confidence intervals but in two dimensions, meaning the area covered by the eclipse denotes where one can expect the points to be with a given confidence percent. These plots contain a subset of the data, however the ellipses and $\lambda_0$ are calculated with all the data.}
+	\label{fig:LSTM:eclipse}
+\end{figure}
+
+Figure \ref{fig:LSTM:eclipse} shows that the LSTM fits well to the data, however there is a clear deviation when the true soil temperature is between $5^\circ C$ and $20^\circ C$.
+
+\begin{figure}
+	\begin{subfigure}{0.45\textwidth}
+		\centering
+		\begin{adjustwidth}{-1in}{-1in}
+			\includegraphics[width=0.9\linewidth]{../../results/plots/epoch_graf_l2KerasBiLSTM_stat_10}
+		\end{adjustwidth}
+		\caption[Epoch graph LSTM 10cm]{Graf of LSTM 10cm performance per epoch.}
+		\label{fig:epochgrafl2KerasBiLSTMstat10}
+	\end{subfigure}
+	\begin{subfigure}{0.45\textwidth}
+		\centering
+		\begin{adjustwidth}{-1in}{-1in}
+			\includegraphics[width=0.9\linewidth]{../../results/plots/epoch_graf_l2KerasBiLSTM_stat_20}
+		\end{adjustwidth}
+		\caption[Epoch graph LSTM 20cm]{Graf of LSTM 20cm performance per epoch.}
+		\label{fig:epochgrafl2KerasBiLSTMstat20}
+	\end{subfigure}
+	\caption{Performance graphs displaying the developments of Mean Square Error and \acrfull{ac:r2} for each epoch.}
+	\label{fig:lstm:epoch:performance}
+\end{figure}
+
+The \acrshort{ac:lstm} shows a great fit to the data except for the May/April month where there is a trend of constant over estimation with a constant value with few stations showing a spike in difference error in April. Figure \ref{fig:lstm:epoch:performance} shows that LSTM quickly converges and does not need many epochs to give good results, however it does take longer to converge for soil temperature 20 cm depth.
 
 \subsection{Bi-Directional \acrfull{ac:lstm}}
 
 \begin{figure}
 	\begin{subfigure}{0.45\textwidth}
 		\centering
-		%\includegraphics[width = 0.9\textwidth]{../../results/plots/diffplot_l1KerasBiLSTM_stat_10_Østfold_2022_TJM10.pdf}
-		\caption[Best Difference plot of BiLSTM model]{Differnce plot for BiLSTM model in year 2022 and region Østfold}
-	\end{subfigure}
-	\begin{subfigure}{0.45\textwidth}
-		\centering
-		%\includegraphics[width = 0.9\textwidth]{../../results/plots/diffplot_l1KerasBiLSTM_stat_20_Innlandet_2021_TJM20.pdf}
-		\caption[Worst Difference plot of BiLSTM model]{Worst plot for BiLSTM model in year 2021 and region Innlandet}
+		\includegraphics[width = 0.9\textwidth]{../../results/plots/diffplot_l1KerasBiLSTM_stat_20_Østfold_2022_TJM20.pdf}
+		\caption[Difference plot of BiLSTM model with highest RMSE]{Difference plot for BiLSTM model in year 2022 and region Østfold with highest RMSE.}
+		\label{fig:bilstm:diff:worst}
 	\end{subfigure}
 	\hfill
-	\begin{subfigure}{0.90\textwidth}
+	\begin{subfigure}{0.45\textwidth}
 		\centering
-		%\includegraphics[width = 0.9\textwidth]{../../results/plots/diffplot_l1KerasBiLSTM_stat_10_Trøndelag_2022_TJM10.pdf}
-		\caption[Average Difference plot of BiLSTM model]{Average plot for BiLSTM model in year 2022 and region Trøndelag}
+		\includegraphics[width = 0.9\textwidth]{../../results/plots/diffplot_l1KerasBiLSTM_stat_10_Vestfold_2022_TJM10.pdf}
+		\caption[Difference plot of BiLSTM model lowest RMSE]{Difference plot for BiLSTM model in year 2022 and region Vestfold with lowest RMSE.}
 	\end{subfigure}
+		\caption[Difference plots of extremal regions BiLSTM]{Difference plots of the extremal regions based on the RMSE measure. The station names can be found in table \ref{tab:station:names}.}
+		\label{fig:bilstm:diff:bestworst}
 \end{figure}
 
-% stat
+Figure \ref{fig:bilstm:diff:bestworst} shows a good fit, however figure \ref{fig:bilstm:diff:worst} shows that station 52 underperforms compared to the other stations which is numerically shown in table \ref{tab:bilstm:performance}. 
 
 \begin{table}
 	\begin{subtable}{0.8\textwidth}
@@ -236,27 +322,31 @@ The \acrshort{ac:lstm} shows a great fit to the data with the exception of the M
 		\input{tables/table_l1KerasBiLSTM_stat_10.tex}
 		\caption{Performance table for BiLSTM model 10cm}
 	\end{subtable}
-	\caption{Performance table for BiLSTM model at 10 cm depth and 20 cm depth.}
+	\caption{Performance table for BiLSTM model at 10 cm depth and 20 cm depth. The station names can be found in table \ref{tab:station:names}.}
+	\label{tab:bilstm:performance}
 \end{table}
 
-% eclipse
+Except for station 52, BiLSTM fits well with the data and is balance around $0^\circ C$ in difference as shown in table \ref{tab:bilstm:performance}. 
 
 \begin{figure}
 	\begin{subfigure}{0.45\linewidth}
 		\centering
 		\includegraphics[width=0.8\linewidth]{../../results/plots/conf_elips_l1KerasBiLSTM_stat_10}
-		\caption[Confidence eclipse of BiLSTM model 10cm]{The plot shows the ground truth against the predicted value of BiLSTM model. The eclipses demonstrates the 65\% (inner eclipse), 95\% (middle eclipse), and 99\% (outer eclipse) confidence interval for the model.}
+		\caption[Confidence eclipse of BiLSTM model 10cm]{The plot shows the ground truth against the predicted value of BiLSTM model. The eclipses demonstrates the 68\% (inner eclipse), 95\% (middle eclipse), and 99\% (outer eclipse) confidence interval for the model.}
 		\label{fig:confelipsl1KerasBiLSTMstat10}
 	\end{subfigure}
-	\vfill
+	\hfill
 	\begin{subfigure}{0.45\textwidth}
 		\centering
 		\includegraphics[width=0.8\linewidth]{../../results/plots/conf_elips_l1KerasBiLSTM_stat_20}
-		\caption[Confidence eclipse of BiLSTM model 20cm]{The plot shows the ground truth against the predicted value of BiLSTM model. The eclipses demonstrates the 65\% (inner eclipse), 95\% (middle eclipse), and 99\% (outer eclipse) confidence interval for the model.}
+		\caption[Confidence eclipse of BiLSTM model 20cm]{The plot shows the ground truth against the predicted value of BiLSTM model. The eclipses demonstrates the 68\% (inner eclipse), 95\% (middle eclipse), and 99\% (outer eclipse) confidence interval for the model.}
 		\label{fig:confelipsl1KerasBiLSTMstat20}
 	\end{subfigure}
-	\caption{Plots showing ground truth vs predicted values from the BiLSTM models with their 65\%, 95\%, and 99\% conficence eclipses. The confidence eclipses function the same as confidence intervals but in two dimensions, meaning the area covered by the eclipse denotes where one can expect the points to be with a given confidence procence.}
+	\caption{Plots showing ground truth vs predicted values from the BiLSTM models with their 68\%, 95\%, and 99\% confidence eclipses. The confidence eclipses function the same as confidence intervals but in two dimensions, meaning the area covered by the eclipse denotes where one can expect the points to be with a given confidence percent. These plots contain a subset of the data, however the ellipses and $\lambda_0$ are calculated with all the data.}
+	\label{fig:bilstm:eclipse}
 \end{figure}
+
+The confidence eclipses as shown in figure \ref{fig:bilstm:eclipse} suggests a good fit with the data, however there seems to be a hard limit that the model has developed from $0^\circ C$ to $7^\circ C$ for some part of the year.
 
 \begin{figure}
 	\begin{subfigure}{0.45\textwidth}
@@ -278,9 +368,63 @@ The \acrshort{ac:lstm} shows a great fit to the data with the exception of the M
 	\caption{Performance graphs displaying the developments of Mean Square Error and \acrfull{ac:r2} for each epoch.}
 \end{figure}
 
-The \acrshort{ac:lstm} shows a great fit to the data with the exception of the May/April month where there is a high variance in the transition from one month to the other. Østfold does have subpar performance, in particular station Øsaker and Tomb. Those two consistently either over estimate or under estimate the soil temperature compared to the other stations in the same region (Rakkestad, and Rygge). 
+The \acrshort{ac:lstm} shows a great fit to the data except for the May/April month when there is a high variance in the transition from one month to the other. In the BiLSTM epoch performance graph its shows that the model is quick to converge after 2 epochs. 
 
 \subsection{\acrfull{ac:gru}}
+
+\begin{figure}
+	\begin{subfigure}{0.45\textwidth}
+		\centering
+		\includegraphics[width = 0.9\textwidth]{../../results/plots/diffplot_KerasGRU_stat_10_Østfold_2022_TJM10.pdf}
+		\caption[Difference plot of GRU model with lowest RMSE]{Difference plot for GRU model in year 2022 and region Østfold with lowest RMSE}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.45\textwidth}
+		\centering
+		\includegraphics[width = 0.9\textwidth]{../../results/plots/diffplot_KerasGRU_stat_20_Innlandet_2022_TJM20.pdf}
+		\caption[Difference plot of GRU model with highest RMSE]{Difference plot for GRU model in year 2022 and region Innlandet with highest RMSE}
+	\end{subfigure}
+		\caption[Difference plots of extremal regions GRU]{Difference plots of the extremal regions based on the RMSE measure. The station names can be found in table \ref{tab:station:names}.}
+		\label{fig:gru:diff}
+\end{figure}
+
+Figure \ref{fig:gru:diff} shows that GRU model is a good fit with the data, and demonstrates a different behaviour in Autumn compared to the rest of the year.
+
+\begin{table}
+	\begin{subtable}{0.8\textwidth}
+		\input{tables/table_KerasGRU_stat_20.tex}
+		\caption{Performance table for GRU model 20cm}
+	\end{subtable}
+	%\hfill
+	\begin{subtable}{0.8\textwidth}
+		\input{tables/table_KerasGRU_stat_10.tex}
+		\caption{Performance table for GRU model 10cm}
+	\end{subtable}
+	\caption{Performance table for GRU model at 10 cm depth and 20 cm depth. The station names can be found in table \ref{tab:station:names}.}
+	\label{tab:gru:performance}
+\end{table}
+
+Table \ref{tab:gru:performance} show good performance, and is a balanced model. There is one station that stands out, that being station 52, 26, and 17 with the highest RMSE. 
+
+\begin{figure}
+	\begin{subfigure}{0.45\linewidth}
+		\centering
+		\includegraphics[width=0.8\linewidth]{../../results/plots/conf_elips_KerasGRU_stat_10}
+		\caption[Confidence eclipse of GRU model 10cm]{The plot shows the ground truth against the predicted value of GRU model. The eclipses demonstrate the 68\% (inner eclipse), 95\% (middle eclipse), and 99\% (outer eclipse) confidence interval for the model.}
+		\label{fig:confelipsKerasGRUstat10}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.45\textwidth}
+		\centering
+		\includegraphics[width=0.8\linewidth]{../../results/plots/conf_elips_KerasGRU_stat_20}
+		\caption[Confidence eclipse of GRU model 20cm]{The plot shows the ground truth against the predicted value of GRU model. The eclipses demonstrates the 68\% (inner eclipse), 95\% (middle eclipse), and 99\% (outer eclipse) confidence interval for the model.}
+		\label{fig:confelipsKerasGRUstat20}
+	\end{subfigure}
+	\caption{Plots showing ground truth vs predicted values from the GRU models with their 68\%, 95\%, and 99\% confidence eclipses. The confidence eclipses function the same as confidence intervals but in two dimensions, meaning the area covered by the eclipse denotes where one can expect the points to be with a given confidence percent. These plots contain a subset of the data, however the ellipses and $\lambda_0$ are calculated with all the data.}
+	\label{fig:gru:eclipse}
+\end{figure}
+
+The confidence eclipses in figure \ref{fig:gru:eclipse} show that it is a good fit to the data, however it also shows that it has developed a hard limit at $0^\circ C$ and at $10^\circ C$.
 
 \begin{figure}
 	\begin{subfigure}{0.45\textwidth}
@@ -300,13 +444,71 @@ The \acrshort{ac:lstm} shows a great fit to the data with the exception of the M
 		\label{fig:epochgrafKerasGRUstat20}
 	\end{subfigure}
 	\caption{Performance graphs displaying the developments of Mean Square Error and \acrfull{ac:r2} for each epoch.}
+	\label{fig:gru:epoch}
 \end{figure}
 
-The GRU model demonstrates encouraging outcome with few notable stations and year. One of which is station Øsaker who over estimates the soil temperature at both depth (10 cm and 20 cm). 
+The GRU model demonstrates encouraging outcome with few notable stations and year. One of which is station Øsaker who overestimates the soil temperature at both depth (10 cm and 20 cm). The epoch graphs in figure \ref{fig:gru:epoch} shows that it takes time to converge and has a slow learning rate.
 
-All station shows an seasonal sensitivity, as all stations tend to incrementally over estimate in May before falling down towards 0 $\Delta^\circ C$ around April month. 
+All station shows an seasonal sensitivity, as all stations tend to incrementally overestimate in May before falling down towards 0 $\Delta^\circ C$ around April month. 
 
 \subsection{Bi-directional \acrfull{ac:gru}}
+
+\begin{figure}[H]
+	\begin{subfigure}{0.45\textwidth}
+		\centering
+		\includegraphics[width = 0.9\textwidth]{../../results/plots/diffplot_KerasBiGRU_stat_20_Vestfold_2022_TJM20.pdf}
+		\caption[Lowest RMSE Difference plot of BiGRU model]{Difference plot with the lowest RMSE for BiGRU model in year 2022 and region Vestfold}
+		\label{fig:bigru:diff:best}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.45\textwidth}
+		\centering
+		\includegraphics[width = 0.9\textwidth]{../../results/plots/diffplot_KerasBiGRU_stat_20_Østfold_2022_TJM20.pdf}
+		\caption[Highest RMSE Difference plot of BiGRU model]{Difference plot with the highest RMSE for BiGRU model in year 2022 and region Østfold}
+		\label{fig:bigru:diff:worst}
+	\end{subfigure}
+		\caption[Difference plots of extremal regions BiGRU]{Difference plots of the extremal regions based on the RMSE measure. The station names can be found in table \ref{tab:station:names}.}
+		\label{fig:bigru:diff:bestworst}
+\end{figure}
+
+Figure \ref{fig:bigru:diff:bestworst} shows a reasonable fit, except for station 52 that underestimates the soil temperature. In both figure \ref{fig:bigru:diff:best} and \ref{fig:bigru:diff:worst} there are two periods, Autumn with consistent overestimation and the rest of the year.
+
+\begin{table}
+	\begin{subtable}{0.8\textwidth}
+		\input{tables/table_KerasBiGRU_stat_20.tex}
+		\caption{Performance table for BiGRU model 20cm}
+	\end{subtable}
+	%\hfill
+	\begin{subtable}{0.8\textwidth}
+		\input{tables/table_KerasBiGRU_stat_10.tex}
+		\caption{Performance table for BiGRU model 10cm}
+	\end{subtable}
+	\caption{Performance table for BiGRU model at 10 cm depth and 20 cm depth. The station names can be found in table \ref{tab:station:names}.}
+	\label{tab:bigru:performance}
+\end{table}
+
+Table \ref{tab:bigru:performance} shows that the model fits well to the data and can explain the variance in the data, except for station 52 that has a high RMSE compeared to the other stations.
+
+\begin{figure}
+	\begin{subfigure}{0.45\linewidth}
+		\centering
+		\includegraphics[width=0.8\linewidth]{../../results/plots/conf_elips_KerasBiGRU_stat_10}
+		\caption[Confidence eclipse of BiGRU model 10cm]{The plot shows the ground truth against the predicted value of BiGRU model. The eclipses demonstrate the 68\% (inner eclipse), 95\% (middle eclipse), and 99\% (outer eclipse) confidence interval for the model.}
+		\label{fig:confelipsKerasBiGRUstat10}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.45\textwidth}
+		\centering
+		\includegraphics[width=0.8\linewidth]{../../results/plots/conf_elips_KerasBiGRU_stat_20}
+		\caption[Confidence eclipse of BiGRU model 20cm]{The plot shows the ground truth against the predicted value of BiGRU model. The eclipses demonstrates the 68\% (inner eclipse), 95\% (middle eclipse), and 99\% (outer eclipse) confidence interval for the model.}
+		\label{fig:confelipsKerasBiGRUstat20}
+	\end{subfigure}
+	\caption{Plots showing ground truth vs predicted values from the BiGRU models with their 68\%, 95\%, and 99\% confidence eclipses. The confidence eclipses function the same as confidence intervals but in two dimensions, meaning the area covered by the eclipse denotes where one can expect the points to be with a given confidence percent. These plots contain a subset of the data, however the ellipses and $\lambda_0$ are calculated with all the data.}
+	\label{fig:bigru:eclipse}
+\end{figure}
+
+The confidence eclipses in figure \ref{fig:bigru:eclipse} shows a good fit with the data, and does not have any learned hard limits in temperature. 
+
 \begin{figure}
 	\begin{subfigure}{0.45\textwidth}
 		\centering
@@ -325,36 +527,12 @@ All station shows an seasonal sensitivity, as all stations tend to incrementally
 		\label{fig:epochgrafKerasBiGRUstat20}
 	\end{subfigure}
 	\caption{Performance graphs displaying the developments of Mean Square Error and \acrfull{ac:r2} for each epoch.}
+	\label{fig:bigru:epoch}
 \end{figure}
 
+Figure \ref{fig:bigru:epoch} shows that the model has a small learning rate however converges quickly after 4 epochs.
 
 
-\subsection{Deep learning models}
-
-\acrshort{ac:lstm} based models has a higher \acrshort{ac:rmse} than the \acrshort{ac:gru} model that performs similary to the Plauborg models in its performance while the rest (BiLSTM, and LSTM) inhibits an Autumn discrepancy, see section \ref{sec:autumn}. However this discrepancy is less prevalent in the more advance models (BiLSTM, and GRU) but still visible compared to the rest of the year.
-
-
-\begin{figure}[H]
-%	\begin{subfigure}{\textwidth}
-		\centering
-		\includegraphics[width=0.8\linewidth,height=0.3\textheight]{../../results/plots/diffplot_l2KerasBiLSTM_stat_20_Innlandet_2022_TJM20}
-		\caption[LSTM TJM10]{LSTM model applied at stations in the region Innlandet in 2022 with 10cm soil temperature as target.}
-		\label{fig:diffplotl2kerasbilstmstats10innlandet2022tjm10}
-\end{figure}
-\begin{figure}
-		\centering
-		\includegraphics[width=0.8\linewidth,height=0.3\textheight]{../../results/plots/diffplot_KerasGRU_stats_20_Innlandet_2022_TJM20}
-		\caption[GRU TJM10]{GRU model applied at staions in the region Innladet in 2022 with 10cm soil temperature as target.}
-		\label{fig:diffplotgrustats10innlandet2022tjm10}
-\end{figure}
-\begin{figure}
-		\centering
-		\includegraphics[width=0.8\linewidth,height=0.3\textheight]{../../results/plots/diffplot_l1KerasBiLSTM_stat_20_Innlandet_2022_TJM20}
-		\caption[BiLSTM TJM10]{BiLSTM applied at stations in the region Innlandet in 2022 with 10cm soil temperature as target.}
-		\label{fig:diffplotl1kerasbilstmstats10innlandet2022tjm10}
-\end{figure}
-
-The number of epochs was fixed at 10, however the performance graphs shows that after 4 epochs the performance tend to stabilise, and after 6 epochs it becomes small gains in performance. 
 
 
 

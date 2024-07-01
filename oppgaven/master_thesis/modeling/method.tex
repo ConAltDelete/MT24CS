@@ -5,7 +5,7 @@
 	\includegraphics[width=0.7\linewidth]{figures/progress_diagram}
 	\caption[Diagram sketching three procedures used in this study.]{A surface level diagram of the methodology.}
 	\label{fig:progressdiagram}
-\end{figure}\todo{Complete diagram}
+\end{figure}
 
 \subsection{Source of data}
 
@@ -19,53 +19,56 @@ For this comparative study the following data sources will be used
 
 \subsection{Dataset}
 
-The dataset is chosen from four regions in Norway; Innlandet, Vestfold, Trøndelag, and Østfold. From each region are four stations picked:
+The dataset is chosen from four regions in Norway; Innlandet, Vestfold, Trøndelag, and Østfold. From each region are four stations picked shown in table \ref{tab:station:names}
 \begin{table}[h]
 	\begin{adjustwidth}{-1in}{-1in}
 		\centering
-		\begin{tabular}{llrlrrr}
-			\hline Region&Name&ID&Drain type&MET name& Latitude&Longdetude\\\hline
-			Innlandet&Apelsvoll&11& Selvdrenert&SN11500&60,70024&10,86952\\
-			Innlandet& Fåvang&17& Selvdrenert&SN13150&61,45822&10,18720\\
-			Innlandet& Ilseng&26& Selvdrenert&SN12180&60,80264&11,20298\\
-			Innlandet& Kise&27& Vannmettet&SN12550&60,77324&10,80569\\
-			Trøndelag& Kvithamar&57& Vannmettet&SN69150&63,48795&10,87994\\
-			Trøndelag& Frosta&15& Selvdrenert&SN69655&63,56502&10,69298\\
-			Trøndelag& Mære&34& Selvdrenert&SN71320&63,94244&11,42527\\
-			Trøndelag& Rissa&39& Vannmettet&SN71320&63,58569&9,97007\\
-			Vestfold& Lier&30& Vannmettet&SN19940&59,79084&10,25962\\
-			Vestfold& Sande&42& Vannmettet&SN26990&59,61620&10,22339\\
-			Vestfold& Tjølling&50& Selvdrenert&SN27780&59,04641&10,12513\\
-			Vestfold& Ramnes&38& Vannmettet&SN27315&59,38081&10,23970\\
-			Østfold& Rakkestad&37& Vannmettet&SN3290&59,38824&11,39042\\
-			Østfold& Rygge&41& Selvdrenert&SN17380&59,39805&10,75427\\
-			Østfold& Tomb&52& Vannmettet&SN17050&59,31893&10,81449\\
-			Østfold& Øsaker&118& Vannmettet&SN3370&59,31936&11,04221\\\hline
+		\begin{tabular}{llrlrrrr}
+			\hline Region&Name&ID&Drain type&MET name& Latitude&Longdetude&Altitude [m.a.s.l.]\\\hline
+			Innlandet&Apelsvoll&11& Self-drained&SN11500&60,70024&10,86952&262\\
+			Innlandet& Fåvang&17& Self-drained&SN13150&61,45822&10,18720&184\\
+			Innlandet& Ilseng&26& Self-drained&SN12180&60,80264&11,20298&182\\
+			Innlandet& Kise&27& Saturated&SN12550&60,77324&10,80569&129\\
+			Trøndelag& Kvithamar&57& Saturated&SN69150&63,48795&10,87994&28\\
+			Trøndelag& Frosta&15& Self-drained&SN69655&63,56502&10,69298&18\\
+			Trøndelag& Mære&34& Self-drained&SN71320&63,94244&11,42527&59\\
+			Trøndelag& Rissa&39& Saturated&SN71320&63,58569&9,97007&23\\
+			Vestfold& Lier&30& Saturated&SN19940&59,79084&10,25962&38\\
+			Vestfold& Sande&42& Saturated&SN26990&59,61620&10,22339&35\\
+			Vestfold& Tjølling&50& Self-drained&SN27780&59,04641&10,12513&19\\
+			Vestfold& Ramnes&38& Saturated&SN27315&59,38081&10,23970&39\\
+			Østfold& Rakkestad&37& Saturated&SN3290&59,38824&11,39042&102\\
+			Østfold& Rygge&41& Self-drained&SN17380&59,39805&10,75427&35\\
+			Østfold& Tomb&52& Saturated&SN17050&59,31893&10,81449&12\\
+			Østfold& Øsaker&118& Saturated&SN3370&59,31936&11,04221&45\\\hline
 		\end{tabular}
 	\end{adjustwidth}
-	\caption[Soil information for each station/w location and MET-ID]{Station information from stations used in this study. The MET names was found by looking at the coordinates of the station and finding the closest MET station coordinates.}
+	\caption[Staion information for each station/w location and MET-ID]{Station information from stations used in this study. The MET names was found by looking at the coordinates of the station and finding the closest MET station coordinates. \acrshort{ac:masl} stands for \acrlong{ac:masl}. The ID will be used in the text, tables, and figures for convenience and it was used in the code for something.}
+	\label{tab:station:names}
 \end{table}
 
-All stations are sampled from the date\footnote{Format month-day} 03-01 to 10-31 from 2016 to 2020. The features mean hourly soil temperature at 10cm (TJM10), mean hourly soil temperature at 20cm (TJM20), and mean hourly air temperature at 2m (TM) are sampled from the LMT database.
+% ™. These parameters were meticulously compiled from the Long-term Meteorological Trends (LMT) database, ensuring a robust dataset for evaluating temporal soil and air temperature patterns. This rich dataset provides valuable insights into the thermal dynamics of soil and air, which are essential for a multitude of ecological and agricultural applications.
+
+The dataset created from all stations, spanning the period of 1st of March to 31st of October, annually from 2016 through 2022. This timeframe was selected to capture the critical growing seasons across various regions. The specific features extracted for analysis include the mean hourly soil temperature at a depth of 10cm (denoted as TJM10), the mean hourly soil temperature at 20cm (TJM20), and the mean hourly air temperature measured at 2 meters above ground level. These parameters were collected from the \acrfull{ac:kilden} database.
 
 \subsubsection{Selection process}
 
-An array of stations was provided by LMT based on their possession of the necessary data. All stations were reviewed, checked for missing data, and those with excessive gaps were removed from the list or replace with another station. After compiling a list of stations, each one was re-examined to identify outliers present in the data and eliminate them accordingly. If certain stations had an excessive number of missing values after the outlier check, nearby stations were sought, and the affected station was replaced and the outlier check was re-done. Table \ref{fig:plot-17} is showing Fåvang before treatment, and table \ref{fig:plot-17-treated} shows the same station cleaned and ready for being used as training/testing data.
+An array of stations was provided by \acrshort{ac:kilden} based on their possession of the necessary data. All stations were reviewed, checked for missing data, and those with excessive gaps were removed from the list or replace with another station. After compiling a list of stations, each one was re-examined to identify outliers present in the data and eliminate them accordingly. If certain stations had an excessive number of missing values after the outlier check, nearby stations were sought, and the affected station was replaced and the outlier check was re-done. Table \ref{fig:plot-17} is showing Øsaker before treatment, and table \ref{fig:plot-17-treated} shows the same station cleaned and ready for being used as training/testing data.
 
 \begin{figure}
 		\centering
 		\begin{adjustwidth}{-1in}{-1in}
-			\includegraphics[height=0.9\textheight, width=\textwidth, angle=90]{"../../results/plots/Plot_test_naive_nan_k17_fTJM20.pdf"}
+			\includegraphics[height=0.7\textheight, width=1.35\textwidth]{"../../results/plots/Plot_test_naive_nan_k118_fTJM20.pdf"}
 		\end{adjustwidth}
-		\caption[Visual representation of Fåvang]{Visual representation of missing values at Fåvang from 2014 to 2022 at the parameter "TJM20". The left numbers indicated how many hours that are missing and how many of them are shorter than or longer than 5 hours. The yellow markings indicate possible outliers based on the given year, all markings was checked if they were actual outliers. The red colouring indicate missing values in the data (represented in the data with code "NULL").}
+		\caption[Visual representation of Øsaker untreated]{Visual representation of missing values at Øsaker from 2014 to 2022 at the parameter "TJM20". The left numbers indicated how many hours that are missing and how many of them are shorter than or longer than 5 hours. The yellow markings indicate possible outliers based on the given year, all markings was checked if they were actual outliers. The red colouring indicate missing values in the data (represented in the data with code "NULL").}
 		\label{fig:plot-17}
 \end{figure}
 \begin{figure}
 		\centering
 		\begin{adjustwidth}{-1in}{-1in}
-			\includegraphics[height=0.9\textheight, width=\textwidth, angle=90]{"../../results/plots/Plot_test_naive_nan_treated_k17_fTJM20.pdf"}
+			\includegraphics[height=0.7\textheight, width=1.35\textwidth]{"../../results/plots/Plot_test_naive_nan_treated_k118_fTJM20.pdf"}
 		\end{adjustwidth}
-		\caption[Visual representation of Fåvang treated]{Visual representation of missing values at Fåvang from 2014 to 2022 at the parameter "TJM20" after treating for outliers. The left numbers indicated how many hours that are missing and how many of them are shorter than or longer than 5 hours, however for this visualisation they indicate the untreated version of the data. The yellow markings indicate possible outliers based on the given year, all markings was checked if they were actual outliers. The red colouring indicate missing values in the data (represented in the data with code "NULL"). The years 2014 and 2015 was removed from the dataset but not coloured in due to technical limitations of reusable code, and furthermore half of 2016 was removed due to suspicion of misreading from sensor at this station.}
+		\caption[Visual representation of Øsaker treated]{Visual representation of missing values at Øsaker from 2014 to 2022 at the parameter "TJM20" after treating for outliers. The left numbers indicated how many hours that are missing and how many of them are longer or shorter than 5 hours, however for this visualization they indicate the untreated version of the data. The yellow markings indicate possible outliers based on the given year, all markings was checked if they were actual outliers. The red colouring indicate missing values in the data (represented in the data with code "NULL"). The years 2014 and 2015 was removed from the dataset but not coloured in due to technical limitations of reusable code, and furthermore half of 2016 was removed due to suspicion of misreading from sensor at this station.}
 		\label{fig:plot-17-treated}
 \end{figure}
 
@@ -74,17 +77,18 @@ The data plots (see figure \ref{fig:plot-17} and \ref{fig:plot-17-treated} as ex
 \subsubsection{Collection of data}
 
 \begin{table}
+	\centering
 	\begin{tabular}{l|p{3cm}|p{3cm}}
 		Name       &version&                       description                        \\ \hline
-		Powershell &7.3.11 & Windows native scripting language \\\hline
-		Curl       & 8.4.0 (windows) libcurl/8.4.0 Schannel WinIDN & Commandline tool to communicate with servers using http. \\\hline
-		python     &                    3.9.11                     &                popular Scripting language
+		PowerShell &7.3.11 & Windows native scripting language \\\hline
+		Curl       & 8.4.0 (windows) libcurl/8.4.0 Schannel WinIDN & Command line tool to communicate with servers using http. \\\hline
+		Python     &                    3.9.11                     &                popular Scripting language
 	\end{tabular}
 	\caption[software version description]{The description the software used in this study}
 	\label{tab:software}
 \end{table}
 
-In the tabel \ref{tab:software} are the softwares used in this study and in the collection and treatment of the data. The program used in the collection of meteorological messurements is Powershell in combination with Curl. Using hyperlinks gathered from inspecting \acrshort{ac:kilden}'s web page using the browser (Microsoft edge) built-in inspector tool to get the relevant links to send data requests. The presise URL's can be reviewed on GitHub in the studies GitHub repository\footnote{Link: https://github.com/ConAltDelete/MT24CS}. For a more surfac level description on what was requested of the servers see table \ref{tab:station_request}.
+In the tabel \ref{tab:software} are the software programs used in this study and in the collection and treatment of the data. The program used in the collection of meteorological measurements is PowerShell in combination with Curl. Using hyperlinks gathered from inspecting \acrshort{ac:kilden}'s web page using the browser (Microsoft Edge) built-in inspector tool to get the relevant links to send data requests. The presise URL's can be reviewed on GitHub in the studies GitHub repository\footnote{Link: https://github.com/ConAltDelete/MT24CS}. For a more surfac level description on what was requested of the servers see table \ref{tab:station_request}.
 
 \begin{table}
 	\centering
@@ -102,7 +106,7 @@ In the tabel \ref{tab:software} are the softwares used in this study and in the 
 The storage of the data is done through two data structures; \gls{gl:hashmap} and \gls{gl:dataframe} from the package pandas. The transformation of data is done with a customized data-type called "DataFileHandler" which is converted to a module for convenience. The keys for the hashmap is chosen by the naming of the data files and the pattern given to the class. To escalate the loading of the data it will also be exported to a binary file for faster retrieval. 
 
 \paragraph[Data structure]{Technical overview of custom data structure}
-The data structure used to store the data from the different stations is called "DataFileHandler" and stores the data in a nested dictionary which can be inpreted as the data structure "tree". The main features of "DataFileHandler" is 
+The data structure used to store the data from the different stations is called "DataFileHandler" and stores the data in a nested dictionary which can be interpreted as the data structure "tree". The main features of "DataFileHandler" is 
 \begin{enumerate}
 	\item Simple syntax for partitioning the data
 	\item Grouping the data after loading
@@ -118,28 +122,34 @@ To use the data in this study it must be cleaned and treated for training. Thoug
 
 \begin{enumerate}
 	\item Recommendation from Norwegian Institute of Bio-economy Research
-	\item \label{list:na_anal}Compute the missing values in the data
-	\item Missing values analyse 
+	\item \label{list:na_anal}Find the missing values in the data using algorithm \ref{alg:find_non_NULL_ranges_abstract}
+	\item Analyse missing values 
 	\item Searching LMT database for alternative station candidates if current data is insufficient
 	\item If some station was replaced the repeat step \ref{list:na_anal}
 \end{enumerate}
 
-\subsubsection{Outlier detection and removal}\label{sec:method:outlier}\todo{Revise so it reflects what you actually do}
+\subsubsection{Outlier detection and removal}\label{sec:method:outlier}
 
 Though the data fetched from \acrshort{ac:nibio} is treated and controlled the external data from \acrshort{ac:met} might not be, and this research project incorporated raw, untreated data from \acrshort{ac:nibio} to fill inn missing values.
 
-The method to quickly find obvious outliers was to look at the following condition
+The method to quickly find obvious outliers was to look at the following z-score condition
 \begin{equation}
-	|z(|\Delta T|)| = \left|\frac{|\Delta T|-E(|\Delta T|)}{Var(|\Delta T|)}\right|> 4^\circ C
-\end{equation}\todo{Make more clear}
+	|z(|\Delta T|)| = \left|\frac{|\Delta T|-E(|\Delta T|)}{\sqrt{Var(|\Delta T|)}}\right|> 2.35.\label{eq:zscore}
+\end{equation}
 
-Where the $E()$ is the expected value, and $Var()$ is the variance. This condition looks at the absolute difference between consecutive measurements and calculates the z-score for each observation. It is expected that the change in temperature can't be too rapid. Further methods used to highlight potential outliers is 
+Where $ E() $ represents the expected value, which is a measure of the average of a set, $ Var() $ denotes the variance, which quantifies the spread or dispersion of the data points around the mean. The condition in equation \ref{eq:zscore} examines the absolute difference between successive measurements to compute the z-score for each data point then checks if it excised a score of 2.35, which translates to a check if a point performs a jump that deviates more than top $\sim 1\%$ of all the other data points that year. 
 
-\begin{figure}[h]
+% determining if an observation exhibits a deviation that exceeds the threshold corresponding to approximately the top 1% of all data points within that year, thereby identifying significant anomalies.
+
+The z-score is a statistical measure that normalizes the dataset. It is calculated by subtracting the mean from an individual data point and then dividing the result by the standard deviation. This process transforms the data so that the new mean of the dataset is 0 and the standard deviation is 1. By converting data to z-scores, also known as standard scores, it becomes easier to compare different datasets and identify outliers, as the data is now on a standardized scale. This technique is particularly useful in fields like finance, research, and quality control where relative comparisons are essential. 
+
+The premise behind temperature analysis assumes that temperature fluctuations should be bounded, limiting how much they change from one time step to the next. To identify potential anomalies, an additional technique employed is the "out of line" method. This approach involves the program determining a projected point, denoted as $ C^* $, and then quantifying the deviation of the actual observed data point from this projection. For a graphical illustration of this method, refer to figure \ref{fig:localoutlier}, which visually depicts the extent of deviation of an observed temperature from its expected temperature. 
+
+\begin{figure}[H]
 	\centering
 	\definecolor{zzttqq}{rgb}{0.6,0.2,0.}
 	\definecolor{REDDD}{rgb}{0.8,0.5,0.2}
-	\definecolor{ududff}{rgb}{0.30196078431372547,0.30196078431372547,1.}
+	\definecolor{ududff}{rgb}{0.3,0.3,1.}
 	\begin{tikzpicture}[line cap=round,line join=round,>=triangle 45,x=1.0cm,y=1.0cm]
 		\begin{axis}[
 			x=1.0cm,y=1.0cm,
@@ -170,25 +180,27 @@ Where the $E()$ is the expected value, and $Var()$ is the variance. This conditi
 		\end{axis}
 	\end{tikzpicture}
 	\caption[Simple Interpolation outlier detection]{An simple outlier detection method utilizing a simple line to estimate where the expected point ($C^*$,red dotted circle) is supposed to be. If observed point C falls outside the tolerance level (green circle) then it is marked as an outlier.}
+	\label{fig:localoutlier}
 \end{figure}
 
 \subsubsection{Missing value imputation}\label{sec:method:interpolation}
 
-The data has missing values, in particular during early Autumn when there were sub-zero temperatures meaning any rain measurements done during this period would have unpredictable fluctuations since at negative temperatures water can freeze, get clogged up with residual bio-material from the surrounding area \todo{Rewrite this part to reflect what is going on}. When interpolating values the method chosen is a linear interpolation with a maximum period of 5 consecutive hours for soil temperatures, and 3 consecutive hours for air temperatures. The reasoning for this is that the soil temperatures are more reliable making it safer to interpolate without loosing too much information, while air temperatures has a higher variance making it more difficult to interpolate without cutting values.
+The data has missing values, however it is still possible to impute some reasonable values that does not deviate too much from what is expected. When interpolating values the method chosen is a linear interpolation with a maximum period of 5 consecutive hours for soil temperatures, and 3 consecutive hours for air temperatures. The reasoning for this is that the soil temperatures are more reliable making it safer to interpolate without loosing too much information, while air temperatures has a higher variance making it more difficult to interpolate without cutting values. Due to a technical oversight in the coding of this study some large periods that should not be imputed get interpolated at the beginning of the interval.
 
 \subsubsection{Summary of data}
 
-After going to the procedure of removing outliers and interpolating missing values, the current form of the station are
+Following the processes of outlier removal and missing value interpolation, the statistics for the refined dataset are presented in table \ref{tab:staion:summary:overall}. For an in-depth year-by-year breakdown, please refer to the summaries located in appendix \ref{apx:tables:station:summary}.
 
-\begin{table}
-	\centering
-	\begin{adjustwidth}{-1in}{1in}
+\begin{table}[H]
+	\begin{adjustwidth}{-1in}{-1in}
+		\centering
 		\input{tables/station_summary_table_all.tex}
 	\end{adjustwidth}
-	\caption[Table of station statistics]{The table shows the statistics of each station for each feature except for Time as it is a strictly monotonic sequence.}
+	\caption[Table of station statistics]{The table shows the statistics of each station for each feature except for Time as it is a strictly monotonic sequence. The station names can be found in table \ref{tab:station:names}. $\mu$ Denotes the mean temperature, $\sigma$ denotes the standard deviation, "min" is the minimum temperature, and "max" is the maximum temperature. All values in the table have the unit degree Celsius.}
+	\label{tab:staion:summary:overall}
 \end{table}
 
-\subsection{Setup of models}\todo{In general, write more on all subsections}
+\subsection{Setup of models}
 
 The models are set up in according to the relevant paper the model is fetched from, alternatively reuse the code made by the author. When importing the data to the model there will be modifying to the original code to facilitate for the model as far as it goes. Any modifications will be in the appendix under section \ref{apx:code}. For the convenience of the reader all code is using the sklearn estimator class to make all the models discuses in this study more user friendly and compatible with sklearns other functions. The details of the models will be discussed in section \ref{sec:theory}, this section discusses the setup and implementation of the models.\footnote{Caution to the reader; The code used was run on the Linux subsystem (Debian) on windows due to the fact that the current version of tensorflow can't run on Windows.}
 
@@ -198,9 +210,9 @@ The linear model (section \ref{sec:theory:linreg}) utilises in the study is crea
 
 \subsubsection{Plauborg}
 
-The Plauborg regression will be formulated as a linear regression problem so that the 'LinearRegression' function in the Sci-kit module can be used. For the parameters used in the paper\cite{plauborg_simple_2002} the F function defined in section \ref{sec:theory:pluborg} will be formulated with loops to give rise 3 more parameters for fine-tuning the model. NULL-values generated from the procedure get replaced with 0, since the data fed to the model is significantly larger than 10h (the minimum for the training is 24h).
+The Plauborg regression will be formulated as a Linear Regression problem so that the 'LinearRegression' function in the Sci-kit module can be used. For the parameters used in the paper\cite{plauborg_simple_2002} the F function defined in section \ref{sec:theory:pluborg} will be formulated with loops to give rise 3 more parameters for fine-tuning the model. NULL-values generated from the procedure get replaced with 0, since the data fed to the model is significantly larger than 10h (the minimum for the training is 24h).
 
-\subsubsection{LSTM}\todo{rewrite or possibaly move}
+\subsubsection{LSTM}
 
 The LSTM used in this study came from the keras module using standard settings.
 
@@ -227,11 +239,10 @@ The LSTM used in this study came from the keras module using standard settings.
 
 \subsubsection{GRU}
 
-The GRU model used in this study is fetched from TensorFlow-Keras python module with standard settings.  The model used in this study is the Keras default GRU layer. 
-
-The standard model settings are
+The GRU model used in this study is fetched from TensorFlow-Keras python module with standard settings. The model class used in this study is the Keras default GRU layer. The model settings can be reviewed in table \ref{tab:gru:params} which is the standard settings for the keras class.
 
 \begin{table}
+	\centering
 	\begin{tabular}{l|l|l|l}
 		Parameter&value&Parameter&value\\\hline
 		activation&"tanh"&recurrent\_constraint&None\\
@@ -251,17 +262,20 @@ The standard model settings are
 	\label{tab:gru:params}
 \end{table}
 
-\subsubsection{Bi-Directional layer}\todo{rewrite}
+\subsubsection{Bidirectional layer}
 
-The Bi-directional layer used in this study came from the keras module using standard settings except for "merge\_mode" which is set to "ave" for averaging the output values.
+The Bi-directional layer used in this study came from the keras module using standard settings except for "merge\_mode" which is set to "ave" for averaging the output values. This was done since there are no other layers to get those values. The table of configurations can be found in table \ref{tab:bidir:params}.
 
 \begin{table}
+	\centering
 	\begin{tabular}{l|l}
 		Parameter&value\\\hline
 		merge\_mode&"ave"\\
 		weights&None\\
 		backward\_layer&None
 	\end{tabular}
+	\caption[Bidirectional method parameters]{The adjustable parameters of the bidirectional layer from Keras.}
+	\label{tab:bidir:params}
 \end{table}
 
 
@@ -278,13 +292,13 @@ The metrics used in this study are
 	\item digit sensitivity
 \end{itemize*}
 
-Soil temperature as a different behavior than air temperature since energy (temperature) though the soil gets dampen and delayed. Since the data used in this study has outliers that was not caught during data treatment, which has been addressed, the author of this study decided to include two more metrics that are not usually included in the evaluation; The log condition number, and digit sensitivity. Both metrics are based on the calculation of the condition number defined as 
+Soil temperature as a different behaviour than air temperature since energy (temperature) though the soil gets dampen and delayed. Since the data used in this study has outliers that was not caught during data treatment, which has been addressed, the author of this study decided to include two more metrics that are not usually included in the evaluation; The log condition number, and digit sensitivity. Both metrics are based on the calculation of the condition number defined in formula \ref{eq:kappa}.
 
 \begin{equation}\label{eq:kappa}
 \kappa = \lim\limits_{\varepsilon \to 0^+} \sup\limits_{|\partial x|\leq\varepsilon}  \frac{\left|f(x+\partial x) - f(x)\right|}{|f(x)|}*\frac{|x|}{|\partial x|} 
 \end{equation}
 
-Calculating this directly is impossible due to the limitations of handling infinitesimally small numbers in simulations. However, this paper uses a specific algorithm (referred to as $\kappa$) to estimate this value for all the models.
+Calculating this directly is impossible due to the limitations of handling infinitesimally small numbers in simulations. However, this paper uses a own designed algorithm (referred to as $\kappa$) to estimate this value for all the models. See algorithm \ref{alg:cond_num} for the pseudocode of the algorithm.
 
 \begin{algorithm}[H]
 	\SetAlgoLined
@@ -302,19 +316,33 @@ Calculating this directly is impossible due to the limitations of handling infin
 	\label{alg:cond_num}
 \end{algorithm}
 
+The normal use case for $\kappa$ is to check the sensitivity of matrices for small changes in the input,  
+
 The digit sensitivity is included to give an intuitive understanding of $\kappa$ and is computed simply as $\log_e(\kappa)+1$. This number tells us the significant digit generated from the model. If the number is less than 0 then it's the nth digit after the decimal point.
 
 For the rest of the metrics, they are defined as follows
 \begin{itemize}
-	\item \gls{ac:rmse} = $\sqrt{\frac{\sum (y_{\text{pred}} - y_{\text{truth}})^2}{n}}$
-	\item \gls{ac:mae} = $\frac{\sum \left| y_{\text{pred}} - y_{\text{truth}}\right|}{n}$
-	\item bias = $\frac{\sum ( y_{\text{pred}} - y_{\text{truth}})}{n}$
-	\item \gls{ac:r2} = $1-\frac{\sum (y_{\text{pred}} - y_{\text{truth}})^2}{\sum (y_{\text{pred}} - \vec{y})^2}$
+	\item \gls{ac:rmse} \begin{equation}\sqrt{\frac{\sum (y_{\text{pred}} - y_{\text{truth}})^2}{n}}\end{equation}
+	\item \gls{ac:mae} \begin{equation}\frac{\sum \left| y_{\text{pred}} - y_{\text{truth}}\right|}{n}\end{equation}
+	\item bias \begin{equation}\frac{\sum ( y_{\text{pred}} - y_{\text{truth}})}{n}\end{equation}
+	\item \gls{ac:r2} \begin{equation}1-\frac{\sum (y_{\text{pred}} - y_{\text{truth}})^2}{\sum (y_{\text{pred}} - \vec{y})^2}\end{equation}
 \end{itemize}
 
 Where $\vec{y}$ is the mean of the target, $y_{\text{pred}}$ is the predicted data, and $y_{\text{truth}}$ is the observed soil temperature.
 
-\subsubsection{Model training}
+\subsubsection{Confidence eclipses}\label{sec:method:eclipse}
+
+To see goodness of fit to the ground truth (soil temperature) confidence eclipses will be calculated for the results. This is done by calculating the singular values of the predicted soil temperature and the observed ground truth. A way to define it would be with equation \eqref{eq:singval}.
+
+\begin{equation}
+	\left|\left[Y \quad \tilde{Y}\right]^T \left[Y \quad \tilde{Y}\right] -\lambda I\right| = 0\label{eq:singval}
+\end{equation}
+
+Where $Y$ is the soil temperature, $\tilde{Y}$ is the predicted soil temperature, $[\dots]^T$ is the transpose of a matrix, $\lambda$ is a diagonal matrix with the entries being the singular values, and $I$ is the identity matrix. The interpretation of the singular values would be the width and hight of the eclipse that covers 1 standard deviation of the data in two dimensions. In section \ref{sec:result} only the smallest singular value will be shown, denoted $\lambda_0$, as it will be half the width of the eclipse and will show if a model fits to the symmetry line. Furtermore, the figures of the confidence eclipses will also show 2nd standard deviation, and 3rd standard deviation for completeness. 
+
+\subsection{Model training}
+
+When training the model's data from 2014 to 2020 get used as the training data and the years 2021 to 2022 will be used as the test set. Normally data sets get split up into multiple training sets and test sets known as cross-validation however since this study have collected a large amount of data this technique is not necessary for the analyses. However, since the study utilizes the GridSearchCV class for finding optimal parameters cross-validation will be performed anyway within the training set by default.
 
 The models get trained on air temperature, however the precise input for each model is not the same for all. The features used for each model are described in table \ref{tab:model_trans} and their transformation in table \ref{tab:model_trans}.
 
@@ -359,17 +387,17 @@ The models get a sample of the training data at the time due to the size and the
 	}
 \end{algorithm}
 
-After the missing values has been identified rows get removed in such a way that if any of the features or target values is missing then that row get removed. At the end all the rows get concatenated , so there is just one complete dateset for the training. 
+After the missing values has been identified rows get removed in such a way that if any of the features or target values is missing then that row get removed. At the end all the rows get concatenated , so there is just one complete dataset for the training. 
 
 \begin{table}[H]
 	\centering
-	\begin{tabular}{|r|c| p{6cm}|}
-		\hline Model name & features & transformations \\\hline\hline
-		Linear regression & TM & --- \\\hline
-		Plauborg & Time, TM & Time get translated in two way; the current day since new year if looking at daily values, and hours since new year if looking at hourly predictions. When converting TM to daily values the hourly data get averaged in 24 hour periods from midnight to 23:00\\\hline
-		Deep learning models &Time, TM& Time get translated to hours since new year by taking the day of the year and multiplying it by 24 and adding the hour.\\\hline
+	\begin{tabular}{|r|c|c| p{6cm}|}
+		\hline Model name & features& target & transformations \\\hline\hline
+		Linear Regression & TM& TJM10, TJM20 & --- \\\hline
+		Plauborg & Time, TM& TJM10, TJM20 & Time get translated in two way; the current day since new year if looking at daily values, and hours since new year if looking at hourly predictions. When converting TM to daily values the hourly data get averaged in 24 hour periods from midnight to 23:00\\\hline
+		Deep learning models &Time, TM& TJM10, TJM20& Time get translated to hours since new year by taking the day of the year and multiplying it by 24 and adding the hour.\\\hline
 	\end{tabular}
-	\caption[Model parameters]{Parameters used for predicting soil temperatures at depth 10cm and 20cm.}
+	\caption[Model parameters]{Parameters used for predicting soil temperatures at depth 10cm and 20cm. The deep learning models encapsulated in the "Deep learing models" are LSTM, BiLSTM, GRU, and BiGRU.}
 	\label{tab:model_trans}
 \end{table}
 
@@ -383,4 +411,4 @@ In this paper there has been used Artificial Intelligence (AI), specifically Bin
 	\item Code generation of basic consepts and structures (tree traversal, template for generic classes) 
 \end{enumerate}
 
-It is important to emphasize that my engagement with AI have been actively curated and verified with known sources. All code underwent rigorous manual inspection within a dedicated testing environment. Furthermore, no confidential or sensitive information was shared with the AI; my interactions focused solely on broad topics and general inquiries. To validate the accuracy of AI-generated responses, I cross-checked them with established research papers and textbooks.
+It is important to emphasize that my engagement with AI have been actively curated and verified with known sources. All code underwent rigorous manual inspection within a dedicated testing environment. Furthermore, no confidential or sensitive information was shared with the AI; my interactions focused solely on broad topics and general inquiries. To validate the accuracy of AI-generated responses, it has been cross-checked with established research papers and textbooks.

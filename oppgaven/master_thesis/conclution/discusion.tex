@@ -1,50 +1,49 @@
-\section{Discussion}
-\todo{Write a discussion}
-\todo{metion annomelies and resons}
+\section{Discussion}\label{sec:discussion}
 
 \subsection{The Autumn discrepancy}\label{sec:autumn}
 
-A phenomenon that arose during performance evaluations was that the linear models struggles with the Autumn season. The difference graphs showed a clear over or under estimation that are larger than $10\sigma$. When investigating the coeffisents to the model \todo{Show table of parameters} this discrepancy can be contributed to the intercept that during low temperature ($<5^\circ C$) giving either an over estimation or an under approximation. Further more when removing the calculation of the intersept the same phenomenon is still precent possibility due to the adaptation to Summer season.
+A phenomenon that arose during performance evaluations was that the linear models struggles with, and that the deep learning models treated differently was Autumn. The difference graphs showed a clear over or under estimation that are larger than $10\sigma$. This discrepancy can be contributed to the intercept coefficient that during low temperature ($<5^\circ C$) giving either an over estimation or an under approximation. Furthermore, when removing the calculation of the intercept the same phenomenon is still precent possibility due to the model adapting better to Summer that has stable temperatures for a longer period than Autumn and Spring.
 
-If one looks at the deep learning models shown at figure \ref{fig:diffplotl1kerasbilstmstats10innlandet2022tjm10} to figure \ref{fig:diffplotl2kerasbilstmstats10innlandet2022tjm10} this effect can be observed. The GRU model is affected similarly, but to a lesser exstent where it overestimates at a few periods during the Mars month. This can be due to snow covering the soil forming an thermal isolator keeping the soil temperature constant while the air temperature is fluxiating at relative normal rates giving the models a false sense of generality when predicting this period, however the GRU model seems to interoperate a sense of season awareness allowing it to have a more constant temperature prediction in the autumn and return to "normal" operation during Summer and Spring. 
+The deep learning models seems to have learned that there is a difference between winter season and the other seasons, and this effect can be observed in the difference plots in appendix \ref{apx:plots} .  but to a lesser exstent where it overestimates at a few periods during the Mars month. This can be due to snow covering the soil forming an thermal isolator keeping the soil temperature constant while the air temperature is fluctuating at relative normal rates giving the models a false sense of generality when predicting this period, however the GRU model seems to interoperate a sense of season awareness allowing it to have a more constant temperature prediction in the autumn and return to "normal" operation during Summer and Spring. 
 
 \subsubsection{Temperature seasons}
 
-It can be observed in the raw data and in the diff plots (see figure \ref{fig:diffplotl1kerasbilstmstats10innlandet2022tjm10} as an example) that the seasons can be shown though the temperatures and stable periods. The flat areas is explained by snow covers that creates an thermal isolation layer that dampens the effekt of the air temperature. There excist models in the literature that takes this effect into account\cite{rankinen_simple_2004,stuurop_simulating_2021} to make a more accurate prediction of soil temperature when there is snow present or frozen soil.
+It can be observed that in the "TM vs TJM10" and "TM vs TJM20" that there signs of seasons where in the air temperature range -10 to 10 and the soil temperature 0 to 5 represents winter / snow season, the air temperature range 0 to 20 and soil temperature 5 to 12 represent Autumn / Spring, and the air temperature 5 to 30 and soil temperature 12 to 22 represents Summer. This seems reasonable as when the temperature in the air rises there will be a lag period before the soil temperature gets warmed up to the appropriate temperature. 
 
-\subsection{Plauborg}
+It can be observed in the raw data and in the diff plots (see figure \ref{fig:diffplotl1kerasbilstmstats10innlandet2022tjm10} as an example) that the seasons can be shown though the temperatures and stable periods. The flat areas can be explained by snow covers that create a thermal isolation layer that dampens the effect of sudden changes in the air temperature. There exist models in the literature that takes this effect into account\cite{rankinen_simple_2004,stuurop_simulating_2021} to make a more accurate prediction of soil temperature when there is snow present or frozen soil, however these models require knowledge about the soil that gets simulated or some other properties such as the specific heat capacity of the soil being simulated or the water content of the soil. 
 
-The result of the modelling (table \ref{tab:Plauborg:day:20} to \ref{tab:linreg:10}) show that modelig soil temperature without the inclusion of time is an inefficient, and inaccurate method of predicting soil temperatures.
+\subsection{Regression model performance}
 
-In this study the original model, that was trained for daily values was converted to predict hourly data to see if the same formulation could be used to make predictions. When comparing the results shown in table \ref{tab:Plauborg:hour:10} and table \ref{tab:Plauborg:hour:20} to their daily counterpart it shows similar values showing that the model proposed in \citeauthor{plauborg_simple_2002} can be extended to hourliy timeseries.
+The findings in the results, as detailed in the tables from (\ref{tab:Plauborg:day:20}) to (\ref{tab:linreg:10}), underscore the limitations of predicting soil temperatures without factoring in temporal elements. The study reveals that omitting time from the modelling process leads to inefficiencies and inaccuracies, a conclusion that is shown in the doubling of RMSE and halving of $R^2$, by the basic Linear Regression model compared to the Plauborg models.
+
+This study looked into the adaptability of the original model, which was initially trained for daily mean temperature predictions. The model underwent a shift in coefficients to facilitate hourly forecasts, with the objective of determining whether the foundational formula could maintain its efficacy on smaller timescales, from daily mean values to hourly mean values in this case. A comparative analysis of the outcomes, as presented in tables (\ref{tab:Plauborg:hour:10}) and (\ref{tab:Plauborg:hour:20}), with their daily equivalents, revealed a consistency in values. This consistency suggests that the modelling approach introduced by Plauborg in 2002 \cite{plauborg_simple_2002} is versatile enough to be applied to hourly data series, thereby expanding its utility beyond daily temperature estimations.
+
+% rewrite so it fitts better with the text
+In the region Østfold year 2021 there is a divergence in the PLauborg models when predicting the 10 cm soil temperature, this arises as an effect from an old code used to plot the graph of this model. In the old code the NULL values was set by default to 0 meaning when calculation the difference between predicted values and ground truth it in essence created a copy of the air temperature.
 
 \subsection{Discussion of good results of Plauborg}
 
-The inclusion of previous temperatures gives an improved estimation, even on hourly basis. The coefficents for both daily and hourly are observed to be <1 making it a mean temperature and the fourier terms would estimate the soil function\eqref{eq:soil_equation}\cite{holmes_estimating_2008}.
+It is found that incorporating historical temperature data significantly enhances the accuracy of predictions, even on an hourly scale. The coefficients for both daily and hourly predictions are noted to be less than one, which suggests that they represent an average temperature. The Fourier terms are employed to approximate the soil temperature function, as indicated in Equation \eqref{eq:soil_equation}, referenced from \citeauthor{holt_forecasting_2004}’ work \cite{holmes_estimating_2008} on estimating soil temperatures in \citeyear{holmes_estimating_2008}.
 
 \begin{equation}
-E_{\text{soil,year}}(T) + e^{-z/D}\sin(\omega t - z/D + \phi)\label{eq:soil_equation}
+E_{\text{air,year}}(T) + e^{-z/D}\sin(\omega t - z/D + \phi)\label{eq:soil_equation}
 \end{equation}
 
-Since the term $exp(z/D)$ is constant we would be estimating $\sin(\omega t - Q) = \sin(\omega t)\cos(Q) - \sin(Q)\cos(\omega t)$, where Q is $z/D - \phi$ and is considered constant. This will be extrapolated to a simple sum of sines and cosines as the model does. Together the Plauborg model would estimate the approximation \eqref{eq:plauborg_expand}. The extra terms are nessesery to include external factors that affects the temperature (rain, soil type, atmosphere, etc). 
+The expected value of the soil temperature is denoted by $ E_{\text{soil,year}} $, and $T$  represents the collection of time ( t ) and corresponding air temperature. As the term $ e^{z/D} $ is a constant, the estimation focuses on $ \sin(\omega t - Q) $, which is expressed as $ \sin(\omega t)\cos(Q) - \sin(Q)\cos(\omega t) $. Here, $ Q $ is $ z/D - \phi $ and is considered a constant. This leads to an extrapolation to a simple sum of sines and cosines, as the model does. The Plauborg model estimates the soil temperature equation \eqref{eq:soil_equation} with the approximation given in Equation \eqref{eq:plauborg_expand}. The inclusion of extra terms is useful to account for external factors that influence temperature, such as rainfall, soil type, and atmospheric conditions.
 
 \begin{align}
-E_{\text{soil,year}}(T) + e^{-z/D}\sin(\omega t - z/D + \phi) \\
-\approx E_{\text{air,period}}(T) + \sum \alpha_ie^{z/D}\sin(-Q_i)\cos(i\omega t_i) + \sum \beta_je^{z/D}\cos(-Q_j)\sin(i\omega t_j)\label{eq:plauborg_expand}
+E_{\text{air,period}}(T) + \sum \alpha_ie^{z/D}\sin(-Q_i)\cos(i\omega t_i) + \sum \beta_je^{z/D}\cos(-Q_j)\sin(i\omega t_j) + \varepsilon\label{eq:plauborg_expand}
 \end{align}
 
-The differences between actual and predicted values could be due to the varying soil types at different stations. To create a more accurate model, one might need to consider additional weather-related measurements (such as air pressure, humidity, soil type, and texture) or incorporate non-linear features (such as the square root of temperature or the temperature change ratio over time)
- 
+The term $ E_{\text{air, period}} $ is the expected value of air temperature over a designated period, which is distinct from an annual calculation.
 
-\subsection{Linear regression vs Plauborg}\todo{review mot tidlige i diskusjonen}
+By focusing on shorter periods, the model can more accurately reflect the immediate environmental conditions, which is important for applications such as agricultural planning, where precise temperature forecasts can influence crop management decisions.
 
-The global measure for the linear regression has an average error of $2.3^\circ C \pm 4.23^\circ C$ while the global messure of the Plauborg daily model has an average error of $0.6^\circ C \pm 1.96^\circ C$. Further more Plauborg has an hight $R^2$ value indicating that it follows the temperature changes in the soil better than just scaling the air temperature by a scaling factor.
-
-The linear model shows subpar predictive capabilities compared to Plauborg's model who uses the same technics but interoperate time dependence. 
+The differences between actual and predicted values in the Pluborg models could be due to the varying soil types at different stations. For the purpose of formulating a more precise model, it might be beneficial to incorporate a broader spectrum of meteorological measurements. These could include factors such as air pressure, humidity, and specific characteristics of the soil, like its type and texture. Additionally, the integration of non-linear variables—such as the square root of the temperature or the ratio of temperature change over a given time interval—might offer further refinement to the model’s predictive capabilities. By incorporating these enhancements, the model can better grasp the complicated interactions between different metrological, and soil factors that influence temperature readings.
 
 \subsection{Modification of Plauborg}
 
-The Plauborg model trained in Norway was found to only need 3 days ($t_0,t_{-1},t_{-2}$) compared to \cite{plauborg_simple_2002} that needed 4 days ($t_0,t_{-1},t_{-2},t_{-3}$). However for the Fourier terms both models (Danish model and the Norwegian model) required 2 sine and cosine terms. For the 20cm target the models diverge in the sense of quantity of terms. It was found that the 20cm model needs 14 sine terms and 2 cosine terms, however only needs 2 days.
+The Plauborg model trained in Norway was found to only need 3 days ($t_0,t_{-1},t_{-2}$) compared to \cite{plauborg_simple_2002} that needed 4 days ($t_0,t_{-1},t_{-2},t_{-3}$). However, for the Fourier terms both models (hourly version and the daily version) required 2 sine and cosine terms. For the 20cm target the models diverge in the sense of quantity of terms. It was found that the 20cm model needs 14 sine terms and 2 cosine terms, however only needs 2 days.
 \begin{figure}[H]
 	\begin{subfigure}{\textwidth}
 		\centering
@@ -63,7 +62,7 @@ The Plauborg model trained in Norway was found to only need 3 days ($t_0,t_{-1},
 
 The modification to Plauborg's model is minor, by replacing the $\omega$ with a larger coefficient it can be used with hourly data. As seen in figure \ref{fig:diffplotplauborgstat10innlandet2022tjm10} the variation is stronger than \ref{fig:diffplotplauborgdaystat10innlandet2022tjm10} however the overall performance is comparable as seen in table \ref{tab:Plauborg:day:10} and table \ref{tab:Plauborg:hour:10}. 
 
-\begin{table}[t]
+\begin{table}[H]
 	\centering
 	\resizebox{\textwidth}{!}{
 		\input{tables/table_Plauborg_stat_10.tex}
@@ -72,7 +71,7 @@ The modification to Plauborg's model is minor, by replacing the $\omega$ with a 
 	\label{tab:plauborg_hour_res}
 \end{table}
 
-\begin{table}[t]
+\begin{table}[H]
 	\centering
 	\resizebox{\textwidth}{!}{
 		\input{tables/table_Plauborg_day_stat_10.tex}
@@ -85,15 +84,17 @@ With modification to the model to accept hourly data it still preforms approxima
  
 \subsubsection{RNN results compared to other studies}
  
-The BiLSTM is an improvement over LSTM and the modified BiLSTM with layers is a clear indication that added complexity to a deep learning model is the way to go for . This progression of improvements has been shown in other studies\cite{feng_estimation_2019,citakoglu_comparison_2017,li_attention-aware_2022,li_gans-lstm_2020,wang_modeling_2022}. None of the deep learning models has been optimised, however in according to earlier studies that focused on these types of model the authors did find that adding layers to the models does improve the model performance. 
+The findings of this research are consistent with the numerical trends observed in previous studies, such as those conducted by \cite{feng_estimation_2019,citakoglu_comparison_2017,li_attention-aware_2022,li_gans-lstm_2020,wang_modeling_2022}. However, it is noteworthy that these studies incorporated a broader set of predictive features—including air moisture, rainfall, solar radiation, and wind speed—to enhance the accuracy of soil temperature predictions. The inclusion of these additional meteorological parameters has been shown to improve model performance, underscoring the importance of a comprehensive feature set in predictive modelling of soil temperature.
 
-\subsection{Model comparison}
+\subsection{Deep learning model performance}
 
-There is a unmistakeably distinction between the linear regression and the other models. The basic linear regression model 
+It is observed in the epoch graphs of the deep learning models that there is a boost in learning rate when implementing the bidirectional technique rather than learning  from the data in one time direction. Similarly, it is found that the general performance of the models gets improved by making them bidirectional.
+
+By analysing the model performance table in section \ref{sec:result} it shows that BiLSTM did better than the other models in terms predicting soil temperature at 10 cm depth, however BiGRU did perform better at 20 cm depth.
 
 \subsection{Future work}
 
-The models chosen in this study is not a representative sample of current knowledge of soil temperature modelling, and this study did not aim for optimizing the models beyond what the original authors have already done with the exception for base models used for comparison purposes. A more comprehensive is needed of more complex models that utilises cutting edge technologies, techniques, and theory. One of which is logic based models, for instance ASPER\cite{le_asper_2023} that tries to incorporate logical descriptions of the problem and limits the model for better or equal results based on fewer samples\cite{machot_bridging_2023}. Another approach is to use the newest deep learning method of the attention mechanism\cite{vaswani_attention_2017} combined with recurrent neural networks to elevate the accuracy and speed of the model. As the author of the paper \cite{li_attention-aware_2022} has show great promise with that approach.
+The models chosen in this study is not a representative sample of current knowledge of soil temperature modelling, and this study did not aim for optimizing the models beyond what the original authors have already done with the exception for base models used for comparison purposes. A more comprehensive is needed of more complex models that utilises cutting edge technologies, techniques, and theory. One of which is logic based models, for instance ASPER\cite{le_asper_2023} that tries to incorporate logical descriptions of the problem and limits the model for better or equal results based on fewer samples\cite{machot_bridging_2023}. Another approach is to use the newest deep learning method of the attention mechanism\cite{vaswani_attention_2017} combined with recurrent neural networks to elevate the accuracy and speed of the model. As the author of the paper \cite{li_attention-aware_2022} has show some promise with that approach.
 
 Furthermore, the models presented in this study are not optimised as far as they can as there are more parameters one can include in the model, and \gls{gl:hype_param} one can fine tune to improve the predictive capability of the models such as
 \begin{itemize}

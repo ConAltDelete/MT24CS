@@ -1,11 +1,21 @@
 
 \section*{Abstract}
-This study focuses on 3 models that have been used in the literature to predict soil temperatures. The depths chosen as targets are 10cm, and 20cm in 4 regions; Innlandet, Østfold, Vestfold, and Trøndelag. In each region there are 4 stations spread along the region to get the most coverage of area to be the most representative of the local area. The models chosen had been used in the literature to predict soil temperatures. The data used in this study was collected from \acrshort{ac:kilden} with the features; hourly air temperature from 2m height, soil temperature from 10cm depth, soil temperature from 20cm depth.
+This comparative study examines the efficacy of three established models for predicting soil temperatures at depths of 10cm and 20cm across four Norwegian regions: Innlandet, Østfold, Vestfold, and Trøndelag. To ensure comprehensive regional representation, four monitoring stations were strategically placed within each region. Utilizing data from \acrshort{ac:nibio}, including hourly air temperature at 2m and soil temperatures at 10cm and 20cm depths, the study evaluated seven models cited in existing literature.
 
-The models chosen are LSTM, BiLSTM, GRU, linear regression, and linear regression model modified by \citeauthor{plauborg_simple_2002}. All the models performed within 2$^\circ C$ RMSE and an absolute bias of 1.5|$^\circ C$| except linear regression that had an RMSE of 4.5℃ RMSE  and absolute bias of 
+These models included Linear Regression, Plauborg’s Linear Regression for daily and hourly values, LSTM, bidirectional LSTM, GRU, and bidirectional GRU. The findings revealed improved performance of bidirectional models over unidirectional ones and comparable results between the hourly extension and Plauborg’s original daily model. Notably, deep learning models exhibited a dual-mode operation to adapt to the transitional Autumn/Spring and stable Summer periods.
+
+It was found that the bidirectional models performed the best and that bidirectional LSTM worked best for 10 cm soil temperature while Bidirectional GRu worked best for 20 cm soil temperature. It was also found that the inclusion of time in regression models improved the models predictive capabilities.
+
+The author of this current study advocates for further research into bidirectional models and suggests broadening the feature set beyond two variables to capture additional predictive variations.
 
 \section*{Oppsumering}
-Denne studien ser på modeler som predikerer jordtemperaturer
+Denne sammenlignings studien undersøker effekten av tre etablerte modeller for å forutsi jordtemperaturer på dybder på 10 cm og 20 cm i fire norske regioner: Innlandet, Østfold, Vestfold og Trøndelag. For å sikre helhetlig regional representasjon ble fire målestasjoner strategisk plassert innenfor hver region. Ved å bruke data fra \acrshort{ac:nibio}, inkludert timelig lufttemperatur ved 2m og jordtemperaturer på 10cm og 20cm dybder, evaluerte studien syv modeller sitert i eksisterende litteratur.
+
+Disse modellene inkluderte lineær regresjon, Plauborgs lineære regresjon for daglige og timebaserte verdier, LSTM, toveis LSTM, GRU og toveis GRU. Funnene avslørte forbedret ytelse av toveismodeller i forhold til enveismodeller og sammenlignbare resultater mellom timeforlengelsen og Plauborgs opprinnelige daglige modell. Spesielt viste dyplæringsmodeller en dual-mode-operasjon for å tilpasse seg overgangsperiodene høst/vår og stabile sommerperioder.
+
+Det ble funnet at toveismodellene fungerte best og at toveis LSTM fungerte best for 10 cm jordtemperatur mens toveis GRu fungerte best for 20 cm jordtemperatur. Det ble oså funnet at inkludering av tid i regisjons modellen hadde en positiv påvirking av modelens predikerings evne.
+
+Forfatteren av denne nåværende studien tar til orde for videre forskning på toveismodeller og foreslår å utvide funksjonssettet utover to variabler for å fange opp ytterligere prediktive variasjoner.
 
 % hva gjør vi
 
@@ -19,16 +29,19 @@ Denne studien ser på modeler som predikerer jordtemperaturer
 
 \section{Introduction}
 
-In agriculture soil temperature is one of the important parameters to put into consideration when thinking about pest prevention, conservation, and yield prediction. The reasoning for this is that knowing the soil temperature is gaining useful insight into
-gain important info for water management \cite{alizamir_advanced_2020},
-potential yields \cite{sim_prediction_2020},
-calculation of plant-growth \cite{li_modeling_2020},
-and predicting hatching insect eggs\cite{nanushi_pest_2022,johnson_effects_2010}.
-Being able to predict the soil temperature a few days in advance does give insight into
-potential flooding and erosions\cite{stuurop_influence_2022},
-when seeds start to sprout \cite{li_modeling_2020},
-nitrogen processes \cite{rankinen_simple_2004} in the soil.
-Due to climate change it is more important to know soil temperatures at given depths.
+Soil temperature is an important element in agriculture, impacting pest management, and yield forecasting. Accurate soil temperature readings offer insights into effective water management, as highlighted by \cite{alizamir_advanced_2020}, and are useful in predicting potential crop yields, as discussed by \cite{sim_prediction_2020}. Furthermore, soil temperature is essential for calculating plant growth, a process noted by \cite{li_modeling_2020}, and for anticipating the hatching of insect eggs, which is crucial for pest control measures \cite{nanushi_pest_2022,johnson_effects_2010}.
+
+The ability to predict soil temperature days in advance can provide early warnings of potential flooding and erosion \cite{stuurop_influence_2022}, and can indicate the optimal time for seed sprouting \cite{li_modeling_2020}. It also sheds light on nitrogen processes within the soil, which are essential for soil health \cite{rankinen_simple_2004}.
+
+With the ongoing challenges posed by climate change, understanding soil temperatures at specific depths has become increasingly important. This knowledge not only aids in immediate agricultural decisions but also contributes to the long-term adaptation of farming practices to evolving environmental conditions
+
+%The significance of soil temperature in environmental and agricultural research is well-established, yet the universal measurement of this parameter is not without its challenges. The cost of retrofitting old weather stations with new technology is a substantial financial barrier. Moreover, the practicality of installing sensors at every location and depth is limited; instead, a strategic approach using a select number of sensors can provide a sufficient representation of soil conditions across different areas.
+
+%In addition to financial and logistical constraints, environmental factors such as extreme weather, poor soil quality, or unique geographical characteristics can make sensor installation and maintenance difficult. These factors can lead to data inaccuracies or the need for data interpolation when sensors fail to capture the true state of the soil.
+
+%Even when weather stations are equipped with the necessary sensors, technical issues or natural phenomena can result in data loss or errors. In such instances, data scientists must rely on estimations or insert NULL values to indicate the absence of data. These placeholders are crucial as they differentiate between a lack of data and actual recorded values, ensuring that subsequent data analysis remains valid and reliable.
+
+%In summary, while measuring soil temperature is crucial, it requires a balance between the ideal and the feasible, taking into account the myriad of factors that influence the collection of accurate and comprehensive data.
 
 If it's important, why don't institutions measure it everywhere? There are several reasons for this, but a common reason is that it's expensive to install new equipment on old weather stations. Furthermore, it is unfeasible to install sensors absolutely everywhere at any depth, however it is not necessary with full coverage of an area as it is sufficient to have a few samples here and there to get an overview of the current state of the soil. Another thing is that it might be impractical to install sensors in some areas due to climate, soil quality (or lack there of), or the misrepresentation of the area if it's a geographical or meteorological special case.
 
@@ -36,7 +49,11 @@ Sometimes the weather station do have the sensors in the fields reading soil tem
 
 Previous research has investigated soil heat conductivity, leading to the formulation of differential equations \cite{karvonen_model_1988}. However, these mathematical statements, which involve heat transfer, are computationally demanding and challenging to simulate or calculate \cite{fourier_analytical_2009, karvonen_model_1988}. Numerical solutions are not the only obstacle; the dynamic nature of heat within the soil also plays a crucial role. For instance, frost in Scandinavian countries significantly alters soil heat conductivity \cite{stuurop_influence_2022}, further complicating accurate calculations. As part of this study, data will be collected from Norway, situated within the Scandinavian region.
 
-Deeplearning models
+%In the pursuit of an optimal predictive model, simplicity and accuracy are key. An ideal model operates with minimal parameters yet yields results that fall within acceptable error margins. This research focuses on models that rely solely on time and air temperature data—two of the most commonly recorded metrics at weather stations. The choice to use these parameters stems from the fact that soil temperature is often not measured, as previously mentioned.
+
+%The effectiveness of these models will be gauged using a dual-metric approach, combining Root Mean Square Error (RMSE) and Explained Variance. RMSE provides a measure of the average magnitude of the model’s prediction errors, offering a clear picture of performance accuracy. Explained Variance, on the other hand, assesses the proportion of total variation in the data that is captured by the model. Together, these metrics offer a comprehensive evaluation of a model’s predictive power and reliability. For a detailed explanation of these metrics, refer to section \ref{sec:method:metric} in the methodology chapter of this study.
+
+%By focusing on these two metrics, the study aims to identify models that are not only efficient in their use of data but also robust in their predictive capabilities, providing valuable tools for weather stations to estimate soil temperature with greater precision.
 
 A beneficial model would be one using the fewest number of parameters as possible while returning results within acceptable tolerances. This study will consider models that can use only time and air temperature as those two features are the most common measurements measured at weather stations, since soil temperature is not necessarily calculated as stated earlier. A good metric in this study will be considered to be a combination of Root Mean Square Error and Explained Variance (see section \ref{sec:method:metric}). 
 

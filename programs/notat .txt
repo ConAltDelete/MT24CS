@@ -1,0 +1,4 @@
+notat 
+===========
+
+- lag tabel  med n <, n > nans count (bruk r kode)
